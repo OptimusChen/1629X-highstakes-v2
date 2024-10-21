@@ -1,5 +1,7 @@
 #include "lib/robot.hpp"
 #include "lib/util.hpp"
+#include "lib/motionProfiling.hpp"
+#include "lib/ramsete.hpp"
 #include <math.h>
 
 using namespace lib;
@@ -56,8 +58,8 @@ void Robot::turnToHeading(float target_angle, int timeout) {
         float output = angular->calculate(error);
         
         // Set the chassis motor speeds based on the PID output
-        float left_speed = util::clamp(-output, -127, 127);
-        float right_speed = util::clamp(output, -127, 127);
+        float left_speed = util::clamp(output, -127, 127);
+        float right_speed = util::clamp(-output, -127, 127);
 
         std::cout << left_speed << std::endl;
 
@@ -131,8 +133,12 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
         float angularError = util::calculate_shortest_angle(adj > 0 ? adj : 360.0f + adj, target_angle);
 
+        // std::cout << pose.x << ", " << pose.y << ": " << target_angle << " - " << adj << " = " << angularError << std::endl;
+
         // Adjust the movement output if the angular error is significant
         moveOut *= cos(angularError * M_PI / 180.0f);  // Convert angular error to radians
+
+        std::cout << signed_dist << ": " << moveOut << std::endl;
 
         // Get the output from the angular (heading) PID controller
         float turnOut = angular->calculate(angularError);
@@ -146,17 +152,25 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         moveOut *= multiplier;
 
         // If turnFirst is true and angular error is large, stop forward movement
-        if (turnFirst && fabs(angularError) > 10.0f) {
+        if (turnFirst && fabs(angularError) > 25.0f) {
             moveOut = 0;
         }
 
+        // std::cout << moveOut << std::endl;
+
         // Calculate motor speeds for tank drive (left and right motor speeds)
-        float left_motor_speed = moveOut - turnOut;
-        float right_motor_speed = moveOut + turnOut;
+        float left_motor_speed = moveOut + turnOut;
+        float right_motor_speed = moveOut - turnOut;
 
         // Clamp motor speeds to the maximum allowed speed
         left_motor_speed = util::clamp(left_motor_speed, -127, 127);
         right_motor_speed = util::clamp(right_motor_speed, -127, 127);
+
+        const float ratio = std::max(std::fabs(left_motor_speed), std::fabs(right_motor_speed)) / 127;
+        if (ratio > 1) {
+            left_motor_speed /= ratio;
+            right_motor_speed /= ratio;
+        }
 
         // Set motor speeds to move the robot toward the target
         left->move(left_motor_speed);
@@ -172,6 +186,97 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
     }
 
     // Stop the motors when the target is reached or timeout occurs
+    left->move(0);
+    right->move(0);
+}
+
+#define METERS 0.0245
+
+void Robot::ramsete(int timeout) {
+    float max_speed = (450 * M_PI * 2.75 * METERS) / 60.0f;
+    float trackWidth = 10.8 * METERS;
+
+	double force = 0.175 / ((2.75 * 0.0254) / 2);
+	double accel = (force * 6) / 3.577089;
+
+	std::cout << accel << std::endl;
+
+	double jerk = accel * 2;
+
+	const double delta_d = 0.01;
+	const int sample_points = 0;
+	const int benchmark_samples = 1;
+
+	// Test Motion Profile
+	auto constraints = new Constraints(max_speed, accel, 0.1, accel, jerk, trackWidth);
+
+	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
+
+    CubicBezier* testPath;
+	testPath = new CubicBezier({0, 0}, {0, 0.85}, {0.85, 0}, {0.85, 0.85});
+
+    profileGenerator->generateProfile(testPath);
+
+    RamseteController controller(2, 0.7, max_speed);
+
+    auto path = profileGenerator->getProfile();
+
+    std::cout << path.size() << std::endl;
+
+    size_t path_index = 0;
+    bool running = true;
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+    // Target loop time (10 ms)
+    std::chrono::duration<float> target_loop_time(0.01);
+
+    while (running) {
+        std::cout << path_index << std::endl;
+
+        auto loop_start = std::chrono::high_resolution_clock::now();
+
+        // Check timeout and end condition
+        auto current_time = std::chrono::high_resolution_clock::now();
+        if (path_index >= path.size()) {
+            running = false;
+            break;
+        }
+
+        Pose pose = get_pose();
+
+        // Convert chassis position to meters
+        float x = pose.x * METERS;
+        float y = pose.y * METERS;
+
+        // Get target point from the motion path
+        ProfilePoint point = path[path_index];
+
+        // Calculate left and right motor power using Ramsete controller
+        auto [left_power, right_power] = controller.calculate(x, y, pose.theta, point.x, point.y, point.theta, point.vel, point.accel);
+
+        // Set motor speeds
+        left->move(left_power);
+        right->move(right_power);
+
+        // Move to the next point in the path
+        path_index++;
+
+        pros::delay(100);
+
+        continue;
+
+        // Measure loop duration and sleep if necessary
+        auto loop_duration = std::chrono::high_resolution_clock::now() - loop_start;
+        auto sleep_time = target_loop_time - loop_duration;
+
+        if (sleep_time.count() > 0) {
+            
+        } else {
+            std::cout << "Warning: Calculation time exceeded the target loop time" << std::endl;
+        }
+    }
+
+    // Stop motors after finishing the path or timeout
     left->move(0);
     right->move(0);
 }

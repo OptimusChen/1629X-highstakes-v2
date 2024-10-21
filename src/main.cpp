@@ -25,27 +25,27 @@ using namespace lib;
 Controller master(E_CONTROLLER_MASTER);
 
 auto r = Rotation(VERTICAL);
-auto r2 = Rotation(-HORIZONTAL);
+auto r2 = Rotation(HORIZONTAL);
 auto imu = Imu(INERTIAL_PORT);
 
 auto pl = TrackingWheel(&r, 0.7f, 2.0f);
 auto pd = TrackingWheel(&r2, 1.0f, 2.0f);
 
-Odom odom(&pl, &pd, &imu);
+Odom odom(&pd, &pl, &imu);
 
 MotorGroup left_motor_group({-L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK});
 MotorGroup right_motor_group({R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK});
 
 PID linear(	
-        10, // kP
-        0, // kI
-        1 // kD
+        5, // kP
+        0.02, // kI
+        0.1 // kD
 );
 
 // turning PID
 PID angular(
-	2, // proportional gain (kP)
-	0, // integral gain (kI)
+	1, // proportional gain (kP)
+	0.001, // integral gain (kI)
 	1 // derivative gain (kD)
 );
 
@@ -67,7 +67,10 @@ void initialize() {
 		}
 	}};
 
-	robot.moveToPoint(10, 0, 2000, true, true);
+	robot.set_pose(0, 0, 90);
+	robot.ramsete(4000);
+	// robot.turnToHeading(90 ,20000);
+	// robot.moveToPoint(0, 10, 4000, true, true);
 }
 
 void disabled() {}

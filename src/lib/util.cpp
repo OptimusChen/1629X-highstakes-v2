@@ -40,4 +40,8 @@ namespace util {
 
         return fmod(degrees(atan2(deltaY, deltaX)), 360);
     }
+
+    float no_big_angles_pls(float theta) {
+        return theta - 2*M_PI*floor((theta+M_PI)/(2*M_PI));
+    }
 }

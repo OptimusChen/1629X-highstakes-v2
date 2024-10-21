@@ -25,7 +25,7 @@ Pose Odom::get_pose() {
 }
 
 void Odom::update() {
-    float recordedTheta = util::radians(inertial->get_rotation());
+    float recordedTheta = util::radians(-inertial->get_rotation());
     float parallelTravel = parallel->get_distance();
     float perpendicularTravel = perpendicular->get_distance();
 
@@ -75,7 +75,7 @@ void Odom::update() {
     // std::cout << localX << ", " << localY << ", " << avgHeading << std::endl;
     x += localY * sin(avgHeading);
     y += localY * cos(avgHeading);
-    x += localX * -cos(avgHeading);
+    x += localX * cos(avgHeading);
     y += localX * sin(avgHeading);
     theta = heading;
 
@@ -85,7 +85,6 @@ void Odom::update() {
     if (theta < 0) {
         theta += 2*M_PI;
     }
-
 }
 
 void Odom::start() {

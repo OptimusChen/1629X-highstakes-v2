@@ -27,5 +27,6 @@ namespace lib {
             // movement stuff
             void turnToHeading(float heading, int timeout);
             void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false);
+            void ramsete(int timeout);
     };
 }
