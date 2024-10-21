@@ -79,6 +79,11 @@ void Robot::turnToHeading(float target_angle, int timeout) {
     right->move(0);
 }
 
+    void Robot::turnToPoint(float x, float y, int timeout) {
+        Pose pose = get_pose();
+        turnToHeading(util::get_angle_to_target(pose.x, pose.y, x, y), timeout);
+    }
+
 void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnFirst) {
     // Reset the PID controllers for lateral and angular control
     lateral->reset();
