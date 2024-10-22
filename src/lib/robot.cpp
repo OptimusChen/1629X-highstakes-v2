@@ -199,18 +199,17 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
 void Robot::ramsete(int timeout) {
     float max_speed = (450 * M_PI * 2.75 * METERS) / 60.0f;
+
     float trackWidth = 10.8 * METERS;
 
-	double force = 0.175 / ((2.75 * 0.0254) / 2);
-	double accel = (force * 6) / 3.577089;
+	double force = 0.15 / ((2.75 * METERS) / 2);
+	double accel = (force * 6) / 5;
 
 	std::cout << accel << std::endl;
 
 	double jerk = accel * 2;
 
 	const double delta_d = 0.01;
-	const int sample_points = 0;
-	const int benchmark_samples = 1;
 
 	// Test Motion Profile
 	auto constraints = new Constraints(max_speed, accel, 0.1, accel, jerk, trackWidth);
@@ -222,18 +221,21 @@ void Robot::ramsete(int timeout) {
 
     profileGenerator->generateProfile(testPath);
 
+    // return;
+
     RamseteController controller(2, 0.7, max_speed);
 
     auto path = profileGenerator->getProfile();
 
     std::cout << path.size() << std::endl;
 
-    size_t path_index = 0;
-    bool running = true;
+    size_t path_index = 1;
     auto start_time = std::chrono::high_resolution_clock::now();
 
     // Target loop time (10 ms)
-    std::chrono::duration<float> target_loop_time(0.01);
+    int LOOP_PERIOD_MS = 15;
+
+    bool running = true;
 
     while (running) {
         std::cout << path_index << std::endl;
@@ -266,18 +268,14 @@ void Robot::ramsete(int timeout) {
         // Move to the next point in the path
         path_index++;
 
-        pros::delay(100);
+        // Calculate the time spent in this loop
+        auto loop_end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> loop_duration = loop_end - loop_start;
 
-        continue;
-
-        // Measure loop duration and sleep if necessary
-        auto loop_duration = std::chrono::high_resolution_clock::now() - loop_start;
-        auto sleep_time = target_loop_time - loop_duration;
-
-        if (sleep_time.count() > 0) {
-            
-        } else {
-            std::cout << "Warning: Calculation time exceeded the target loop time" << std::endl;
+        // Calculate the remaining time to sleep to maintain the desired loop period
+        int sleep_time_ms = LOOP_PERIOD_MS - loop_duration.count();
+        if (sleep_time_ms > 0) {
+            pros::delay(sleep_time_ms);
         }
     }
 

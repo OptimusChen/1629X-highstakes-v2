@@ -44,6 +44,8 @@ std::pair<float, float> RamseteController::calculate(float currentX, float curre
     // Angular velocity (unit: rad/s)
     float w = wd + k * et + (b * vd * std::sin(et) * ey) / et;
 
+    v = util::clamp(v, -this->max, this->max);
+
     w = w * ((METERS * 10.8) / 2);
 
     // Calculate wheel velocities (left, right)

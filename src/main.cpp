@@ -29,7 +29,7 @@ auto r2 = Rotation(HORIZONTAL);
 auto imu = Imu(INERTIAL_PORT);
 
 auto pl = TrackingWheel(&r, 0.7f, 2.0f);
-auto pd = TrackingWheel(&r2, 1.0f, 2.0f);
+auto pd = TrackingWheel(&r2, 1.5f, 2.0f);
 
 Odom odom(&pd, &pl, &imu);
 
