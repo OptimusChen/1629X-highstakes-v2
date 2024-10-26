@@ -2,6 +2,7 @@
 #include "lib/util.hpp"
 #include "lib/motionProfiling.hpp"
 #include "lib/ramsete.hpp"
+#include "lib/units.hpp"
 #include <math.h>
 
 using namespace lib;
@@ -195,17 +196,15 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
     right->move(0);
 }
 
-#define METERS 0.0245
+#define METERS 0.0254
 
 void Robot::ramsete(int timeout) {
     float max_speed = (450 * M_PI * 2.75 * METERS) / 60.0f;
 
-    float trackWidth = 10.8 * METERS;
+    float trackWidth = 11 * METERS;
 
 	double force = 0.15 / ((2.75 * METERS) / 2);
-	double accel = (force * 6) / 5;
-
-	std::cout << accel << std::endl;
+	double accel = (force * 6) / 4;
 
 	double jerk = accel * 2;
 
@@ -221,25 +220,19 @@ void Robot::ramsete(int timeout) {
 
     profileGenerator->generateProfile(testPath);
 
-    // return;
-
     RamseteController controller(2, 0.7, max_speed);
 
     auto path = profileGenerator->getProfile();
-
-    std::cout << path.size() << std::endl;
 
     size_t path_index = 1;
     auto start_time = std::chrono::high_resolution_clock::now();
 
     // Target loop time (10 ms)
-    int LOOP_PERIOD_MS = 15;
+    int LOOP_PERIOD_MS = 10;
 
     bool running = true;
 
     while (running) {
-        std::cout << path_index << std::endl;
-
         auto loop_start = std::chrono::high_resolution_clock::now();
 
         // Check timeout and end condition
@@ -259,11 +252,20 @@ void Robot::ramsete(int timeout) {
         ProfilePoint point = path[path_index];
 
         // Calculate left and right motor power using Ramsete controller
-        auto [left_power, right_power] = controller.calculate(x, y, pose.theta, point.x, point.y, point.theta, point.vel, point.accel);
+        auto [v, w] = controller.calculate(x, y, pose.theta, point.x, point.y, point.theta, point.vel, point.accel);
 
-        // Set motor speeds
-        left->move(left_power);
-        right->move(right_power);
+        float left_power = (v - w * trackWidth * 0.5);
+        float right_power = (v + w * trackWidth * 0.5);
+
+        float ratio = std::max(fabs(left_power), fabs(right_power)) / max_speed;
+
+        if (ratio > 1) {
+            left_power /= ratio;
+            right_power /= ratio;  
+        }
+
+        left->move(left_power * 127 / max_speed);
+        right->move(right_power * 127 / max_speed);
 
         // Move to the next point in the path
         path_index++;

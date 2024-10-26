@@ -257,7 +257,7 @@
     "upload_options": {
       "slot": 4,
       "icon": "planet",
-      "after": "run"
+      "after": "screen"
     },
     "use_early_access": true
   }

@@ -1,9 +1,10 @@
 #include "lib/ramsete.hpp"
 #include "lib/util.hpp"
 #include <stdlib.h>
+#include <iostream>
 #include <math.h>
 
-#define METERS 0.0245
+#define METERS 0.0254
 
 RamseteController::RamseteController(float b, float zeta, float max) {
     this->b = b;
@@ -20,6 +21,8 @@ std::pair<float, float> RamseteController::calculate(float currentX, float curre
         targetY - currentY,
         targetT - currentTheta
     };
+
+    std::cout << (currentX) / METERS << ", " << (currentY) / METERS << ", " << util::degrees(currentTheta) << std::endl;
 
     float cos_theta = std::cos(currentTheta);
     float sin_theta = std::sin(currentTheta);
@@ -44,13 +47,5 @@ std::pair<float, float> RamseteController::calculate(float currentX, float curre
     // Angular velocity (unit: rad/s)
     float w = wd + k * et + (b * vd * std::sin(et) * ey) / et;
 
-    v = util::clamp(v, -this->max, this->max);
-
-    w = w * ((METERS * 10.8) / 2);
-
-    // Calculate wheel velocities (left, right)
-    float left = (v - w) / this->max;
-    float right = (v + w) / this->max;
-
-    return {127 * left, 127 * right};
+    return {v, w};
 }

@@ -25,16 +25,16 @@ using namespace lib;
 Controller master(E_CONTROLLER_MASTER);
 
 auto r = Rotation(VERTICAL);
-auto r2 = Rotation(HORIZONTAL);
+auto r2 = Rotation(-HORIZONTAL);
 auto imu = Imu(INERTIAL_PORT);
 
 auto pl = TrackingWheel(&r, 0.7f, 2.0f);
-auto pd = TrackingWheel(&r2, 1.5f, 2.0f);
+auto pd = TrackingWheel(&r2, 1.5, 2.0f);
 
 Odom odom(&pd, &pl, &imu);
 
-MotorGroup left_motor_group({-L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK});
-MotorGroup right_motor_group({R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK});
+MotorGroup left_motor_group({-L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue);
+MotorGroup right_motor_group({R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue);
 
 PID linear(	
         5, // kP

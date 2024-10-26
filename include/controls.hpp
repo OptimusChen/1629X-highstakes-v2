@@ -28,8 +28,8 @@
 #define ARM 5
 
 
-#define VERTICAL 7
-#define HORIZONTAL 8
+#define VERTICAL 1
+#define HORIZONTAL 10
 
 
 #define INERTIAL_PORT 11
