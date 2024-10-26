@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <math.h>
+#include <iomanip>
 
 #define METERS 0.0254
 
@@ -22,7 +23,12 @@ std::pair<float, float> RamseteController::calculate(float currentX, float curre
         targetT - currentTheta
     };
 
-    std::cout << (currentX) / METERS << ", " << (currentY) / METERS << ", " << util::degrees(currentTheta) << std::endl;
+    // std::cout << (currentX) / METERS << ", " << (currentY) / METERS << ", " << util::degrees(currentTheta) << std::endl;
+
+    std::cout << std::fixed << std::setprecision(3);
+    std::cout << "desired: (" << targetX / METERS  << ", " << targetY / METERS << ", " << util::degrees(targetT)
+            << "), current: (" << currentX / METERS << ", " << currentY / METERS << ", " << util::degrees(currentTheta) 
+            << ")" << std::endl;
 
     float cos_theta = std::cos(currentTheta);
     float sin_theta = std::sin(currentTheta);

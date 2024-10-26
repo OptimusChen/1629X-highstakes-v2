@@ -166,10 +166,6 @@ double Constraints::maxSpeed(double curvature)
         return max_turn_speed;
     // double max_slip_speed = 100000000;
     double max_slip_speed = sqrt(this->friction_coef * (1.0f / abs(curvature)) * 9.81);
-
-    std::cout << ((curvature)) << std::endl;
-    std::cout << "ss:" << max_slip_speed << std::endl;
-
     return std::min(max_slip_speed, max_turn_speed);
 }
 
@@ -227,7 +223,7 @@ ProfileGenerator::ProfileGenerator(Constraints *constraints, double dd)
 void ProfileGenerator::generateProfile(virtualPath *path)
 {
     this->profile.clear();
-    double dist = this->dd;
+    double dt = 0.01;
 
     double vel = 0.00001;
 
@@ -258,17 +254,15 @@ void ProfileGenerator::generateProfile(virtualPath *path)
 
         curvature = path->getCurvature(deriv, derivSecond);
         angular_vel = vel * curvature;
-        angular_accel = (angular_vel - last_angular_vel) / dd;
+        angular_accel = (angular_vel - last_angular_vel) / dt;
         last_angular_vel = angular_vel;
 
         max_accel = this->constraints->max_acc - abs(angular_accel * this->constraints->track_width / 2);
-        vel = std::min(this->constraints->maxSpeed(curvature), vel + max_accel*dd);
+        vel = std::min(this->constraints->maxSpeed(curvature), vel + max_accel*dt);
 
-        double dis = vel * dd + 0.5 * max_accel * dd * dd;
+        double dis = vel * dt + 0.5 * max_accel * dt * dt;
 
         t += dis / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
-
-        dist += dis;
 
         forwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, angular_vel));
     }
@@ -290,17 +284,15 @@ void ProfileGenerator::generateProfile(virtualPath *path)
         curvature = path->getCurvature(deriv, derivSecond);
 
         angular_vel = vel * curvature;
-        angular_accel = (angular_vel - last_angular_vel) / dd;
+        angular_accel = (angular_vel - last_angular_vel) / dt;
         last_angular_vel = angular_vel;
 
         max_accel = this->constraints->max_dec - abs(angular_accel * this->constraints->track_width / 2);
-        vel = std::min(this->constraints->maxSpeed(curvature), vel + max_accel*dd);
+        vel = std::min(this->constraints->maxSpeed(curvature), vel + max_accel*dt);
 
-        double dis = vel * dd + 0.5 * max_accel * dd * dd;
+        double dis = vel * dt + 0.5 * max_accel * dt * dt;
 
         t -= dis / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
-
-        dist -= dis;
 
         backwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, angular_vel));
     }
@@ -309,8 +301,8 @@ void ProfileGenerator::generateProfile(virtualPath *path)
     for (int i = 0; i < backwardPass.size(); ++i)
     {
         auto forward = forwardPass[i];
-        auto vel = std::min(forward.vel, backwardPass[backwardPass.size() - i].vel);
-        auto avel = std::min(forward.accel, backwardPass[backwardPass.size() - i].accel);
+        auto vel = std::min(forward.vel, backwardPass[backwardPass.size() - 1 - i].vel);
+        auto avel = std::min(forward.accel, backwardPass[backwardPass.size() - 1 - i].accel);
 
         this->profile.push_back(ProfilePoint(forward.x, forward.y, forward.theta, forward.curvature, forward.t, vel, avel));
     }

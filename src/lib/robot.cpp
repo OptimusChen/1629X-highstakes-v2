@@ -204,14 +204,14 @@ void Robot::ramsete(int timeout) {
     float trackWidth = 11 * METERS;
 
 	double force = 0.15 / ((2.75 * METERS) / 2);
-	double accel = (force * 6) / 4;
+	double accel = (force * 6) / 5;
 
 	double jerk = accel * 2;
 
 	const double delta_d = 0.01;
 
 	// Test Motion Profile
-	auto constraints = new Constraints(max_speed, accel, 0.1, accel, jerk, trackWidth);
+	auto constraints = new Constraints(max_speed, max_speed*3, 0.1, max_speed*3, jerk, trackWidth);
 
 	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
 
@@ -224,11 +224,11 @@ void Robot::ramsete(int timeout) {
 
     auto path = profileGenerator->getProfile();
 
-    size_t path_index = 1;
+    size_t path_index = 0;
     auto start_time = std::chrono::high_resolution_clock::now();
 
     // Target loop time (10 ms)
-    int LOOP_PERIOD_MS = 10;
+    float LOOP_PERIOD_MS = 10;
 
     bool running = true;
 
@@ -254,18 +254,13 @@ void Robot::ramsete(int timeout) {
         // Calculate left and right motor power using Ramsete controller
         auto [v, w] = controller.calculate(x, y, pose.theta, point.x, point.y, point.theta, point.vel, point.accel);
 
-        float left_power = (v - w * trackWidth * 0.5);
-        float right_power = (v + w * trackWidth * 0.5);
+        float left_power = 127 * ((v - w * trackWidth * 0.5) / max_speed);
+        float right_power = 127 * ((v + w * trackWidth * 0.5) / max_speed);
 
-        float ratio = std::max(fabs(left_power), fabs(right_power)) / max_speed;
+        std::cout << "left power: " << left_power << " right power: " << right_power << std::endl;
 
-        if (ratio > 1) {
-            left_power /= ratio;
-            right_power /= ratio;  
-        }
-
-        left->move(left_power * 127 / max_speed);
-        right->move(right_power * 127 / max_speed);
+        left->move(left_power);
+        right->move(right_power);
 
         // Move to the next point in the path
         path_index++;
@@ -275,10 +270,9 @@ void Robot::ramsete(int timeout) {
         std::chrono::duration<double, std::milli> loop_duration = loop_end - loop_start;
 
         // Calculate the remaining time to sleep to maintain the desired loop period
-        int sleep_time_ms = LOOP_PERIOD_MS - loop_duration.count();
-        if (sleep_time_ms > 0) {
-            pros::delay(sleep_time_ms);
-        }
+        float sleep_time_ms = LOOP_PERIOD_MS - loop_duration.count();
+
+        pros::delay(sleep_time_ms);
     }
 
     // Stop motors after finishing the path or timeout
