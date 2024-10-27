@@ -220,12 +220,12 @@ ProfileGenerator::ProfileGenerator(Constraints *constraints, double dd)
     this->dd = dd;
 }
 
-void ProfileGenerator::generateProfile(virtualPath *path)
+void ProfileGenerator::generateProfile(bezier::Bezier path)
 {
     this->profile.clear();
     double dt = 0.01;
 
-    double vel = 0;
+    double vel = 0.00001;
 
     std::vector<ProfilePoint> forwardPass;
     std::vector<ProfilePoint> backwardPass;
@@ -268,7 +268,7 @@ void ProfileGenerator::generateProfile(virtualPath *path)
         forwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, angular_vel));
     }
 
-    vel = 0;
+    vel = 0.00001;
     last_angular_vel = 0;
     angular_accel = 0;
     t = 1;
@@ -280,11 +280,11 @@ void ProfileGenerator::generateProfile(virtualPath *path)
         deriv = path->getDerivative(t);
         derivSecond = path->getSecondDerivative(t);
 
+        theta = std::atan2(deriv.y, deriv.x);
+
         double dis = vel * dt + 0.5 * max_accel * dt * dt;
 
         t -= dis / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
-
-        theta = std::atan2(deriv.y, deriv.x);
 
         curvature = path->getCurvature(deriv, derivSecond);
 

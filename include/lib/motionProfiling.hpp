@@ -1,5 +1,6 @@
 #include "Eigen/Dense"
 #include "pose.hpp"
+#include "bezier.h"
 
 namespace lib {
     class Point2D
@@ -119,7 +120,7 @@ namespace lib {
     {
     public:
         ProfileGenerator(Constraints *constraints, double dd);
-        void generateProfile(virtualPath *path);
+        void generateProfile(bezier::Bezier path);
         ChassisSpeeds getProfilePoint(double d);
         auto getProfile() { return profile; }
 

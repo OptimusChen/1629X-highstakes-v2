@@ -1,9 +1,12 @@
 #include "lib/robot.hpp"
 #include "lib/util.hpp"
+#include "lib/bezier.h"
 #include "lib/motionProfiling.hpp"
-#include "lib/ramsete.hpp"
+#include "lib/controller/ramsete.hpp"
+#include "lib/controller/feedForward.hpp"
 #include "lib/units.hpp"
 #include <math.h>
+#include <iomanip>
 
 using namespace lib;
 
@@ -202,9 +205,11 @@ void Robot::ramsete(int timeout) {
     float max_speed = ((450 / 60.0f) * (M_PI * 2.75 * METERS));
 
     float trackWidth = 11 * METERS;
+    float mass = 4;
+    float motorConst = 0.2;
 
-	double force = 0.15 / ((2.75 * METERS) / 2);
-	double accel = (force * 6) / 4;
+	double force = motorConst / ((2.75 * METERS) / 2);
+	double accel = (force * 6) / mass;
 
 	double jerk = accel * 2;
 
@@ -215,12 +220,15 @@ void Robot::ramsete(int timeout) {
 
 	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
 
-    CubicBezier* testPath;
-	testPath = new CubicBezier({0, 0}, {0, 0.85}, {0.85, 0}, {0.85, 0.85});
+    bezier::Bezier<3> path({{0, 0}, {0, 0.85}, {0, 0}, {0, 0.85}});
 
-    profileGenerator->generateProfile(testPath);
+    profileGenerator->generateProfile(path);
 
     RamseteController controller(2, 0.7, max_speed);
+
+    float gearRatio = 48/36;
+
+    FeedforwardController feedForward(0, 127 / max_speed, 0);
 
     auto path = profileGenerator->getProfile();
 
@@ -231,6 +239,9 @@ void Robot::ramsete(int timeout) {
     float LOOP_PERIOD_MS = 10;
 
     bool running = true;
+
+    float lastLeftVelocity = 0;
+    float lastRightVelocity = 0;
 
     while (running) {
         auto loop_start = std::chrono::high_resolution_clock::now();
@@ -252,20 +263,30 @@ void Robot::ramsete(int timeout) {
         float y = pose.y * METERS;
 
         // Calculate left and right motor power using Ramsete controller
-        auto [v, w] = controller.calculate(x, y, pose.theta, point.x, point.y, point.theta, point.vel, point.accel);
+        auto [v, w] = controller.calculate(x, y, pose.theta, point.x, point.y, point.theta, point.vel, point.vel * point.curvature);
 
-        float left_power = 12000 * ((v - w * trackWidth * 0.5) / max_speed);
-        float right_power = 12000 * ((v + w * trackWidth * 0.5) / max_speed);
+        float leftVelocity = (v - w * trackWidth * 0.5);
+        float rightVelocity = (v + w * trackWidth * 0.5);
+        
+        float leftAccel = (leftVelocity - lastLeftVelocity) / delta_d;
+        float rightAccel = (rightVelocity - lastRightVelocity) / delta_d;
 
-        std::cout << "left power: " << left_power << " right power: " << right_power << std::endl;
+        std::cout << "left accel: " << leftAccel << " right accel: " << rightAccel << std::endl;
 
-        left->move_voltage(left_power);
-        right->move_voltage(right_power);
+        double leftPower = feedForward.calculate(leftVelocity, leftAccel);
+        double rightPower = feedForward.calculate(rightVelocity, rightAccel);
+
+        lastLeftVelocity = leftVelocity;
+        lastRightVelocity = rightVelocity;
+
+        std::cout << "left power: " << leftPower << " right power: " << rightPower << std::endl;
+
+        left->move(leftPower);
+        right->move(rightPower);
         
         pros::delay(LOOP_PERIOD_MS);
 
-        std::cout << "left real: " << left->get_voltage() << " right real: " << right->get_voltage() << std::endl;
-
+        std::cout << "left real: " << left->get_voltage() / 100 << " right real: " << right->get_voltage() / 100 << std::endl;
         path_index++;
     }
 

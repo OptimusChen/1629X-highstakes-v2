@@ -44,4 +44,8 @@ namespace util {
     float no_big_angles_pls(float theta) {
         return theta - 2*M_PI*floor((theta+M_PI)/(2*M_PI));
     }
+
+    int sign(double value) {
+        return (value > 0) - (value < 0);
+    }
 }
