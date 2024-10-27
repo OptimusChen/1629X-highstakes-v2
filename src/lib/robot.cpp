@@ -199,19 +199,19 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 #define METERS 0.0254
 
 void Robot::ramsete(int timeout) {
-    float max_speed = (450 * M_PI * 2.75 * METERS) / 60.0f;
+    float max_speed = ((450 / 60.0f) * (M_PI * 2.75 * METERS));
 
     float trackWidth = 11 * METERS;
 
 	double force = 0.15 / ((2.75 * METERS) / 2);
-	double accel = (force * 6) / 5;
+	double accel = (force * 6) / 4;
 
 	double jerk = accel * 2;
 
 	const double delta_d = 0.01;
 
 	// Test Motion Profile
-	auto constraints = new Constraints(max_speed, max_speed*3, 0.1, max_speed*3, jerk, trackWidth);
+	auto constraints = new Constraints(max_speed, accel, 0.1, accel, jerk, trackWidth);
 
 	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
 
@@ -242,37 +242,31 @@ void Robot::ramsete(int timeout) {
             break;
         }
 
+        // Get target point from the motion path
+        ProfilePoint point = path[path_index];
+
         Pose pose = get_pose();
 
         // Convert chassis position to meters
         float x = pose.x * METERS;
         float y = pose.y * METERS;
 
-        // Get target point from the motion path
-        ProfilePoint point = path[path_index];
-
         // Calculate left and right motor power using Ramsete controller
         auto [v, w] = controller.calculate(x, y, pose.theta, point.x, point.y, point.theta, point.vel, point.accel);
 
-        float left_power = 127 * ((v - w * trackWidth * 0.5) / max_speed);
-        float right_power = 127 * ((v + w * trackWidth * 0.5) / max_speed);
+        float left_power = 12000 * ((v - w * trackWidth * 0.5) / max_speed);
+        float right_power = 12000 * ((v + w * trackWidth * 0.5) / max_speed);
 
         std::cout << "left power: " << left_power << " right power: " << right_power << std::endl;
 
-        left->move(left_power);
-        right->move(right_power);
+        left->move_voltage(left_power);
+        right->move_voltage(right_power);
+        
+        pros::delay(LOOP_PERIOD_MS);
 
-        // Move to the next point in the path
+        std::cout << "left real: " << left->get_voltage() << " right real: " << right->get_voltage() << std::endl;
+
         path_index++;
-
-        // Calculate the time spent in this loop
-        auto loop_end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> loop_duration = loop_end - loop_start;
-
-        // Calculate the remaining time to sleep to maintain the desired loop period
-        float sleep_time_ms = LOOP_PERIOD_MS - loop_duration.count();
-
-        pros::delay(sleep_time_ms);
     }
 
     // Stop motors after finishing the path or timeout
