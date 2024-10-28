@@ -224,11 +224,9 @@ void ProfileGenerator::generateProfile(virtualPath* path)
 {
     this->profile.clear();
 
-    // dont ask
-    double dt = dd;
-
-    double vel = 0.00001;
-    double dist = 0;
+    // dont ask    
+    double dt = 0.01;
+    double vel = 0;
 
     std::vector<ProfilePoint> forwardPass;
     std::vector<ProfilePoint> backwardPass;
@@ -250,22 +248,24 @@ void ProfileGenerator::generateProfile(virtualPath* path)
         deriv = path->getDerivative(t);
         derivSecond = path->getSecondDerivative(t);
 
-        double dis = vel * dt + 0.5 * max_accel * dt * dt;
-
-        t += dis / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
-
         theta = std::atan2(deriv.y, deriv.x);
 
         curvature = path->getCurvature(deriv, derivSecond);
 
+        double maxSpeed = constraints->maxSpeed(curvature);
+
         angular_vel = vel * curvature;
-        angular_accel = (angular_vel - last_angular_vel) / dt;
+        angular_accel = (angular_vel - last_angular_vel) * (vel / dt);
         last_angular_vel = angular_vel;
-
         max_accel = this->constraints->max_acc - abs(angular_accel * this->constraints->track_width / 2);
-        vel = std::min(this->constraints->maxSpeed(curvature), vel + max_accel*dt);
 
-        forwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, angular_vel));
+        double maxAchievable = std::sqrt(vel * vel + 2 * max_accel * dd);
+
+        vel = std::min(maxSpeed, maxAchievable);
+
+        forwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, max_accel));
+
+        t += dd / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
     }
 
     vel = 0.00001;
@@ -282,31 +282,54 @@ void ProfileGenerator::generateProfile(virtualPath* path)
 
         theta = std::atan2(deriv.y, deriv.x);
 
-        double dis = vel * dt + 0.5 * max_accel * dt * dt;
-
-        t -= dis / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
-
         curvature = path->getCurvature(deriv, derivSecond);
 
+        double maxSpeed = constraints->maxSpeed(curvature);
+
         angular_vel = vel * curvature;
-        angular_accel = (angular_vel - last_angular_vel) / dt;
+        angular_accel = (angular_vel - last_angular_vel) * (vel / dd);
         last_angular_vel = angular_vel;
-
         max_accel = this->constraints->max_dec - abs(angular_accel * this->constraints->track_width / 2);
-        vel = std::min(this->constraints->maxSpeed(curvature), vel + max_accel*dt);
 
-        backwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, angular_vel));
+        double maxAchievable = std::sqrt(vel * vel + 2 * max_accel * dd);
+
+        vel = std::min(maxSpeed, maxAchievable);
+
+        backwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, max_accel));
+
+        t -= dd / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
     }
 
     // Get lower of the two velocities at each point and store in trajectory
     for (int i = 0; i < backwardPass.size(); ++i)
     {
         auto forward = forwardPass[i];
-        auto vel = std::min(forward.vel, backwardPass[backwardPass.size() - 1 - i].vel);
-        auto avel = vel * forward.curvature;
+        auto vel = std::min(forwardPass[i].vel, backwardPass[backwardPass.size() - i - 1].vel);
 
-        this->profile.push_back(ProfilePoint(forward.x, forward.y, forward.theta, forward.curvature, forward.t, vel, avel));
+        this->profile.push_back(ProfilePoint(forward.x, forward.y, forward.theta, forward.curvature, forward.t, vel, forward.accel));
     }
+
+    // double time = 0.0;  // Initialize cumulative time
+    // double lastDistance = 0.0;  // Track the distance at the previous point
+    // for (int i = 1; i < this->profile.size(); ++i) {
+    //     auto& point = this->profile[i];
+
+    //     // Calculate the distance increment from the last point
+    //     double deltaDistance = (i == 0) ? 0.0 : std::sqrt(
+    //         std::pow(point.x - this->profile[i - 1].x, 2) +
+    //         std::pow(point.y - this->profile[i - 1].y, 2)
+    //     );
+
+    //     double a = (pow(point.vel, 2) - pow(this->profile[i - 1].vel, 2) / (2 * deltaDistance));
+
+    //     if (std::abs(a) > 0.0001) {
+    //         time += (point.vel - this->profile[i - 1].vel) / a;
+    //     } else {
+    //         time += deltaDistance / point.vel;
+    //     }
+
+    //     std::cout << time << std::endl;
+    // }
     
     for (auto p : getProfile()) {
         // std::cout << p << std::endl;
