@@ -220,18 +220,18 @@ ProfileGenerator::ProfileGenerator(Constraints *constraints, double dd)
     this->dd = dd;
 }
 
-void ProfileGenerator::generateProfile(bezier::Bezier path)
+void ProfileGenerator::generateProfile(virtualPath* path)
 {
     this->profile.clear();
-    double dt = 0.01;
+
+    // dont ask
+    double dt = dd;
 
     double vel = 0.00001;
+    double dist = 0;
 
     std::vector<ProfilePoint> forwardPass;
     std::vector<ProfilePoint> backwardPass;
-
-    // forwardPass.push_back(ProfilePoint(0, 0));
-    // backwardPass.push_back(ProfilePoint(0, 0));
 
     double t = 0;
     double curvature;

@@ -120,7 +120,7 @@ namespace lib {
     {
     public:
         ProfileGenerator(Constraints *constraints, double dd);
-        void generateProfile(bezier::Bezier path);
+        void generateProfile(virtualPath* path);
         ChassisSpeeds getProfilePoint(double d);
         auto getProfile() { return profile; }
 
