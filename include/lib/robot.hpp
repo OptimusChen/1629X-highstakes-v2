@@ -2,7 +2,7 @@
 
 #include "pose.hpp"
 #include "odometry/odom.hpp"
-#include "lib/pid.hpp"
+#include "lib/controller/pid.hpp"
 #include "lib/bezier.h"
 #include "pros/motor_group.hpp"
 #include <vector>
@@ -37,6 +37,6 @@ namespace lib {
             void turnToHeading(float heading, int timeout);
             void turnToPoint(float x, float y, int timeout);
             void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false);
-            void ramsete(std::vector<bezier::Point>, int timeout);
+            void ramsete(std::vector<bezier::Point>);
     };
 }

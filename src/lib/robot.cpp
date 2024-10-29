@@ -1,6 +1,6 @@
 #include "lib/robot.hpp"
 #include "lib/util.hpp"
-#include "lib/pid.hpp"
+#include "lib/controller/pid.hpp"
 #include "lib/bezier.h"
 #include "lib/motionProfiling.hpp"
 #include "lib/controller/ramsete.hpp"
@@ -208,7 +208,7 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
 #define METERS 0.0254
 
-void Robot::ramsete(std::vector<bezier::Point> waypoints, int timeout) {
+void Robot::ramsete(std::vector<bezier::Point> waypoints) {
     float max_speed = ((this->rpm / 60.0f) * (M_PI * this->wheelDiameter * METERS));
 
     float trackWidthMeters = this->trackWidth * METERS;
@@ -231,7 +231,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, int timeout) {
 
     profileGenerator->generateProfile(bezierPath);
 
-    RamseteController controller(2, 0.7, max_speed);
+    RamseteController controller(2, 0.7);
     // PID lateralVelocityController(2, 1, 0.5);
     // PID angularVelocityController(1, 0, 0);
 

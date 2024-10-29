@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lib/pid.hpp"
+#include "lib/controller/pid.hpp"
 #include <unordered_set>
 #include "controls.hpp"
 #include "pros/motors.hpp"

@@ -7,10 +7,9 @@
 
 #define METERS 0.0254
 
-RamseteController::RamseteController(float b, float zeta, float max) {
+RamseteController::RamseteController(float b, float zeta) {
     this->b = b;
     this->zeta = zeta;
-    this->max = max;
 }
 
 std::pair<float, float> RamseteController::calculate(float currentX, float currentY, float currentTheta, 

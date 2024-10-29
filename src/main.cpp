@@ -1,5 +1,4 @@
 #include "main.h"
-#include "lib/pid.hpp"
 #include "arm.hpp"
 #include "controls.hpp"
 #include "lib/bezier.h"
@@ -17,7 +16,7 @@
 
 #include "lib/odometry/odom.hpp"
 #include "lib/robot.hpp"
-#include "lib/pid.hpp"
+#include "lib/controller/pid.hpp"
 
 using namespace pros;
 using namespace pros::c;
