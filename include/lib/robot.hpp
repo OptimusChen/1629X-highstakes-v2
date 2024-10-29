@@ -3,6 +3,7 @@
 #include "pose.hpp"
 #include "odometry/odom.hpp"
 #include "lib/pid.hpp"
+#include "lib/bezier.h"
 #include "pros/motor_group.hpp"
 #include <vector>
 

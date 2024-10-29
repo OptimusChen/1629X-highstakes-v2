@@ -3,6 +3,7 @@
 #include "arm.hpp"
 #include "controls.hpp"
 #include "lib/bezier.h"
+#include "lib/opcontrol.hpp"
 #include "pros/misc.h"
 #include "pros/motors.h"
 
@@ -71,7 +72,7 @@ void initialize() {
     robot.set_constants(2.75, 450, 5, 12);
 
 	robot.set_pose(0, 0, 90);
-	robot.ramsete({{0, 0}, {0, 1}, {1, 0}, {1, 1}}, 4000);
+	// robot.ramsete({{0, 0}, {0, 1}, {1, 0}, {1, 1}}, 4000);
 	// robot.turnToHeading(90 ,20000);
 	// robot.moveToPoint(0, 10, 4000, true, true);
 }
@@ -174,6 +175,7 @@ void opcontrol() {
         // move the robot
 		// soon tm
         // auton::arcade(leftY, rightX);
+        lib::opcontrol::arcade(robot, leftY, rightX);
 
         // if arm PID is enabled recalculate the error and set voltage based off PID output
         arm.tick(held);
