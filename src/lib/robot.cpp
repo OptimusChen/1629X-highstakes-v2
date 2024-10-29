@@ -202,10 +202,10 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 #define METERS 0.0254
 
 void Robot::ramsete(int timeout) {
-    float max_speed = ((450 / 60.0f) * (M_PI * 2.75 * METERS)) / 2;
+    float max_speed = ((450 / 60.0f) * (M_PI * 2.75 * METERS));
 
-    float trackWidth = 11 * METERS;
-    float mass = 3;
+    float trackWidth = 12 * METERS;
+    float mass = 5;
     float motorConst = 0.175;
 
 	double force = motorConst / ((2.75 * METERS) / 2);
@@ -216,7 +216,7 @@ void Robot::ramsete(int timeout) {
 	const double delta_d = 0.01;
 
 	// Test Motion Profile
-	auto constraints = new Constraints(max_speed, accel, 0.1, accel, jerk, trackWidth);
+	auto constraints = new Constraints(max_speed, accel, 0.03, accel, jerk, trackWidth);
 
 	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
 
@@ -262,22 +262,13 @@ void Robot::ramsete(int timeout) {
         // Calculate left and right motor power using Ramsete controller
         auto [v, w] = controller.calculate(x, y, pose.theta, point.x, point.y, point.theta, point.vel, point.vel * point.curvature);
 
-        // float dTheta = pose.theta - lastTheta;
-        // lastTheta = pose.theta;
-
-        // float angularVelocity = dTheta / delta_d;
-        // float lateralVelocity = ((left->get_actual_velocity() / 60) * (M_PI * 2.75 * METERS) + (right->get_actual_velocity() / 60) * (M_PI * 2.75 * METERS)) / 2;
-
-        // float v = lateralVelocityController.calculate(vout - lateralVelocity);
-        // float w = angularVelocityController.calculate(wout - angularVelocity);
-
         float leftVelocity = (v - w * trackWidth * 0.5);
         float rightVelocity = (v + w * trackWidth * 0.5);
         
-        double leftPower = leftVelocity * (60)/max_speed;
-        double rightPower = rightVelocity * (60)/max_speed;
+        double leftPower = leftVelocity * (120)/max_speed;
+        double rightPower = rightVelocity * (120)/max_speed;
 
-        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (60);
+        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (120);
         if (ratio > 1) {
             leftPower /= ratio;
             rightPower /= ratio;

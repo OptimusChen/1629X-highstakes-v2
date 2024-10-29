@@ -232,7 +232,7 @@ void ProfileGenerator::generateProfile(virtualPath* idontcarebruh)
 {
     this->profile.clear();
 
-    bezier::Bezier<3> path({{0, 0}, {0, 0.85}, {0.85, 0}, {0.85, 0.85}});       
+    bezier::Bezier<3> path({{0, 0}, {0, 1}, {1, 0}, {1, 1}});       
 
     // dont ask    
     double dt = 0.01;
