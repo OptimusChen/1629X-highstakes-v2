@@ -1,4 +1,5 @@
 #include "lib/motionProfiling.hpp"
+#include "lib/bezier.h"
 #include <iostream>
 
 using namespace lib;
@@ -161,11 +162,18 @@ Constraints::Constraints(double max_vel, double max_acc, double friction_coef, d
 }
 double Constraints::maxSpeed(double curvature)
 {
-    double max_turn_speed = ((2.0f * this->max_vel / this->track_width) * this->max_vel) / (fabs(curvature) * this->max_vel + (2.0f * this->max_vel / this->track_width));
-    if (curvature == 0)
-        return max_turn_speed;
-    // double max_slip_speed = 100000000;
-    double max_slip_speed = sqrt(this->friction_coef * (1.0f / abs(curvature)) * 9.81);
+    if (curvature == 0) {
+        // For straight-line motion, the robot should ideally reach max velocity.
+        return this->max_vel;
+    }
+
+    // Max speed limited by turning capabilities based on track width and curvature.
+    double max_turn_speed = ((2.0 * this->max_vel / this->track_width) * this->max_vel) /
+                            (std::fabs(curvature) * this->max_vel + (2.0 * this->max_vel / this->track_width));
+    
+    // Max speed limited by friction to prevent slipping.
+    double max_slip_speed = std::sqrt(this->friction_coef * (1.0 / std::fabs(curvature)) * 9.81);
+
     return std::min(max_slip_speed, max_turn_speed);
 }
 
@@ -220,9 +228,11 @@ ProfileGenerator::ProfileGenerator(Constraints *constraints, double dd)
     this->dd = dd;
 }
 
-void ProfileGenerator::generateProfile(virtualPath* path)
+void ProfileGenerator::generateProfile(virtualPath* idontcarebruh)
 {
     this->profile.clear();
+
+    bezier::Bezier<3> path({{0, 0}, {0, 0.85}, {0.85, 0}, {0.85, 0.85}});       
 
     // dont ask    
     double dt = 0.01;
@@ -238,34 +248,40 @@ void ProfileGenerator::generateProfile(virtualPath* path)
     double last_angular_vel = 0;
     double max_accel = 0;
     double theta = 0;
-    Point2D deriv;
-    Point2D derivSecond;
+    bezier::Point deriv;
+    bezier::Point derivSecond;
 
     while (t <= 1)
     {
-        auto p1 = path->getPoint(t);
+        auto p1 = path.valueAt(t);
 
-        deriv = path->getDerivative(t);
-        derivSecond = path->getSecondDerivative(t);
+        deriv = path.derivative().valueAt(t);
+        derivSecond = path.derivative().derivative().valueAt(t);
 
         theta = std::atan2(deriv.y, deriv.x);
 
-        curvature = path->getCurvature(deriv, derivSecond);
+        curvature = path.curvatureAt(deriv, derivSecond);
 
         double maxSpeed = constraints->maxSpeed(curvature);
 
         angular_vel = vel * curvature;
-        angular_accel = (angular_vel - last_angular_vel) * (vel / dt);
+        angular_accel = (angular_vel - last_angular_vel) / dt;
         last_angular_vel = angular_vel;
-        max_accel = this->constraints->max_acc - abs(angular_accel * this->constraints->track_width / 2);
+        max_accel = this->constraints->max_acc - fabs(angular_accel * this->constraints->track_width / 2);
 
-        double maxAchievable = std::sqrt(vel * vel + 2 * max_accel * dd);
+        double maxAchievable = vel + dt * max_accel;
 
         vel = std::min(maxSpeed, maxAchievable);
 
-        forwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, max_accel));
+        double angular = vel*curvature;
 
-        t += dd / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
+        std::cout << vel << " * " << curvature << " = " << angular << std::endl;
+
+        forwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, angular));
+
+        double distance = vel * dt + 0.5 * max_accel * dt * dt;
+
+        t += distance / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
     }
 
     vel = 0.00001;
@@ -275,38 +291,44 @@ void ProfileGenerator::generateProfile(virtualPath* path)
 
     while (t >= 0)
     {
-        auto p1 = path->getPoint(t);
+        auto p1 = path.valueAt(t);
 
-        deriv = path->getDerivative(t);
-        derivSecond = path->getSecondDerivative(t);
+        deriv = path.derivative().valueAt(t);
+        derivSecond = path.derivative().derivative().valueAt(t);
 
         theta = std::atan2(deriv.y, deriv.x);
 
-        curvature = path->getCurvature(deriv, derivSecond);
+        curvature = path.curvatureAt(deriv, derivSecond);
 
         double maxSpeed = constraints->maxSpeed(curvature);
 
         angular_vel = vel * curvature;
-        angular_accel = (angular_vel - last_angular_vel) * (vel / dd);
+        angular_accel = (angular_vel - last_angular_vel) / dt;
         last_angular_vel = angular_vel;
-        max_accel = this->constraints->max_dec - abs(angular_accel * this->constraints->track_width / 2);
+        max_accel = this->constraints->max_dec - fabs(angular_accel * this->constraints->track_width / 2);
 
-        double maxAchievable = std::sqrt(vel * vel + 2 * max_accel * dd);
+        double maxAchievable = vel + max_accel * dt;
 
         vel = std::min(maxSpeed, maxAchievable);
 
-        backwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, max_accel));
+        double angular = vel*curvature;
 
-        t -= dd / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
+        backwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, angular));
+
+        double distance = vel * dt + 0.5 * max_accel * dt * dt;
+
+        t -= distance / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
     }
 
     // Get lower of the two velocities at each point and store in trajectory
     for (int i = 0; i < backwardPass.size(); ++i)
     {
         auto forward = forwardPass[i];
-        auto vel = std::min(forwardPass[i].vel, backwardPass[backwardPass.size() - i - 1].vel);
+        auto backward = backwardPass[backwardPass.size() - i - 1];
+        auto vel = std::min(forward.vel, backward.vel);
+        auto avel = vel*forward.curvature;
 
-        this->profile.push_back(ProfilePoint(forward.x, forward.y, forward.theta, forward.curvature, forward.t, vel, forward.accel));
+        this->profile.push_back(ProfilePoint(forward.x, forward.y, forward.theta, forward.curvature, forward.t, vel, avel));
     }
 
     // double time = 0.0;  // Initialize cumulative time

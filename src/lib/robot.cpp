@@ -202,11 +202,11 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 #define METERS 0.0254
 
 void Robot::ramsete(int timeout) {
-    float max_speed = ((450 / 60.0f) * (M_PI * 2.75 * METERS));
+    float max_speed = ((450 / 60.0f) * (M_PI * 2.75 * METERS)) / 2;
 
-    float trackWidth = 11 * METERS;
-    float mass = 4;
-    float motorConst = 0.15;
+    float trackWidth = 12 * METERS;
+    float mass = 3;
+    float motorConst = 0.175;
 
 	double force = motorConst / ((2.75 * METERS) / 2);
 	double accel = (force * 6) / mass;
@@ -223,8 +223,6 @@ void Robot::ramsete(int timeout) {
     CubicBezier* bezierPath = new CubicBezier({0, 0}, {0, 0.85}, {0.85, 0}, {0.85, 0.85});
 
     profileGenerator->generateProfile(bezierPath);
-
-    return;
 
     RamseteController controller(2, 0.7, max_speed);
     // PID lateralVelocityController(2, 1, 0.5);
@@ -247,7 +245,7 @@ void Robot::ramsete(int timeout) {
 
         // Check timeout and end condition
         auto current_time = std::chrono::high_resolution_clock::now();
-        if (path_index >= 30) {
+        if (path_index >= path.size()) {
             running = false;
             break;
         }
@@ -276,10 +274,10 @@ void Robot::ramsete(int timeout) {
         float leftVelocity = (v - w * trackWidth * 0.5);
         float rightVelocity = (v + w * trackWidth * 0.5);
         
-        double leftPower = leftVelocity * 600/max_speed;
-        double rightPower = rightVelocity * 600/max_speed;
+        double leftPower = leftVelocity * 60/max_speed;
+        double rightPower = rightVelocity * 60/max_speed;
 
-        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / 600;
+        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / 60;
         if (ratio > 1) {
             leftPower /= ratio;
             rightPower /= ratio;
@@ -287,12 +285,12 @@ void Robot::ramsete(int timeout) {
 
         std::cout << "left power: " << leftPower << " right power: " << rightPower << std::endl;
 
-        left->move_velocity(leftPower);
-        right->move_velocity(rightPower);
+        left->move(leftPower);
+        right->move(rightPower);
         
         pros::delay(LOOP_PERIOD_MS);
 
-        // std::cout << "left real: " << left->get_voltage() / 100 << " right real: " << right->get_voltage() / 100 << std::endl;
+        std::cout << "left real: " << left->get_voltage() / 100 << " right real: " << right->get_voltage() / 100 << std::endl;
         path_index++;
     }
 

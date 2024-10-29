@@ -699,6 +699,15 @@ namespace bezier
             return Normal(-tangent.y, tangent.x, normalize);
         }
 
+        double curvatureAt(Point d, Point dd)
+        {
+            double denominator = d.x * d.x + d.y * d.y;
+            denominator *= denominator * denominator;
+            denominator = std::sqrt(denominator);
+            double k = (d.x * dd.y - d.y * dd.x) / denominator;
+            return k;
+        }
+
         void translate(const Vec2& distance)
         {
             for (size_t i = 0; i < N+1; i++)
