@@ -205,7 +205,7 @@ void Robot::ramsete(int timeout) {
     float max_speed = ((450 / 60.0f) * (M_PI * 2.75 * METERS)) / 2;
 
     float trackWidth = 11 * METERS;
-    float mass = 4;
+    float mass = 3;
     float motorConst = 0.175;
 
 	double force = motorConst / ((2.75 * METERS) / 2);
