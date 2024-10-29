@@ -2,6 +2,7 @@
 #include "lib/pid.hpp"
 #include "arm.hpp"
 #include "controls.hpp"
+#include "lib/bezier.h"
 #include "pros/misc.h"
 #include "pros/motors.h"
 
@@ -67,8 +68,10 @@ void initialize() {
 		}
 	}};
 
+    robot.set_constants(2.75, 450, 5, 12);
+
 	robot.set_pose(0, 0, 90);
-	robot.ramsete(4000);
+	robot.ramsete({{0, 0}, {0, 1}, {1, 0}, {1, 1}}, 4000);
 	// robot.turnToHeading(90 ,20000);
 	// robot.moveToPoint(0, 10, 4000, true, true);
 }

@@ -34,6 +34,13 @@ void Robot::calibrate() {
     odometry->start();
 }
 
+void Robot::set_constants(float wheelDiameter, int rpm, float mass, float trackWidth) {
+    this->wheelDiameter = wheelDiameter;
+    this->rpm = rpm;
+    this->mass = mass;
+    this->trackWidth = trackWidth;
+}
+
 void Robot::turnToHeading(float target_angle, int timeout) {
     angular->reset();
     
@@ -201,26 +208,26 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
 #define METERS 0.0254
 
-void Robot::ramsete(int timeout) {
-    float max_speed = ((450 / 60.0f) * (M_PI * 2.75 * METERS));
+void Robot::ramsete(std::vector<bezier::Point> waypoints, int timeout) {
+    float max_speed = ((this->rpm / 60.0f) * (M_PI * this->wheelDiameter * METERS));
 
-    float trackWidth = 12 * METERS;
-    float mass = 5;
+    float trackWidthMeters = this->trackWidth * METERS;
     float motorConst = 0.175;
 
-	double force = motorConst / ((2.75 * METERS) / 2);
-	double accel = (force * 6) / mass;
+    // NOTE: ASSUMES 6 MOTOR DRIVE ON BLUE CARTS
+	double force = motorConst / ((this->wheelDiameter * METERS) / 2);
+	double accel = (force * 6) / this->mass;
 
 	double jerk = accel * 2;
 
 	const double delta_d = 0.01;
 
 	// Test Motion Profile
-	auto constraints = new Constraints(max_speed, accel, 0.03, accel, jerk, trackWidth);
+	auto constraints = new Constraints(max_speed, accel, 0.03, accel, jerk, trackWidthMeters);
 
 	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
 
-    CubicBezier* bezierPath = new CubicBezier({0, 0}, {0, 0.85}, {0.85, 0}, {0.85, 0.85});
+    bezier::Bezier<3> bezierPath(waypoints);
 
     profileGenerator->generateProfile(bezierPath);
 

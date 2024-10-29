@@ -4,6 +4,7 @@
 #include "odometry/odom.hpp"
 #include "lib/pid.hpp"
 #include "pros/motor_group.hpp"
+#include <vector>
 
 using namespace pros;
 
@@ -24,10 +25,17 @@ namespace lib {
             Pose get_pose();
             void calibrate();
 
+            float wheelDiameter;
+            int rpm;
+            float mass; // kg
+            float trackWidth;
+
+            void set_constants(float wheelDiameter, int rpm, float mass, float trackWidth);
+
             // movement stuff
             void turnToHeading(float heading, int timeout);
             void turnToPoint(float x, float y, int timeout);
             void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false);
-            void ramsete(int timeout);
+            void ramsete(std::vector<bezier::Point>, int timeout);
     };
 }
