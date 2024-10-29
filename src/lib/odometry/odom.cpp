@@ -74,7 +74,7 @@ void Odom::update() {
     // calculate global x and y
     // std::cout << localX << ", " << localY << ", " << avgHeading << std::endl;
     x += localY * sin(avgHeading);
-    y += localY * cos(avgHeading);
+    y += localY * -cos(avgHeading);
     x += localX * cos(avgHeading);
     y += localX * sin(avgHeading);
     theta = heading;
@@ -92,7 +92,7 @@ void Odom::start() {
         tracking = new pros::Task {[=] {
             while (true) {
                 update();
-                pros::delay(1);
+                pros::delay(10);
             }
         }};
     }

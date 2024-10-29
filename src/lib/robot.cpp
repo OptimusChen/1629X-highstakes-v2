@@ -204,8 +204,8 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 void Robot::ramsete(int timeout) {
     float max_speed = ((450 / 60.0f) * (M_PI * 2.75 * METERS)) / 2;
 
-    float trackWidth = 12 * METERS;
-    float mass = 3;
+    float trackWidth = 11 * METERS;
+    float mass = 4;
     float motorConst = 0.175;
 
 	double force = motorConst / ((2.75 * METERS) / 2);
@@ -274,10 +274,10 @@ void Robot::ramsete(int timeout) {
         float leftVelocity = (v - w * trackWidth * 0.5);
         float rightVelocity = (v + w * trackWidth * 0.5);
         
-        double leftPower = leftVelocity * 60/max_speed;
-        double rightPower = rightVelocity * 60/max_speed;
+        double leftPower = leftVelocity * (60)/max_speed;
+        double rightPower = rightVelocity * (60)/max_speed;
 
-        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / 60;
+        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (60);
         if (ratio > 1) {
             leftPower /= ratio;
             rightPower /= ratio;
