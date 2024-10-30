@@ -7,6 +7,8 @@
 
 #define METERS 0.0254
 
+using namespace lib;
+
 RamseteController::RamseteController(float b, float zeta) {
     this->b = b;
     this->zeta = zeta;

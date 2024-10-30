@@ -34,6 +34,10 @@ void Robot::calibrate() {
     odometry->start();
 }
 
+void Robot::set_velocityController(VelocityController vel) {
+    this->vel = vel;
+}
+
 void Robot::set_constants(float wheelDiameter, int rpm, float mass, float trackWidth, float friction_coef) {
     this->wheelDiameter = wheelDiameter;
     this->rpm = rpm;
@@ -233,8 +237,8 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
     profileGenerator->generateProfile(bezierPath);
 
     RamseteController controller(2, 0.7);
-    // PID lateralVelocityController(2, 1, 0.5);
-    // PID angularVelocityController(1, 0, 0);
+    // VelocityController lateral_vel();
+    // VelocityController angular_vel();
 
     auto path = profileGenerator->getProfile();
 
@@ -277,6 +281,9 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
         auto [v, w] = controller.calculate(x, y, adjustedTheta, point.x, point.y, point.theta, point.vel, point.vel * point.curvature);
 
         if (!forwards) w = -w;
+
+        // v = lateral_vel.calculate(v);
+        // w = angular_vel.calculate(w * trackWidthMeters * 0.5);
 
         float leftVelocity = (v - w * trackWidthMeters * 0.5);
         float rightVelocity = (v + w * trackWidthMeters * 0.5);

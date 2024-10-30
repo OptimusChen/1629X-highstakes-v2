@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define METERS 0.254
+
 namespace util {
     float degrees(float radians);
     float radians(float degrees);

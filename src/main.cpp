@@ -17,6 +17,7 @@
 #include "lib/odometry/odom.hpp"
 #include "lib/robot.hpp"
 #include "lib/controller/pid.hpp"
+#include "lib/controller/velocityController.hpp"
 
 using namespace pros;
 using namespace pros::c;
@@ -52,6 +53,8 @@ PID angular(
 
 Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
 
+VelocityController vel(&robot, 0.01, 1, 0.01, 0.1);
+
 void initialize() {
 	pros::lcd::initialize();
 
@@ -69,6 +72,7 @@ void initialize() {
 	}};
 
     robot.set_constants(2.75, 450, 4.5, 11, 0.03);
+    robot.set_velocityController(vel);
 
 	robot.set_pose(0, 0, 90);
 	// robot.ramsete({{0, 0}, {0, 1}, {0, 1}, {1, 1}});

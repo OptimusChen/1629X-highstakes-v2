@@ -12,6 +12,8 @@ namespace lib {
             float prevError = 0;
 
             PID(float kP, float kI, float kD);
+            PID();
+
             float calculate(float error);
             void reset();
             void set_winduprange(float winduprange);
