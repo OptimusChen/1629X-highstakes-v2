@@ -34,11 +34,12 @@ void Robot::calibrate() {
     odometry->start();
 }
 
-void Robot::set_constants(float wheelDiameter, int rpm, float mass, float trackWidth) {
+void Robot::set_constants(float wheelDiameter, int rpm, float mass, float trackWidth, float friction_coef) {
     this->wheelDiameter = wheelDiameter;
     this->rpm = rpm;
     this->mass = mass;
     this->trackWidth = trackWidth;
+    this->friction_coef = friction_coef;
 }
 
 void Robot::turnToHeading(float target_angle, int timeout) {
@@ -208,7 +209,7 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
 #define METERS 0.0254
 
-void Robot::ramsete(std::vector<bezier::Point> waypoints) {
+void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
     float max_speed = ((this->rpm / 60.0f) * (M_PI * this->wheelDiameter * METERS));
 
     float trackWidthMeters = this->trackWidth * METERS;
@@ -223,7 +224,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints) {
 	const double delta_d = 0.01;
 
 	// Test Motion Profile
-	auto constraints = new Constraints(max_speed, accel, 0.03, accel, jerk, trackWidthMeters);
+	auto constraints = new Constraints(max_speed, accel, this->friction_coef, accel, jerk, trackWidthMeters);
 
 	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
 
@@ -266,12 +267,20 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints) {
         float x = pose.x * METERS;
         float y = pose.y * METERS;
 
-        // Calculate left and right motor power using Ramsete controller
-        auto [v, w] = controller.calculate(x, y, pose.theta, point.x, point.y, point.theta, point.vel, point.vel * point.curvature);
+        float adjustedTheta = pose.theta;
 
-        float leftVelocity = (v - w * trackWidth * 0.5);
-        float rightVelocity = (v + w * trackWidth * 0.5);
-        
+        if (!forwards) {
+            adjustedTheta = fmod(adjustedTheta + M_PI, 2 * M_PI);  // Adjust by π for reverse            
+        }
+
+        // Calculate left and right motor power using Ramsete controller
+        auto [v, w] = controller.calculate(x, y, adjustedTheta, point.x, point.y, point.theta, point.vel, point.vel * point.curvature);
+
+        if (!forwards) w = -w;
+
+        float leftVelocity = (v - w * trackWidthMeters * 0.5);
+        float rightVelocity = (v + w * trackWidthMeters * 0.5);
+
         double leftPower = leftVelocity * (120)/max_speed;
         double rightPower = rightVelocity * (120)/max_speed;
 
@@ -279,6 +288,11 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints) {
         if (ratio > 1) {
             leftPower /= ratio;
             rightPower /= ratio;
+        }
+
+        if (!forwards) {
+            leftPower *= -1;
+            rightPower *= -1;
         }
 
         std::cout << "left power: " << leftPower << " right power: " << rightPower << std::endl;

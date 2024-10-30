@@ -30,13 +30,14 @@ namespace lib {
             int rpm;
             float mass; // kg
             float trackWidth;
+            float friction_coef; // how fast to turning in ramsete
 
-            void set_constants(float wheelDiameter, int rpm, float mass, float trackWidth);
+            void set_constants(float wheelDiameter, int rpm, float mass, float trackWidth, float friction_coef);
 
             // movement stuff
             void turnToHeading(float heading, int timeout);
             void turnToPoint(float x, float y, int timeout);
             void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false);
-            void ramsete(std::vector<bezier::Point>);
+            void ramsete(std::vector<bezier::Point>, bool forwards=true);
     };
 }
