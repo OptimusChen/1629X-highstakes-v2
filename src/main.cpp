@@ -29,8 +29,8 @@ auto r = Rotation(VERTICAL);
 auto r2 = Rotation(-HORIZONTAL);
 auto imu = Imu(INERTIAL_PORT);
 
-auto pl = TrackingWheel(&r, 0.4f, 2.0f);
-auto pd = TrackingWheel(&r2, 1.0f, 2.0f);
+auto pl = TrackingWheel(&r, 0.5f, 2.0f);
+auto pd = TrackingWheel(&r2, 1.5f, 2.0f);
 
 Odom odom(&pd, &pl, &imu);
 
@@ -68,10 +68,11 @@ void initialize() {
 		}
 	}};
 
-    robot.set_constants(2.75, 450, 5, 11, 0.07);
+    robot.set_constants(2.75, 450, 4.5, 11, 0.03);
 
 	robot.set_pose(0, 0, 90);
-	robot.ramsete({{0, 0}, {0, 1}, {1, 0}, {1, 1}});
+	// robot.ramsete({{0, 0}, {0, 1}, {0, 1}, {1, 1}});
+    // robot.ramsete({{1, 1}, {0, 1}, {0, 1}, {0, 0}}, false);    
 	// robot.ramsete({{1, 1}, {1, 0}, {0, 1}, {0, 0}}, false);
 	// robot.turnToHeading(90 ,20000);
 	// robot.moveToPoint(0, 10, 4000, true, true);

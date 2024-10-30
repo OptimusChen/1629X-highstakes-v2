@@ -281,10 +281,10 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
         float leftVelocity = (v - w * trackWidthMeters * 0.5);
         float rightVelocity = (v + w * trackWidthMeters * 0.5);
 
-        double leftPower = leftVelocity * (120)/max_speed;
-        double rightPower = rightVelocity * (120)/max_speed;
+        double leftPower = leftVelocity * (12000)/max_speed;
+        double rightPower = rightVelocity * (12000)/max_speed;
 
-        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (120);
+        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (12000);
         if (ratio > 1) {
             leftPower /= ratio;
             rightPower /= ratio;
@@ -297,8 +297,8 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
 
         std::cout << "left power: " << leftPower << " right power: " << rightPower << std::endl;
 
-        left->move(leftPower);
-        right->move(rightPower);
+        left->move_voltage(leftPower);
+        right->move_voltage(rightPower);
         
         pros::delay(LOOP_PERIOD_MS);
 
