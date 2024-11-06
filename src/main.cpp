@@ -35,8 +35,8 @@ auto pd = TrackingWheel(&r2, 1.5f, 2.0f);
 
 Odom odom(&pd, &pl, &imu);
 
-MotorGroup left_motor_group({-L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue);
-MotorGroup right_motor_group({R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue);
+MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue);
+MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue);
 
 PID linear(	
         5, // kP
@@ -53,7 +53,7 @@ PID angular(
 
 Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
 
-VelocityController vel(&robot, 0.01, 1, 0.01, 0.1);
+// VelocityController vel(&robot, 0.01, 1, 0.01, 0.1);
 
 void initialize() {
 	pros::lcd::initialize();
@@ -71,10 +71,10 @@ void initialize() {
 		}
 	}};
 
-    robot.set_constants(2.75, 450, 4.5, 11, 0.03);
-    robot.set_velocityController(vel);
+    // robot.set_constants(2.75, 450, 4.5, 11, 0.03);
+    // robot.set_velocityController(vel);
 
-	robot.set_pose(0, 0, 90);
+	// robot.set_pose(0, 0, 90);
 	// robot.ramsete({{0, 0}, {0, 1}, {0, 1}, {1, 1}});
     // robot.ramsete({{1, 1}, {0, 1}, {0, 1}, {0, 0}}, false);    
 	// robot.ramsete({{1, 1}, {1, 0}, {0, 1}, {0, 0}}, false);

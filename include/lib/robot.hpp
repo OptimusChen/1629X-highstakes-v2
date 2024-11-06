@@ -21,12 +21,9 @@ namespace lib {
             PID* lateral;
             PID* angular;
 
-            VelocityController vel;
-
             Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular);
 
             void set_pose(float x, float y, float theta, bool radians=false);
-            void set_velocityController(VelocityController vel);
             Pose get_pose();
             void calibrate();
 

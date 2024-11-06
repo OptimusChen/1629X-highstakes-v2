@@ -13,4 +13,5 @@ namespace util {
     float get_angle_to_target(float robotX, float robotY, float targetX, float targetY);
     float no_big_angles_pls(float thetaInRadiansNoDegreesLOL);
     int sign(double value);
+    float cheap_norm_pdf(const float x);
 }

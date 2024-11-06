@@ -34,9 +34,9 @@ void Robot::calibrate() {
     odometry->start();
 }
 
-void Robot::set_velocityController(VelocityController vel) {
-    this->vel = vel;
-}
+// void Robot::set_velocityController(VelocityController vel) {
+//     this->vel = vel;
+// }
 
 void Robot::set_constants(float wheelDiameter, int rpm, float mass, float trackWidth, float friction_coef) {
     this->wheelDiameter = wheelDiameter;
