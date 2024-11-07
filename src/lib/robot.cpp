@@ -250,8 +250,6 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
 
     bool running = true;
 
-    float lastTheta = get_pose().theta;
-
     while (running) {
         auto loop_start = std::chrono::high_resolution_clock::now();
 
@@ -282,16 +280,13 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
 
         if (!forwards) w = -w;
 
-        // v = lateral_vel.calculate(v);
-        // w = angular_vel.calculate(w * trackWidthMeters * 0.5);
-
         float leftVelocity = (v - w * trackWidthMeters * 0.5);
         float rightVelocity = (v + w * trackWidthMeters * 0.5);
 
-        double leftPower = leftVelocity * (12000)/max_speed;
-        double rightPower = rightVelocity * (12000)/max_speed;
+        double leftPower = leftVelocity * 120/max_speed;
+        double rightPower = rightVelocity * 120/max_speed;
 
-        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (12000);
+        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (120);
         if (ratio > 1) {
             leftPower /= ratio;
             rightPower /= ratio;
@@ -302,14 +297,21 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
             rightPower *= -1;
         }
 
-        std::cout << "left power: " << leftPower << " right power: " << rightPower << std::endl;
+        // std::cout << "left power: " << leftPower << " right power: " << rightPower << std::endl;
 
-        left->move_voltage(leftPower);
-        right->move_voltage(rightPower);
+        left->move(leftPower);
+        right->move(rightPower);
         
-        pros::delay(LOOP_PERIOD_MS);
+        auto loop_end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> loop_duration = loop_end - loop_start;
 
-        std::cout << "left real: " << left->get_voltage() / 100 << " right real: " << right->get_voltage() / 100 << std::endl;
+        // Calculate the remaining time to sleep to maintain the desired loop period
+        int sleep_time_ms = LOOP_PERIOD_MS - loop_duration.count();
+        if (sleep_time_ms > 0) {
+            pros::delay(sleep_time_ms);
+        }
+
+        // std::cout << "left real: " << left->get_voltage() / 100 << " right real: " << right->get_voltage() / 100 << std::endl;
         path_index++;
     }
 
