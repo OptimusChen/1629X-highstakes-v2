@@ -34,8 +34,11 @@
 #define INERTIAL_PORT 6
 
 
-#define ARM_ROT 9
+#define LEFT_ROTATION 20
+#define RIGHT_ROTATION 19
 
+#define LEFT_ARM 6
+#define RIGHT_ARM 7
 
 using namespace pros;
 

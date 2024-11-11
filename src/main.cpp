@@ -30,8 +30,8 @@ auto r = Rotation(-VERTICAL);
 auto r2 = Rotation(HORIZONTAL);
 auto imu = Imu(INERTIAL_PORT);
 
-auto pl = TrackingWheel(&r, 0.0f, 2.0f);
-auto pd = TrackingWheel(&r2, 0.0f, 2.75f);
+auto pl = TrackingWheel(&r, -0.7f, 2.0f);
+auto pd = TrackingWheel(&r2, -8.0f, 2.75f);
 
 Odom odom(&pd, &pl, &imu);
 
@@ -75,10 +75,12 @@ void initialize() {
     // robot.set_velocityController(vel);
 
 	robot.set_pose(0, 0, 90);
-	robot.ramsete({{0, 0}, {0, 1}, {1, 0}, {1, 1}});
-    // robot.ramsete({{1, 1}, {0, 1}, {0, 1}, {0, 0}}, false);    
+	// robot.ramsete({{0, 0}, {0, 1}, {1, 0}, {1, 1}});
+    // robot.ramsete({{1, 1}, {0, 1}, {0, 1}, {0, 0}}, false);   
+    // delay(500); 
 	// robot.ramsete({{1, 1}, {1, 0}, {0, 1}, {0, 0}}, false);
-	// robot.turnToHeading(90 ,20000);
+	// robot.ramsete({{0, 0}, {0, 1}, {1, 0}, {1, 1}});
+	// robot.turnToHeading(180 ,20000);
 	// robot.moveToPoint(0, 10, 4000, true, true);
 }
 
@@ -88,6 +90,12 @@ void competition_initialize() {}
 
 void autonomous() {}
 
+float get_rotation_degrees(Rotation rot) {
+    float measure = rot.get_angle() / 100.0f;
+    if (measure > 350) return 0;
+    return measure;
+}
+
 void opcontrol() {
 	auto mogo = ADIDigitalOut(MOGO);
     auto corner_arm = ADIDigitalOut(CORNER_ARM);
@@ -96,16 +104,56 @@ void opcontrol() {
 
     motor_set_gearing(HOOKS, E_MOTOR_GEAR_BLUE);
 
-    Motor a(ARM);
-    Rotation r(ARM_ROT);
-
-    Arm arm(&a, &r);
-
     std::unordered_map<controller_digital_e_t, std::function<void()>> toggle_controls;
     std::unordered_map<controller_digital_e_t, std::pair<std::function<void(bool)>, std::function<void()>>> hold_controls;
     std::unordered_set<controller_digital_e_t> held;
 
     mogo.set_value(mogoActive);
+
+    // arm
+    Motor leftArm(LEFT_ARM, MotorGears::green);
+    Motor rightArm(-RIGHT_ARM, MotorGears::green);
+
+    Rotation leftRotation(-LEFT_ROTATION);
+    Rotation rightRotation(-RIGHT_ROTATION);
+
+    PID leftLift(1, 0, 0.1);
+    PID rightLift(1, 0, 0.1);
+
+    leftLift.reset();
+    rightLift.reset();
+
+    leftRotation.reset();
+    rightRotation.reset();
+    leftRotation.reset_position();
+    rightRotation.reset_position();
+
+    float REST_LOAD = 0;
+    float SCORE = 300;
+
+    float armTarget = REST_LOAD;
+
+    hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
+        [&](bool firstActivation) {
+            // leftArm.move(100);
+            // rightArm.move(100);
+            armTarget += 1;
+        },
+        [&]() {
+            armTarget = SCORE;
+        }
+    ));
+
+    hold_controls.emplace(E_CONTROLLER_DIGITAL_L2, std::make_pair(
+        [&](bool firstActivation) {
+            armTarget -= 0.2;
+        },
+        [&]() {
+            armTarget = REST_LOAD;
+        }
+    ));
+
+    // arm end
 
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_RIGHT, [&]() {
         mogoActive = !mogoActive;
@@ -127,31 +175,6 @@ void opcontrol() {
         },
         [&]() {
             motor_brake(HOOKS);
-        }
-    ));
-
-    toggle_controls.emplace(E_CONTROLLER_DIGITAL_L2, [&]() {
-        arm.toggle_l2();
-    });
-
-    // on hold, the arm acts as a normal arm
-    hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
-        [&](bool firstActivation) {
-            if (firstActivation) return;
-            arm.hold_l1();  
-        },
-        [&]() {
-            arm.release_l1();
-        }
-    ));
-
-    hold_controls.emplace(E_CONTROLLER_DIGITAL_L2, std::make_pair(
-        [&](bool firstActivation) {
-            if (firstActivation) return;
-            arm.hold_l2();
-        },
-        [&]() {
-            arm.release_l2();
         }
     ));
 
@@ -183,7 +206,12 @@ void opcontrol() {
         lib::opcontrol::arcade(robot, leftY, rightX);
 
         // if arm PID is enabled recalculate the error and set voltage based off PID output
-        arm.tick(held);
+        std::cout << armTarget << std::endl;
+        float leftPower = leftLift.calculate(armTarget - get_rotation_degrees(leftRotation));
+        float rightPower = rightLift.calculate(armTarget - get_rotation_degrees(rightRotation));
+
+        leftArm.move(leftPower);
+        rightArm.move(rightPower);
 
         for (auto control : toggle_controls) {
             if (master.get_digital_new_press(control.first) && !held.contains(control.first)) {
