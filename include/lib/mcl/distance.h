@@ -1,11 +1,7 @@
-#pragma once
-
-#include "pros/distance.hpp"
-#include "pose.hpp"
-#include "util.hpp"
-#include <cmath>
-
 #include "Eigen/Dense"
+#include "pros/distance.hpp"
+#include "../pose.hpp"
+#include "../util.hpp"
 
 const std::vector<std::pair<Eigen::Vector2f, Eigen::Vector2f> > WALLS = {
     {{1.78308, 1.78308}, {1.78308, -1.78308}},

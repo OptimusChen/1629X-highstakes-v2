@@ -1,6 +1,6 @@
 #include "controls.hpp"
 #include "main.h"
-
+#include "lib/mcl/distance.h"
 
 namespace controls {
    auto corner_arm = ADIDigitalOut(CORNER_ARM);

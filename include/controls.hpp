@@ -19,9 +19,15 @@
 #define L_DISTANCE 8
 #define B_DISTANCE 9
 
-#define MOGO 1
-#define CORNER_ARM 2
-#define INTAKE_LIFT 3
+#define ARM_PISTON_LEFT 5
+#define ARM_PISTON_RIGHT 8
+#define INTAKE_LIFT 1
+#define DOINKER 0
+#define MOGO_LEFT 2
+#define MOGO_RIGHT 4
+
+#define MOGO 0
+#define CORNER_ARM 0
 
 
 #define ARM 5

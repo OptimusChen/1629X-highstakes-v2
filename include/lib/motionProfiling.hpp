@@ -1,6 +1,7 @@
-#include "Eigen/Dense"
 #include "pose.hpp"
 #include "bezier.h"
+
+#include "Eigen/Dense"
 
 namespace lib {
     class Point2D

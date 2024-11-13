@@ -97,18 +97,20 @@ float get_rotation_degrees(Rotation rot) {
 }
 
 void opcontrol() {
-	auto mogo = ADIDigitalOut(MOGO);
-    auto corner_arm = ADIDigitalOut(CORNER_ARM);
+	auto mogo_left = ADIDigitalOut(MOGO_LEFT);
+	auto mogo_right = ADIDigitalOut(MOGO_RIGHT);
+	auto arm_left = ADIDigitalOut(ARM_PISTON_LEFT);
+	auto arm_right = ADIDigitalOut(ARM_PISTON_RIGHT);
+    auto corner_arm = ADIDigitalOut(DOINKER);
     auto lift_intake = ADIDigitalOut(INTAKE_LIFT);
     bool mogoActive = true;
+    bool armActive = true;
 
     motor_set_gearing(HOOKS, E_MOTOR_GEAR_BLUE);
 
     std::unordered_map<controller_digital_e_t, std::function<void()>> toggle_controls;
     std::unordered_map<controller_digital_e_t, std::pair<std::function<void(bool)>, std::function<void()>>> hold_controls;
     std::unordered_set<controller_digital_e_t> held;
-
-    mogo.set_value(mogoActive);
 
     // arm
     Motor leftArm(LEFT_ARM, MotorGears::green);
@@ -157,7 +159,14 @@ void opcontrol() {
 
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_RIGHT, [&]() {
         mogoActive = !mogoActive;
-        mogo.set_value(mogoActive);
+        mogo_left.set_value(mogoActive);
+        mogo_right.set_value(mogoActive);
+    });
+
+    toggle_controls.emplace(E_CONTROLLER_DIGITAL_LEFT, [&]() {
+        armActive = !armActive;
+        arm_left.set_value(armActive);
+        arm_right.set_value(armActive);
     });
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R1, std::make_pair(

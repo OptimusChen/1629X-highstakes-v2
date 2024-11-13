@@ -211,8 +211,6 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
     right->move(0);
 }
 
-#define METERS 0.0254
-
 void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
     float max_speed = ((this->rpm / 60.0f) * (M_PI * this->wheelDiameter * METERS));
 
