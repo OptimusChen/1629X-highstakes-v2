@@ -32,8 +32,9 @@ template <typename Mass, typename Length, typename Time, typename Angle> struct 
 // Radians for Angle
 
 template <typename Mass, typename Length, typename Time, typename Angle> class Quantity {
-    double value;
+    
   public:
+    double value;
     // A proxy to be able to extract dimension units with decltype
     // Not used at runtime
     inline static Dimensions<Mass, Length, Time, Angle> dim {};

@@ -4,12 +4,10 @@
 #include <random>
 #include <algorithm>
 
-namespace lib::mcl {
-    template<size_t L>
-    class ParticleFilter {
-        // Ensure particles are less than the max of 500 particles
-        static_assert(std::less_equal<size_t>()(L, 500));
+#define L 500
 
+namespace lib::mcl {
+    class ParticleFilter {
     private:
         /**
          *
@@ -22,7 +20,7 @@ namespace lib::mcl {
 
         std::vector<DistanceModel*> sensors;
 
-        Length distanceSinceUpdate = 0.0_m;
+        Length distanceSinceUpdate = 0.0_in;
         Time lastUpdateTime = 0.0_sec;
 
         Length maxDistanceSinceUpdate = 1_in;
@@ -31,7 +29,7 @@ namespace lib::mcl {
         std::function<Angle()> angleFunction;
         std::ranlux24_base de;
 
-        std::uniform_real_distribution<> fieldDist{-1.78308, 1.78308};
+        std::uniform_real_distribution<> fieldDist{-1.78308 / METERS, 1.78308 / METERS};
 
     public:
         explicit ParticleFilter(std::function<Angle()> angle_function)
@@ -41,6 +39,8 @@ namespace lib::mcl {
                 particle[1] = 0.0;
             }
         }
+
+        ParticleFilter() : angleFunction([]() -> Angle { return Angle(0); }) {}
 
         Eigen::Vector3f getPrediction() {
             return prediction;
@@ -100,7 +100,7 @@ namespace lib::mcl {
                 auto particle = Eigen::Vector3f(particles[i][0], particles[i][1], angle.value);
 
                 for (const auto sensor: sensors) {
-                    if (auto weight = sensor->probability(Pose(particle.x, particle.y, particle.z, true)); weight.has_value() && isfinite(weight.value())) {
+                    if (auto weight = sensor->probability(Pose(particle.x(), particle.y(), particle.z(), true)); weight.has_value() && isfinite(weight.value())) {
                         weights[i] = weights[i] * weight.value();
                     }
                 }
@@ -150,7 +150,7 @@ namespace lib::mcl {
             prediction = Eigen::Vector3f(xSum / static_cast<float>(L), ySum / static_cast<float>(L), angle.value);
 
             lastUpdateTime = pros::millis() * 1000_sec;
-            distanceSinceUpdate = 0.0;
+            distanceSinceUpdate = 0.0_in;
         }
 
         void initNormal(const Eigen::Vector2f &mean, const Eigen::Matrix2f &covariance, const bool flip) {
@@ -165,7 +165,7 @@ namespace lib::mcl {
         }
 
         static bool outOfField(const std::array<float, 2> &vector) {
-            return vector[0] > 1.78308 || vector[0] < -1.78308 || vector[1] < -1.78308 || vector[1] > 1.78308;
+            return vector[0] > 1.78308 / METERS || vector[0] < -1.78308 / METERS || vector[1] < -1.78308 / METERS || vector[1] > 1.78308 / METERS;
         }
 
         void initUniform(const Length minX, const Length minY, const Length maxX, const Length maxY) {

@@ -5,19 +5,19 @@
 #include "../pose.hpp"
 #include "../util.hpp"
 
-#define DISTANCE_WEIGHT 69420
+#define DISTANCE_WEIGHT 1
 
 const std::vector<std::pair<Eigen::Vector2f, Eigen::Vector2f> > WALLS = {
-    {{1.78308, 1.78308}, {1.78308, -1.78308}},
-    {{1.78308, -1.78308}, {-1.78308, -1.78308}},
-    {{-1.78308, -1.78308}, {-1.78308, 1.78308}},
-    {{-1.78308, 1.78308}, {1.78308, 1.78308}},
+    {{1.78308 / METERS, 1.78308 / METERS}, {1.78308 / METERS, -1.78308 / METERS}},
+    {{1.78308 / METERS, -1.78308 / METERS}, {-1.78308 / METERS, -1.78308 / METERS}},
+    {{-1.78308 / METERS, -1.78308 / METERS}, {-1.78308 / METERS, 1.78308 / METERS}},
+    {{-1.78308 / METERS, 1.78308 / METERS}, {1.78308 / METERS, 1.78308 / METERS}},
 };
 
-constexpr float WALL_0_X = 1.78308;
-constexpr float WALL_1_Y = 1.78308;
-constexpr float WALL_2_X = -1.78308;
-constexpr float WALL_3_Y = -1.78308;
+constexpr float WALL_0_X = 1.78308 / METERS;
+constexpr float WALL_1_Y = 1.78308 / METERS;
+constexpr float WALL_2_X = -1.78308 / METERS;
+constexpr float WALL_3_Y = -1.78308 / METERS;
 
 namespace lib::mcl {
     class DistanceModel {

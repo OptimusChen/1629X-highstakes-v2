@@ -60,4 +60,10 @@ namespace util {
 
         return pdfApprox;
     }
+
+    float avg(std::vector<float> values) {
+        float sum = 0;
+        for (float value : values) { sum += value; }
+        return sum / values.size();
+    }
 }

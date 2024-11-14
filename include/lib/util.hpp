@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <vector>
 
 #define METERS 0.254
 
@@ -14,4 +15,5 @@ namespace util {
     float no_big_angles_pls(float thetaInRadiansNoDegreesLOL);
     int sign(double value);
     float cheap_norm_pdf(const float x);
+    float avg(std::vector<float> values);
 }

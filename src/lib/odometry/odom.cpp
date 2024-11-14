@@ -12,6 +12,20 @@ Odom::Odom(TrackingWheel* parallel, TrackingWheel* perpendicular, Imu* inertial)
     this->inertial = inertial;
 }
 
+Odom::Odom(int rpm, float wheelDiameter, float trackWidth, MotorGroup* leftMotors, MotorGroup* rightMotors, Imu* inertial) {
+    this->rpm = rpm;
+    this->wheelDiameter = wheelDiameter;
+    this->trackWidth = trackWidth;
+    this->inertial = inertial;
+    this->left = leftMotors;
+    this->right = rightMotors;
+
+    left->tare_position_all();
+    right->tare_position_all();
+    // left->set_encoder_units(motor_encoder_units_e::E_MOTOR_ENCODER_COUNTS);
+    // right->set_encoder_units(motor_encoder_units_e::E_MOTOR_ENCODER_ROTATIONS);
+}
+
 void Odom::set_position(float x, float y, float theta, bool radians) {
     this->x = x;
     this->y = y;
@@ -24,19 +38,46 @@ Pose Odom::get_pose() {
     return Pose(this->x, this->y, this->theta, true);
 }
 
+float Odom::get_right_encoder_travelled() {
+    std::vector<double> positions = this->right->get_position_all();
+    std::vector<float> distances;
+    for (int i = 0; i < positions.size(); i++) {
+        float in = 600;
+        distances.push_back(positions[i] * (wheelDiameter * M_PI / rpm));
+    }
+    return util::avg(distances);
+}
+
+float Odom::get_left_encoder_travelled() {
+    std::vector<double> positions = this->left->get_position_all();
+    std::vector<float> distances;
+    for (int i = 0; i < positions.size(); i++) {
+        float in = 600;
+        distances.push_back(positions[i] * (wheelDiameter * M_PI / rpm));
+    }
+    return util::avg(distances);
+}
+
 void Odom::update() {
     float recordedTheta = util::radians(-inertial->get_rotation());
-    float parallelTravel = parallel->get_distance();
-    float perpendicularTravel = perpendicular->get_distance();
+    bool encoders = parallel == nullptr;
+
+    float parallelTravel = 0;
+    float perpendicularTravel = 0;
+
+    if (!encoders) {
+        parallelTravel = parallel->get_distance();
+        perpendicularTravel = perpendicular->get_distance();
+    } else {
+        parallelTravel = get_left_encoder_travelled();
+    }
+
+    // std::cout << parallelTravel << std::endl;
 
     // calculate the change in sensor values
-    // float deltaParallel = parallelTravel - prevParallel;
-    // float deltaPerpendicular = perpendicularTravel - prevPerpendicular;
     float deltaTheta = recordedTheta - prevTheta;
 
     // update the previous sensor values
-    // prevParallel = parallelTravel;
-    // prevPerpendicular = perpendicularTravel;
     prevTheta = recordedTheta;
 
     // calculate the heading of the robot
@@ -51,11 +92,8 @@ void Odom::update() {
     float deltaX = 0;
     float deltaY = 0;
 
-    // parallelTravel = parallel->get_distance();
-    // perpendicularTravel = perpendicular->get_distance();
-    
-    deltaY = parallelTravel - prevParallel;
-    deltaX = perpendicularTravel - prevPerpendicular;
+    deltaX = parallelTravel - prevParallel;
+    deltaY = perpendicularTravel - prevPerpendicular;
     
     prevParallel = parallelTravel;
     prevPerpendicular = perpendicularTravel;
@@ -67,8 +105,8 @@ void Odom::update() {
         localX = deltaX;
         localY = deltaY;
     } else {
-        localX = 2 * sin(deltaHeading / 2) * (deltaX / deltaHeading + perpendicular->offset);
-        localY = 2 * sin(deltaHeading / 2) * (deltaY / deltaHeading + parallel->offset);
+        localX = 2 * sin(deltaHeading / 2) * (deltaX / deltaHeading + (encoders ? 0 : perpendicular->offset));
+        localY = 2 * sin(deltaHeading / 2) * (deltaY / deltaHeading + (encoders ? -(trackWidth / 2) : parallel->offset));
     }
 
     // calculate global x and y

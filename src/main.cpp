@@ -35,10 +35,10 @@ auto imu = Imu(INERTIAL_PORT);
 auto pl = TrackingWheel(&r, -0.7f, 2.0f);
 auto pd = TrackingWheel(&r2, -8.0f, 2.75f);
 
-Odom odom(&pd, &pl, &imu);
-
 MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue);
 MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue);
+
+Odom odom(450, 2.75, 11.5, &left_motor_group, &right_motor_group, &imu);
 
 PID linear(	
         5, // kP
@@ -61,39 +61,68 @@ Distance left_dist(L_DISTANCE);
 Distance right_dist(R_DISTANCE);
 Distance back_dist(B_DISTANCE);
 
+mcl::ParticleFilter particleFilter;
+
+mcl::DistanceModel rightDistance = mcl::DistanceModel(&right_dist, Pose(5.75, -3.75, (3 * M_PI) / 2));
+mcl::DistanceModel leftDistance = mcl::DistanceModel(&left_dist, Pose(-5.75, -3.25, (M_PI) / 2));
+mcl::DistanceModel backDistance = mcl::DistanceModel(&back_dist, Pose(-5.25, -4.375, M_PI));
+
 #define BLUE 0
 #define RED 1
 #define NONE -1
 
 int color = RED;
 
+float lastX = 0;
+float lastY = 0;
+
 void initialize() {
 	pros::lcd::initialize();
 
-    mcl::ParticleFilter<500> particleFilter = mcl::ParticleFilter<500>([=]() {
+    particleFilter = mcl::ParticleFilter([=]() {
         return Angle(robot.get_pose().theta);
     });
 
-    particleFilter.addSensor(new mcl::DistanceModel(&left_dist, Pose(1, 1, 1)));
-    particleFilter.addSensor(new mcl::DistanceModel(&right_dist, Pose(1, 1, 1)));
-    particleFilter.addSensor(new mcl::DistanceModel(&back_dist, Pose(1, 1, 1)));
+    particleFilter.addSensor(&rightDistance);
+    particleFilter.addSensor(&leftDistance);
+    particleFilter.addSensor(&backDistance);
 
 	robot.calibrate();
 
-	Task trackingTask = Task {[=] {
+	Task trackingTask = Task {[&] {
 		while (true) {	
-			auto pose = robot.get_pose();
+            auto pose = robot.get_pose();
+            std::function<Eigen::Vector2f()> pred = [&]() -> Eigen::Vector2f {
+                float x = pose.x;
+                float y = pose.y;
+                float deltaX = x - lastX;
+                float deltaY = y - lastY;
+                lastX = x;
+                lastY = y;
+                std::cout << y << "-" << lastY << std::endl;
+                return Eigen::Vector2f(deltaX, deltaY); 
+            };
 
-			pros::lcd::print(0, "x: %f", pose.x); // print the x position
-			pros::lcd::print(1, "y: %f", pose.y); // print the y position
-			pros::lcd::print(2, "heading: %f", pose.get_degrees()); // print the heading
+            particleFilter.update(pred);
+
+            auto prediction = particleFilter.getPrediction();
+
+            // std::cout << particleFilter.getParticle(0).x() << ", " << particleFilter.getParticle(0).y() << ", " << particleFilter.getParticle(0).z() << std::endl;
+
+			pros::lcd::print(0, "x: %f", prediction.x()); // print the x position
+			pros::lcd::print(1, "y: %f", prediction.y()); // print the y position
+			pros::lcd::print(2, "heading: %f", util::degrees(prediction.z())); // print the heading
+			pros::lcd::print(3, "x: %f", pose.x); // print the x position
+			pros::lcd::print(4, "y: %f", pose.y); // print the y position
+			pros::lcd::print(5, "heading: %f", pose.get_degrees()); // print the heading
 			pros::delay(10);
 		}
 	}};
 
     robot.set_constants(2.75, 450, 4, 11.5, 0.1);
 
-	robot.set_pose(0, 0, 90);
+	robot.set_pose(0, 50, 90);
+
 }
 
 void disabled() {}
@@ -120,6 +149,9 @@ void opcontrol() {
 
     bool loading = false;
     bool reverse_intake = false;
+    bool stop_intake = false;
+    bool holding_ring = false;
+    bool color_sort = true;
 
     motor_set_gearing(HOOKS, E_MOTOR_GEAR_BLUE);
 
@@ -166,10 +198,12 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L2, std::make_pair(
         [&](bool firstActivation) {
-            armTarget -= 0.2;
-        },
+            armTarget = REST_LOAD;
+        }, 
         [&]() {
             armTarget = REST_LOAD;
+
+            lift_intake.set_value(false);
         }
     ));
 
@@ -187,9 +221,38 @@ void opcontrol() {
         arm_right.set_value(armActive);
     });
 
+    hold_controls.emplace(E_CONTROLLER_DIGITAL_Y, std::make_pair(
+        [&](bool firstActivation) {
+            loading = true;
+            color_sort = false;
+        },
+        [&]() {
+            loading = false;
+            color_sort = true;
+            stop_intake = false;
+            if (holding_ring) {
+                armActive = true;
+                armTarget = SCORE;
+
+                lift_intake.set_value(true);
+                arm_left.set_value(armActive);
+                arm_right.set_value(armActive);
+            }
+        }
+    ));
+
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R1, std::make_pair(
         [&](bool firstActivation) {
-            motor_move(HOOKS, reverse_intake ? -127 : 127);
+            if (stop_intake) {
+                motor_brake(HOOKS);
+                return;
+            }
+
+            int power = loading ? 80 : 127;
+
+            // std::cout << power << ", " << reverse_intake << ", " << stop_intake << std::endl;
+
+            motor_move(HOOKS, reverse_intake ? -power : power);
         },
         [&]() {
             motor_brake(HOOKS);
@@ -202,24 +265,6 @@ void opcontrol() {
         },
         [&]() {
             motor_brake(HOOKS);
-        }
-    ));
-
-    hold_controls.emplace(E_CONTROLLER_DIGITAL_Y, std::make_pair(
-        [&](bool firstActivation) {
-            corner_arm.set_value(true);
-        },
-        [&]() {
-            corner_arm.set_value(false);
-        }
-    ));
-
-    hold_controls.emplace(E_CONTROLLER_DIGITAL_B, std::make_pair(
-        [&](bool firstActivation) {
-            raise_intake();
-        },
-        [&]() {
-            lower_intake();
         }
     ));
 
@@ -257,9 +302,10 @@ void opcontrol() {
 
         auto opticalMeasure = optical.get_rgb();
         
-        std::cout << opticalMeasure.red << ", " << opticalMeasure.green << ", " << opticalMeasure.blue << std::endl;
+        // std::cout << opticalMeasure.red << ", " << opticalMeasure.green << ", " << opticalMeasure.blue << std::endl;
+        // std::cout << optical.get_proximity() << std::endl;
 
-        if (color == BLUE && opticalMeasure.red > 300.0f && !reverse_intake) {
+        if (color == BLUE && opticalMeasure.red > 300.0f && !reverse_intake && color_sort) {
             // std::cout << "story" << std::endl;
             reverse_intake = true;
             Task {[&] {
@@ -267,12 +313,27 @@ void opcontrol() {
                 reverse_intake = false;
             }};
         }
-        if (color == RED && opticalMeasure.blue > 200.0f && !reverse_intake) {
+        if (color == RED && opticalMeasure.blue > 200.0f && !reverse_intake && color_sort) {
             reverse_intake = true;
             Task {[&] {
                 delay(100);
                 reverse_intake = false;
             }};   
+        }
+
+        if (loading) { 
+            if (optical.get_proximity() > 100) {
+                if (!holding_ring) {
+                    motor_move(HOOKS, -50);
+                    delay(50);
+                    motor_brake(HOOKS);
+
+                    stop_intake = true;
+                    holding_ring = true;
+                }
+            } else {
+                holding_ring = false;
+            }
         }
         
         double battery = battery_get_capacity();

@@ -8,18 +8,18 @@
 #include "lib/mcl/particleFilter.hpp"
 
 #define L_DRIVE_FRONT 12
-#define L_DRIVE_MID 15
+#define L_DRIVE_MID 14
 #define L_DRIVE_BACK 3
 
-#define R_DRIVE_FRONT 13
-#define R_DRIVE_MID 14
+#define R_DRIVE_FRONT 11
+#define R_DRIVE_MID 13
 #define R_DRIVE_BACK 2
 
 #define HOOKS 1
 
 #define R_DISTANCE 4
 #define L_DISTANCE 8
-#define B_DISTANCE 9
+#define B_DISTANCE 10
 
 #define OPTICAL 20
 
@@ -39,7 +39,7 @@
 #define VERTICAL 10
 #define HORIZONTAL 21
 
-#define INERTIAL_PORT 6
+#define INERTIAL_PORT 7
 
 #define LEFT_ROTATION 5
 #define RIGHT_ROTATION 15
