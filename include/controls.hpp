@@ -5,7 +5,8 @@
 
 #include "pros/motor_group.hpp"
 
-#include "lib/mcl/particleFilter.hpp"
+#include "localization/particleFilter.h"
+#include "localization/distance.h"
 
 #define L_DRIVE_FRONT 12
 #define L_DRIVE_MID 14

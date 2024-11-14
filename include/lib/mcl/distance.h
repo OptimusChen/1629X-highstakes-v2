@@ -40,6 +40,7 @@ namespace lib::mcl {
                 exit = measuredMM == 9999 || sensor->get_object_size() < 70;
 
                 measured = measuredMM * 0.001;
+                measured /= METERS;
 
                 standard = 0.20 * measured / (sensor->get_confidence() / 64.0);
             }
@@ -49,9 +50,7 @@ namespace lib::mcl {
                     return std::nullopt;
                 }
 
-                pred = pred.meters();
-
-                Eigen::Vector3f sensorOffset(offset.meters().x, offset.meters().y, offset.theta);
+                Eigen::Vector3f sensorOffset(offset.x, offset.y, offset.theta);
                 Eigen::Vector3f X(pred.x, pred.y, pred.theta);
 
                 auto angle = X.z() + sensorOffset.z();
