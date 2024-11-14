@@ -5,6 +5,8 @@
 
 #include "pros/motor_group.hpp"
 
+#include "lib/mcl/particleFilter.hpp"
+
 #define L_DRIVE_FRONT 12
 #define L_DRIVE_MID 15
 #define L_DRIVE_BACK 3
@@ -19,32 +21,31 @@
 #define L_DISTANCE 8
 #define B_DISTANCE 9
 
+#define OPTICAL 20
+
 #define ARM_PISTON_LEFT 5
-#define ARM_PISTON_RIGHT 8
-#define INTAKE_LIFT 1
+#define ARM_PISTON_RIGHT 1
+
+#define INTAKE_LIFT 3
+
 #define DOINKER 0
+
 #define MOGO_LEFT 2
 #define MOGO_RIGHT 4
 
 #define MOGO 0
 #define CORNER_ARM 0
 
-
-#define ARM 5
-
-
 #define VERTICAL 10
 #define HORIZONTAL 21
 
-
 #define INERTIAL_PORT 6
 
-
-#define LEFT_ROTATION 20
-#define RIGHT_ROTATION 19
+#define LEFT_ROTATION 5
+#define RIGHT_ROTATION 15
 
 #define LEFT_ARM 6
-#define RIGHT_ARM 7
+#define RIGHT_ARM 9
 
 using namespace pros;
 

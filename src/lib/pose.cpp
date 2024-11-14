@@ -11,6 +11,8 @@ Pose::Pose(float x, float y, float theta, bool radians) {
     if (!radians) this->theta = util::radians(theta);
 }
 
+Pose::Pose() {}
+
 float Pose::get_degrees() {
     return util::degrees(this->theta);
 }

@@ -1,7 +1,11 @@
+#pragma once
+
 #include "Eigen/Dense"
 #include "pros/distance.hpp"
 #include "../pose.hpp"
 #include "../util.hpp"
+
+#define DISTANCE_WEIGHT 69420
 
 const std::vector<std::pair<Eigen::Vector2f, Eigen::Vector2f> > WALLS = {
     {{1.78308, 1.78308}, {1.78308, -1.78308}},
@@ -14,8 +18,6 @@ constexpr float WALL_0_X = 1.78308;
 constexpr float WALL_1_Y = 1.78308;
 constexpr float WALL_2_X = -1.78308;
 constexpr float WALL_3_Y = -1.78308;
-
-#define DISTANCE_WEIGHT 69420
 
 namespace lib::mcl {
     class DistanceModel {
@@ -42,15 +44,15 @@ namespace lib::mcl {
                 standard = 0.20 * measured / (sensor->get_confidence() / 64.0);
             }
 
-            std::optional<double> probability(Pose actual) {
+            std::optional<double> probability(Pose pred) {
                 if (exit) {
                     return std::nullopt;
                 }
 
-                actual = actual.meters();
+                pred = pred.meters();
 
                 Eigen::Vector3f sensorOffset(offset.meters().x, offset.meters().y, offset.theta);
-                Eigen::Vector3f X(actual.x, actual.y, actual.theta);
+                Eigen::Vector3f X(pred.x, pred.y, pred.theta);
 
                 auto angle = X.z() + sensorOffset.z();
 

@@ -7,7 +7,7 @@ using namespace pros;
 
 Controller cm(E_CONTROLLER_MASTER);
 
-namespace sec {
+namespace selector {
     int auton;
     const char *btnmMap[] = {"Blue WP (+)","Blue Elims (+)","Blue (-)","\n","Red WP (+)","Red Elims (+)","Red (-)","\n","None","Skills",""}; // up to 10 autons
     std::vector<std::string> textMap; // up to 10 autons
