@@ -4,11 +4,16 @@
 #include "lib/bezier.h"
 #include "lib/motionProfiling.hpp"
 #include "lib/controller/ramsete.hpp"
-#include "lib/units.hpp"
+#include "controls.hpp"
 #include <math.h>
 #include <iomanip>
 
 using namespace lib;
+
+ADIDigitalOut arm_left(ARM_PISTON_LEFT);
+ADIDigitalOut arm_right(ARM_PISTON_RIGHT);
+ADIDigitalOut mogo_left(MOGO_LEFT);
+ADIDigitalOut mogo_right(MOGO_RIGHT);
 
 Robot::Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular) {
     this->odometry = odom;
@@ -25,6 +30,8 @@ void Robot::set_pose(float x, float y, float theta, bool radians) {
 }
 
 Pose Robot::get_pose() {
+    // auto pred = particleFilter.getPrediction();
+    // return Pose(pred.x() * metre.Convert(inch), pred.y() * metre.Convert(inch), odometry->get_pose().theta);
     return odometry->get_pose();
 }
 
@@ -230,6 +237,8 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
 
 	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
 
+    std::cout << constraints << std::endl;
+
     bezier::Bezier<3> bezierPath(waypoints);
 
     profileGenerator->generateProfile(bezierPath);
@@ -247,6 +256,8 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
     float LOOP_PERIOD_MS = 10;
 
     bool running = true;
+
+    float lastTheta = get_pose().theta;
 
     while (running) {
         auto loop_start = std::chrono::high_resolution_clock::now();
@@ -278,13 +289,16 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
 
         if (!forwards) w = -w;
 
+        // v = lateral_vel.calculate(v);
+        // w = angular_vel.calculate(w * trackWidthMeters * 0.5);
+
         float leftVelocity = (v - w * trackWidthMeters * 0.5);
         float rightVelocity = (v + w * trackWidthMeters * 0.5);
 
-        double leftPower = leftVelocity * 120/max_speed;
-        double rightPower = rightVelocity * 120/max_speed;
+        double leftPower = leftVelocity * (12000)/max_speed;
+        double rightPower = rightVelocity * (12000)/max_speed;
 
-        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (120);
+        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (12000);
         if (ratio > 1) {
             leftPower /= ratio;
             rightPower /= ratio;
@@ -295,25 +309,29 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
             rightPower *= -1;
         }
 
-        // std::cout << "left power: " << leftPower << " right power: " << rightPower << std::endl;
-
-        left->move(leftPower);
-        right->move(rightPower);
+        left->move_voltage(leftPower);
+        right->move_voltage(rightPower);
         
-        auto loop_end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> loop_duration = loop_end - loop_start;
+        pros::delay(LOOP_PERIOD_MS);
 
-        // Calculate the remaining time to sleep to maintain the desired loop period
-        int sleep_time_ms = LOOP_PERIOD_MS - loop_duration.count();
-        if (sleep_time_ms > 0) {
-            pros::delay(sleep_time_ms);
-        }
-
-        // std::cout << "left real: " << left->get_voltage() / 100 << " right real: " << right->get_voltage() / 100 << std::endl;
         path_index++;
     }
 
     // Stop motors after finishing the path or timeout
     left->move(0);
     right->move(0);
+}
+
+void Robot::set_pf(loco::ParticleFilter<150> particleFilter) {
+    this->particleFilter = particleFilter;
+}
+
+void Robot::set_arm_pistons(bool value) {
+    arm_left.set_value(value);
+    arm_right.set_value(value);
+}
+
+void Robot::set_mogo(bool value) {
+    mogo_left.set_value(value);
+    mogo_left.set_value(value);
 }

@@ -7,6 +7,7 @@ Pose::Pose(float x, float y, float theta, bool radians) {
     this->x = x;
     this->y = y;
     this->theta = theta;
+    this->unit = INCH;
 
     if (!radians) this->theta = util::radians(theta);
 }

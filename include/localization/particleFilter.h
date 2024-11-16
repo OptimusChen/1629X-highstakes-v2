@@ -55,6 +55,10 @@ namespace loco {
                 particle[1] = 0.0;
             }
         }
+        
+        ParticleFilter() {
+            
+        }
 
         Eigen::Vector3f getPrediction() {
             return prediction;

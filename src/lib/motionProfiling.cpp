@@ -173,8 +173,32 @@ void ProfileGenerator::generateProfile(bezier::Bezier<3> path)
 
         this->profile.push_back(ProfilePoint(forward.x, forward.y, forward.theta, forward.curvature, forward.t, vel, avel));
     }
+
+    // double time = 0.0;  // Initialize cumulative time
+    // double lastDistance = 0.0;  // Track the distance at the previous point
+    // for (int i = 1; i < this->profile.size(); ++i) {
+    //     auto& point = this->profile[i];
+
+    //     // Calculate the distance increment from the last point
+    //     double deltaDistance = (i == 0) ? 0.0 : std::sqrt(
+    //         std::pow(point.x - this->profile[i - 1].x, 2) +
+    //         std::pow(point.y - this->profile[i - 1].y, 2)
+    //     );
+
+    //     double a = (pow(point.vel, 2) - pow(this->profile[i - 1].vel, 2) / (2 * deltaDistance));
+
+    //     if (std::abs(a) > 0.0001) {
+    //         time += (point.vel - this->profile[i - 1].vel) / a;
+    //     } else {
+    //         time += deltaDistance / point.vel;
+    //     }
+
+    //     std::cout << time << std::endl;
+    // }
     
     for (auto p : getProfile()) {
+        // std::cout << p << std::endl;
+        // std::cout << p.curvature << " * " << p.vel << " = " << (p.curvature * p.vel) << std::endl;
 		std::cout << p.x << ", " << p.y << ", " << p.theta << ", " << p.vel << ", " << (p.accel) << std::endl;
 	}
     //? Removing this loop slows down code????

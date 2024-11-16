@@ -21,6 +21,7 @@
 #include "lib/robot.hpp"
 #include "lib/controller/pid.hpp"
 #include "lib/controller/velocityController.hpp"
+#include "autonomous.hpp"
 
 using namespace pros;
 using namespace pros::c;
@@ -36,8 +37,8 @@ auto imu = Imu(INERTIAL_PORT);
 auto pl = TrackingWheel(&r, -0.7f, 2.0f);
 auto pd = TrackingWheel(&r2, -8.0f, 2.75f);
 
-MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue);
-MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue);
+MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
+MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
 
 Odom odom(450, 2.75, 11.5, &left_motor_group, &right_motor_group, &imu);
 
@@ -54,23 +55,36 @@ PID angular(
 	1 // derivative gain (kD)
 );
 
-Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
-
 // VelocityController vel(&robot, 0.01, 1, 0.01, 0.1);
 
 Distance left_dist(L_DISTANCE);
 Distance right_dist(R_DISTANCE);
 Distance back_dist(B_DISTANCE);
 
+constexpr float DRIVE_RATIO = 48.0/36.0; // EX: 36 tooth driving gear to 48 tooth driven gear.
+constexpr double DRIVETRAIN_TUNING_SCALAR = 1; // Tuning variable to make sure distance matches
+constexpr QLength WHEEL_RADIUS = 2.75_in/2.0; // Wheel radius
+constexpr float DRIVE_NOISE = 0.35; // The desired amount in % of noise on the drive
+constexpr Angle ANGLE_NOISE = 8_deg; // The noise on the angle that's desired
+
+Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
+
 Angle angle() {
     return Angle(robot.get_pose().theta);
+
+    // Invert the angle into the loco coordinate system
+    const Angle angle = -imu.get_rotation() * degree;
+
+    // Check to make sure the angle isn't nan, if it is it can cause issues in the position change calculations
+    return isfinite(angle.getValue()) ? angle : 0.0;
 }
 
-loco::ParticleFilter<150> particleFilter(angle);
+loco::DistanceSensorModel rightDistance(Eigen::Vector3f((-3.75_in).getValue(), (-5.75_in).getValue(), (270_deg).getValue()), right_dist);
+loco::DistanceSensorModel leftDistance(Eigen::Vector3f((-3.25_in).getValue(), (5.75_in).getValue(), (90_deg).getValue()), left_dist);
+loco::DistanceSensorModel backDistance(Eigen::Vector3f((-4.375_in).getValue(), (5.25_in).getValue(), (180_deg).getValue()), back_dist);
 
-loco::DistanceSensorModel rightDistance(Eigen::Vector3f(5.75, -3.75, (3 * M_PI) / 2), right_dist);
-loco::DistanceSensorModel leftDistance(Eigen::Vector3f(-5.75, -3.25, (M_PI) / 2), left_dist);
-loco::DistanceSensorModel backDistance(Eigen::Vector3f(-5.25, -4.375, M_PI), back_dist);
+loco::ParticleFilter<150> particleFilter(angle);
+std::ranlux24_base de;
 
 #define BLUE 0
 #define RED 1
@@ -78,62 +92,95 @@ loco::DistanceSensorModel backDistance(Eigen::Vector3f(-5.25, -4.375, M_PI), bac
 
 int color = RED;
 
-float lastX = 0;
-float lastY = 0;
+QLength lastLeft, lastRight;
+
+QLength getDistance(const pros::MotorGroup& motor) {
+    QLength totalPosition = 0.0;
+
+    for (double position : motor.get_position_all()) {
+        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI
+           * DRIVETRAIN_TUNING_SCALAR * WHEEL_RADIUS;
+    }
+
+    return totalPosition/motor.size();
+}
 
 void initialize() {
 	pros::lcd::initialize();
 
 	robot.calibrate();
+    robot.set_constants(2.75, 450, 5.669905, 11.5, 0.1);
 
-    robot.set_constants(2.75, 450, 4, 11.5, 0.1);
+    robot.ramsete({{0, 0}, {0, 1}, {1, 0}, {1, 1}}, true);
 
-	robot.set_pose(0, 50, 90);
+    return;
+
+    robot.set_pose(0, 0, 270);
 
     particleFilter.addSensor(&leftDistance);
     particleFilter.addSensor(&rightDistance);
     particleFilter.addSensor(&backDistance);
 
-    auto metersPose = robot.get_pose().meters();
+    particleFilter.initUniform(-70_in, -70_in, 70_in, 70_in);
 
-    Eigen::Matrix2f covariance;                         // Large covariance for wider spread
-    covariance << 0.1, 0.1,
-                0.1, 0.1;
+    pros::Task locoTask = pros::Task([&]() {
+        uint32_t start_time = 0;
 
-    particleFilter.initNormal(Eigen::Vector2f(metersPose.x, metersPose.y), covariance, false);
+        // Run localization forever
+        while (true) {
+            // Store the start time to ensure that the time between updates remains consistent
+            start_time = pros::millis();
 
-    lastX = metersPose.x;
-    lastY = metersPose.y;
+            // Store the current distance of the drivetrain
+            const QLength leftLength = getDistance(left_motor_group);
+            const QLength rightLength = getDistance(right_motor_group);
+
+            // Calculate the change from the previous position
+            const QLength leftChange = leftLength - lastLeft;
+            const QLength rightChange = rightLength - lastRight;
+            
+            // Store the current value as the last value for next frame
+            lastLeft = leftLength;
+            lastRight = rightLength;
+
+            // Calculate the average movement, this is a cheaper way to get the movement of the drive at the center for
+            // skid-steer based mechanics
+            auto avg = (leftChange + rightChange) / 2.0;
+
+            // Define the distributions to add noise to the sensor readings
+            std::uniform_real_distribution avgDistribution(avg.getValue() - DRIVE_NOISE * avg.getValue(),
+                                                        avg.getValue() + DRIVE_NOISE * avg.getValue());
+            std::uniform_real_distribution angleDistribution(
+                particleFilter.getAngle().getValue() - ANGLE_NOISE.getValue(),
+                particleFilter.getAngle().getValue() + ANGLE_NOISE.getValue());
+
+            particleFilter.update([&]() mutable {
+                // Calculate noisy sensor readings
+                const auto noisy = avgDistribution(de);
+                const auto angle = angleDistribution(de);
+
+                // Calculate the translation with the sensor readings
+                return Eigen::Rotation2Df(angle) * Eigen::Vector2f({noisy, 0.0});
+            });
+
+            pros::c::task_delay_until(&start_time, 10);
+        }
+    });
 
    	Task trackingTask = Task {[&] {
 		while (true) {	
-            auto pose = robot.get_pose().meters();
+            auto pose = particleFilter.getPrediction();
 
-            std::function<Eigen::Vector2f()> pred = [&]() -> Eigen::Vector2f {
-                float x = pose.x;
-                float y = pose.y;
-                float deltaX = x - lastX;
-                float deltaY = y - lastY;
-                lastX = x;
-                lastY = y;
-                return Eigen::Vector2f(deltaX, deltaY);
-            };
-
-            particleFilter.update(pred);
-            auto prediction = particleFilter.getPrediction();
-            
-			pros::lcd::print(0, "x: %f", prediction.x() / METERS); // print the x position
-			pros::lcd::print(1, "y: %f", prediction.y() / METERS); // print the y position
-			pros::lcd::print(2, "heading: %f", util::degrees(prediction.z())); // print the heading
-            
-            pose = pose.inches();
-
-			pros::lcd::print(3, "x: %f", pose.x); // print the x position
-			pros::lcd::print(4, "y: %f", pose.y); // print the y position
-			pros::lcd::print(5, "heading: %f", pose.get_degrees()); // print the heading
+			pros::lcd::print(0, "x: %f", pose.x() * metre.Convert(inch)); // print the x position
+			pros::lcd::print(1, "y: %f", pose.y() * metre.Convert(inch)); // print the y position
+			pros::lcd::print(2, "heading: %f", util::degrees(pose.z())); // print the heading
 			pros::delay(10);
 		}
 	}};
+
+    delay(2000);
+    
+    // bestautonfr::skills(robot);
 }
 
 void disabled() {}
@@ -236,6 +283,9 @@ void opcontrol() {
         [&](bool firstActivation) {
             loading = true;
             color_sort = false;
+
+            arm_left.set_value(false);
+            arm_right.set_value(false);
         },
         [&]() {
             loading = false;
