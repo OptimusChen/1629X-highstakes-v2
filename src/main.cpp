@@ -37,8 +37,8 @@ auto imu = Imu(INERTIAL_PORT);
 auto pl = TrackingWheel(&r, -0.7f, 2.0f);
 auto pd = TrackingWheel(&r2, -8.0f, 2.75f);
 
-MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
-MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
+MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue);
+MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue);
 
 Odom odom(450, 2.75, 11.5, &left_motor_group, &right_motor_group, &imu);
 
@@ -111,11 +111,23 @@ void initialize() {
 	robot.calibrate();
     robot.set_constants(2.75, 450, 5.669905, 11.5, 0.1);
 
-    robot.ramsete({{0, 0}, {0, 1}, {1, 0}, {1, 1}}, true);
+    robot.set_pose(0, 0, 90);
+
+    robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}}, true);
+
+    Task trackingTask = Task {[&] {
+		while (true) {	
+            auto pose = robot.get_pose();
+
+			pros::lcd::print(0, "x: %f", pose.x); // print the x position
+			pros::lcd::print(1, "y: %f", pose.y); // print the y position
+			pros::lcd::print(2, "heading: %f", pose.theta); // print the heading
+			pros::delay(10);
+		}
+	}};
 
     return;
 
-    robot.set_pose(0, 0, 270);
 
     particleFilter.addSensor(&leftDistance);
     particleFilter.addSensor(&rightDistance);
@@ -167,16 +179,7 @@ void initialize() {
         }
     });
 
-   	Task trackingTask = Task {[&] {
-		while (true) {	
-            auto pose = particleFilter.getPrediction();
-
-			pros::lcd::print(0, "x: %f", pose.x() * metre.Convert(inch)); // print the x position
-			pros::lcd::print(1, "y: %f", pose.y() * metre.Convert(inch)); // print the y position
-			pros::lcd::print(2, "heading: %f", util::degrees(pose.z())); // print the heading
-			pros::delay(10);
-		}
-	}};
+   	
 
     delay(2000);
     
