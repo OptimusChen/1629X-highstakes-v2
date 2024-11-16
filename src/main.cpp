@@ -70,7 +70,7 @@ constexpr Angle ANGLE_NOISE = 8_deg; // The noise on the angle that's desired
 Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
 
 Angle angle() {
-    return Angle(robot.get_pose().theta);
+    return Angle(robot.get_pose().theta + (M_PI / 2));
 
     // Invert the angle into the loco coordinate system
     const Angle angle = -imu.get_rotation() * degree;
@@ -112,6 +112,8 @@ void initialize() {
     robot.set_constants(2.75, 450, 5.669905, 11.5, 0.1);
 
     robot.set_pose(0, 0, 90);
+
+    robot.set_pose_mode(MCL);
 
     robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}}, true);
 

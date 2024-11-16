@@ -12,6 +12,9 @@
 
 using namespace pros;
 
+#define ODOM 0
+#define MCL 1
+
 namespace lib {
     class Robot {
         public:
@@ -25,12 +28,15 @@ namespace lib {
 
             loco::ParticleFilter<150> particleFilter;
 
+            int poseMode = ODOM;
+
             Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular);
 
             void set_pose(float x, float y, float theta, bool radians=false);
             Pose get_pose();
             void calibrate();
             void set_pf(loco::ParticleFilter<150> particleFilter);
+            void set_pose_mode(int mde);
 
             float wheelDiameter;
             int rpm;

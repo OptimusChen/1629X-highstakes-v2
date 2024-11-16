@@ -29,9 +29,17 @@ void Robot::set_pose(float x, float y, float theta, bool radians) {
     odometry->set_position(x, y, theta, radians);
 }
 
+void Robot::set_pose_mode(int mode) {
+    this->poseMode = mode;
+}
+
 Pose Robot::get_pose() {
-    // auto pred = particleFilter.getPrediction();
-    // return Pose(pred.x() * metre.Convert(inch), pred.y() * metre.Convert(inch), odometry->get_pose().theta);
+    if (this->poseMode == MCL) {
+        auto pred = particleFilter.getPrediction();
+        float cartesianX = -pred.y() * metre.Convert(inch);
+        float cartesianY = -pred.x() * metre.Convert(inch);
+        return Pose(cartesianX, cartesianY, odometry->get_pose().theta);
+    }
     return odometry->get_pose();
 }
 
