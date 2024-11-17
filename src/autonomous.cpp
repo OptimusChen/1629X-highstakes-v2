@@ -6,6 +6,8 @@ void bestautonfr::skills(Robot robot) {
     // robot.ramsete({{0, 1.546}, {0.04, 1.147}, {-0.364, 1.245}, {-0.518, 1.216}});
 
     robot.ramsete({{0, 0}, {0, 1.2}, {1.2, 0}, {1.2, 1.2}}, 1, true);
+    // robot.ramsete({{1.2, 1.2}, {1.2, 0}, {0, 1.2}, {0, 0}}, 0.5, false);
+
     return;
 
     robot.ramsete({{-1.543, -0.018}, {-1.071, 0.048}, {-1.21, 0}, {-1.21, -0.672}}, 1, false);
@@ -14,7 +16,6 @@ void bestautonfr::skills(Robot robot) {
 
     // robot.set_mogo(true);
 
-    robot.turnToHeading(0, 2000);
     robot.ramsete({{-1.213, -0.68}, {-0.753, -0.563}, {-0.481, -0.272}, {0.1, -1.507}});
 
 

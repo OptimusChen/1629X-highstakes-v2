@@ -109,7 +109,7 @@ void initialize() {
 	pros::lcd::initialize();
 
 	robot.calibrate();
-    robot.set_constants(2.75, 450, 6, 11.5, 0.2);
+    robot.set_constants(2.75, 450, 5.6, 11.5, 0.1);
 
     robot.set_pose(0, 0, 90);
 

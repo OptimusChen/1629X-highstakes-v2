@@ -96,7 +96,7 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
     bezier::Point deriv;
     bezier::Point derivSecond;
 
-    std::cout << path.segments[0].valueAt(1).x << ", " << path.segments[0].valueAt(1).y << std::endl;
+    double distance = 0;
 
     int i = 0;
 
@@ -120,24 +120,16 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
 
         double maxSpeed = constraints->maxSpeed(curvature);
 
-        angular_vel = vel * curvature;
-        angular_accel = (angular_vel - last_angular_vel) / dt;
-        last_angular_vel = angular_vel;
-        max_accel = this->constraints->max_acc - fabs(angular_accel * this->constraints->track_width / 2);
-
         max_accel = this->constraints->max_acc;
 
-        double maxAchievable = vel + dt * max_accel;
+        double maxAchievable = std::sqrt(vel * vel + 2 * max_accel * dd);
+
+        forwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, distance, vel, max_accel));
 
         vel = std::min(maxSpeed, maxAchievable);
 
-        double angular = vel*curvature;
-
-        forwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, segmentIndex + localT, vel, angular));
-
-        double distance = vel * dt + 0.5 * max_accel * dt * dt;
-
-        localT += distance / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
+        localT += dd / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
+        distance += dd;
 
         if (localT > 1) {
             segmentIndex++;
@@ -168,26 +160,18 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
 
         curvature = segment.curvatureAt(deriv, derivSecond);
 
-        double maxSpeed = constraints->maxSpeed(curvature);
+        backwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, distance, vel, max_accel));
 
-        angular_vel = vel * curvature;
-        angular_accel = (angular_vel - last_angular_vel) / dt;
-        last_angular_vel = angular_vel;
-        max_accel = this->constraints->max_dec - fabs(angular_accel * this->constraints->track_width / 2);
+        double maxSpeed = constraints->maxSpeed(curvature);
 
         max_accel = this->constraints->max_dec;
 
-        double maxAchievable = vel + max_accel * dt;
+        double maxAchievable = std::sqrt(vel * vel + 2 * max_accel * dd);
 
         vel = std::min(maxSpeed, maxAchievable);
 
-        double angular = vel*curvature;
-
-        backwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, segmentIndex + localT, vel, angular));
-
-        double distance = vel * dt + 0.5 * max_accel * dt * dt;
-
-        localT -= distance / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
+        localT -= dd / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
+        distance -= dd;
 
         if (localT < 0) {
             segmentIndex--;
@@ -197,6 +181,8 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
 
     std::cout << backwardPass.size() << " " << forwardPass.size() << std::endl;
 
+    std::vector<lib::ProfilePoint> distanceBasedProfile;
+
     // Get lower of the two velocities at each point and store in trajectory
     for (int i = 0; i < std::min(forwardPass.size(), backwardPass.size()); ++i)
     {
@@ -204,11 +190,54 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
         auto backward = backwardPass[backwardPass.size() - i - 1];
         auto vel = std::min(forward.vel, backward.vel);
 
-        this->profile.push_back(ProfilePoint(forward.x, forward.y, forward.theta, forward.curvature, backward.curvature, vel, max_accel));
+        distanceBasedProfile.push_back(ProfilePoint(forward.x, forward.y, forward.theta, forward.curvature, forward.t, vel, max_accel));
+    };
+
+    // Start with the initial profile point
+    ProfilePoint startPoint = distanceBasedProfile[0];
+    float currentTime = 0.0;
+
+    // Add the initial point to the time-based profile
+    profile.push_back(ProfilePoint(
+        startPoint.x, startPoint.y, startPoint.theta,
+        startPoint.curvature, currentTime, startPoint.vel, startPoint.accel
+    ));
+
+    // Iterate through the distance-based profile and calculate fixed time steps
+    for (size_t i = 1; i < distanceBasedProfile.size(); i++) {
+        auto current = distanceBasedProfile[i];
+        auto last = distanceBasedProfile[i - 1];
+
+        float a = (pow(current.vel, 2) - pow(last.vel, 2)) / (2 * dd);  // Acceleration
+
+        // Compute time interval for this segment
+        float segmentDuration = (abs(a) > 0.0001) ? (current.vel - last.vel) / a : dd / current.vel;
+
+        // Step through this segment at fixed time intervals
+        for (float t = 0; t < segmentDuration; t += dt) {
+            currentTime += dt;
+
+            // Interpolate position, velocity, and acceleration
+            float ratio = t / segmentDuration;
+            float interpolatedVel = last.vel + ratio * (current.vel - last.vel);
+            float interpolatedAccel = a;  // Acceleration is constant within this segment
+
+            // Interpolate position (for x, y, theta, curvature)
+            float interpolatedX = last.x + ratio * (current.x - last.x);
+            float interpolatedY = last.y + ratio * (current.y - last.y);
+            float interpolatedTheta = last.theta + ratio * (current.theta - last.theta);
+            float interpolatedCurvature = last.curvature + ratio * (current.curvature - last.curvature);
+
+            // Add the interpolated point to the time-based profile
+            profile.push_back(ProfilePoint(
+                interpolatedX, interpolatedY, interpolatedTheta,
+                interpolatedCurvature, currentTime, (((i == (distanceBasedProfile.size() - 1)) && ((t + dt) > segmentDuration)) ? 0 : interpolatedVel), interpolatedAccel
+            ));
+        }
     }
-    
-    for (auto p : getProfile()) {
-		std::cout << p.x << ", " << p.y << ", " << p.curvature << ", " << p.t << ", " << (p.vel*p.curvature) << ", " << (p.t) << std::endl;
+
+    for (auto p : profile) {
+		std::cout << p.x << ", " << p.y << ", " << p.theta << ", " << p.vel << ", " << (p.vel*p.curvature) << ", " << (p.t) << std::endl;
 	}
     //? Removing this loop slows down code????
 }
