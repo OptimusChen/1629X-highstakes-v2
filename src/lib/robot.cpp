@@ -1,6 +1,7 @@
 #include "lib/robot.hpp"
 #include "lib/util.hpp"
 #include "lib/controller/pid.hpp"
+#include "lib/controller/feedForward.hpp"
 #include "lib/bezier.h"
 #include "lib/motionProfiling.hpp"
 #include "lib/controller/ramsete.hpp"
@@ -228,8 +229,13 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
 #define METERS 0.0254
 
-void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
+// buff1!!!!!
+#define BUFFER 50
+
+void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwards) {
     float max_speed = ((this->rpm / 60.0f) * (M_PI * this->wheelDiameter * METERS));
+
+    max_speed *= pct;
 
     float trackWidthMeters = this->trackWidth * METERS;
     float motorConst = 0.175;
@@ -247,13 +253,16 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
 
 	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
 
-    bezier::Bezier<3> bezierPath(waypoints);
+    bezier::BezierSpline<3> bezierPath(waypoints);
 
     profileGenerator->generateProfile(bezierPath);
 
+    int mx = 12000 * pct;
+
     RamseteController controller(2, 0.7);
-    // VelocityController lateral_vel();
-    // VelocityController angular_vel();
+    FeedforwardController ff(1000, mx/max_speed, 0);
+    PID leftPID(5000, 0, 0);
+    PID rightPID(5000, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
@@ -267,14 +276,22 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
 
     float lastTheta = get_pose().theta;
 
+    int bufferIndex = path.size() / BUFFER;
+    bool buffing = false;
+
+    float lastLeft = odometry->get_left_encoder_travelled();
+    float lastRight = odometry->get_right_encoder_travelled();
+
     while (running) {
         auto loop_start = std::chrono::high_resolution_clock::now();
+
+        // if (path_index > 20) break;
 
         // Check timeout and end condition
         auto current_time = std::chrono::high_resolution_clock::now();
         if (path_index >= path.size()) {
-            running = false;
-            break;
+                running = false;
+                break;
         }
 
         // Get target point from the motion path
@@ -297,16 +314,38 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
 
         if (!forwards) w = -w;
 
-        // v = lateral_vel.calculate(v);
-        // w = angular_vel.calculate(w * trackWidthMeters * 0.5);
-
         float leftVelocity = (v - w * trackWidthMeters * 0.5);
         float rightVelocity = (v + w * trackWidthMeters * 0.5);
 
-        double leftPower = leftVelocity * (12000)/max_speed;
-        double rightPower = rightVelocity * (12000)/max_speed;
+        double leftPower = ff.calculate(leftVelocity, point.accel);
+        double rightPower = ff.calculate(rightVelocity, point.accel);
 
-        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (12000);
+        float lt = odometry->get_left_encoder_travelled();
+        float rt = odometry->get_right_encoder_travelled();
+
+        float deltaLeft = lt - lastLeft;
+        float deltaRight = rt - lastRight;
+
+        lastLeft = lt;
+        lastRight = rt;
+
+        const float TPR = rpm / 60; // Example: 360 ticks per revolution
+
+        // Calculate velocity
+        float currentLeftVelocity = (deltaLeft * METER / TPR) / 0.01 * (M_PI * wheelDiameter * METERS);
+        float currentRightVelocity = (deltaRight * METER / TPR) / 0.01 * (M_PI * wheelDiameter * METERS);
+
+        // PID Control for Velocity Adjustment
+        double leftAdjustment = leftPID.calculate(leftVelocity - currentLeftVelocity);
+
+        // std::cout << leftAdjustment << " = 1000 * " << leftVelocity << " - " << currentLeftVelocity << std::endl;
+
+        double rightAdjustment = rightPID.calculate(rightVelocity - currentRightVelocity);
+
+        leftPower += leftAdjustment;
+        rightPower += rightAdjustment;
+
+        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (mx);
         if (ratio > 1) {
             leftPower /= ratio;
             rightPower /= ratio;
@@ -320,9 +359,21 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, bool forwards) {
         left->move_voltage(leftPower);
         right->move_voltage(rightPower);
         
-        pros::delay(LOOP_PERIOD_MS);
+        if (path_index % bufferIndex == 0 && !buffing) {
+            buffing = true;
+        } else {
+            path_index++;
+            buffing = false;
+        }
 
-        path_index++;
+        auto loop_end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> loop_duration = loop_end - loop_start;
+
+        // Calculate the remaining time to sleep to maintain the desired loop period
+        int sleep_time_ms = LOOP_PERIOD_MS - loop_duration.count();
+        if (sleep_time_ms > 0) {
+            pros::delay(sleep_time_ms);
+        }
     }
 
     // Stop motors after finishing the path or timeout

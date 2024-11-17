@@ -55,7 +55,7 @@ namespace lib {
     {
     public:
         ProfileGenerator(Constraints *constraints, double dd);
-        void generateProfile(bezier::Bezier<3> path);
+        void generateProfile(bezier::BezierSpline<3> path);
         auto getProfile() { return profile; }
 
     private:

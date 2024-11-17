@@ -26,6 +26,7 @@
 #include <limits>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 namespace bezier
 {
@@ -701,11 +702,10 @@ namespace bezier
 
         double curvatureAt(Point d, Point dd)
         {
-            double denominator = d.x * d.x + d.y * d.y;
-            denominator *= denominator * denominator;
-            denominator = std::sqrt(denominator);
-            double k = (d.x * dd.y - d.y * dd.x) / denominator;
-            return k;
+            double numerator = d.x * dd.y - d.y * dd.x;
+            double denominator = pow(d.x * d.x + d.y * d.y, 1.5);
+
+            return numerator / denominator;
         }
 
         void translate(const Vec2& distance)
@@ -954,6 +954,32 @@ namespace bezier
 
     private:
         std::array<Point, N+1> mControlPoints;
+    };
+
+    template<size_t N>
+    class BezierSpline
+    {
+    public:
+        int segmentIndex;
+        float localT;
+        std::vector<Bezier<N>> segments;
+
+        // Constructor that takes an initial set of control points.
+        BezierSpline(const std::vector<Point>& controlPoints)
+        {
+            assert(controlPoints.size() >= N + 1);
+            int count = controlPoints.size() / 4;
+            
+            for (int i = 0; i < count; i++) {
+                int stuff = i * 4;
+                auto p1 = controlPoints.at(stuff);
+                auto p2 = controlPoints.at(stuff + 1);
+                auto p3 = controlPoints.at(stuff + 2);
+                auto p4 = controlPoints.at(stuff + 3);
+                // std::cout << p4.x << ", " << p4.y << std::endl;
+                segments.push_back(Bezier<N>({p1, p2, p3, p4}));
+            }
+        }
     };
 
     template<size_t N>

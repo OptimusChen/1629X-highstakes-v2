@@ -50,7 +50,7 @@ namespace lib {
             void turnToHeading(float heading, int timeout);
             void turnToPoint(float x, float y, int timeout);
             void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false);
-            void ramsete(std::vector<bezier::Point>, bool forwards=true);
+            void ramsete(std::vector<bezier::Point>, float pct = 1.0, bool forwards=true);
 
             void set_arm_pistons(bool value);
             void set_mogo(bool value);

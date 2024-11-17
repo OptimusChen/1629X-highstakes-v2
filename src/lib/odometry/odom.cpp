@@ -38,24 +38,30 @@ Pose Odom::get_pose() {
     return Pose(this->x, this->y, this->theta, true);
 }
 
+constexpr float DRIVE_RATIO = 48.0/36.0; // EX: 36 tooth driving gear to 48 tooth driven gear.
+constexpr double DRIVETRAIN_TUNING_SCALAR = 1; // Tuning variable to make sure distance matches
+constexpr float WHEEL_RADIUS = 2.75/2.0; // Wheel radius
+
 float Odom::get_right_encoder_travelled() {
-    std::vector<double> positions = this->right->get_position_all();
-    std::vector<float> distances;
-    for (int i = 0; i < positions.size(); i++) {
-        float in = 600;
-        distances.push_back(positions[i] * (wheelDiameter * M_PI / rpm));
+    float totalPosition = 0.0;
+
+    for (double position : right->get_position_all()) {
+        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI
+           * DRIVETRAIN_TUNING_SCALAR * WHEEL_RADIUS;
     }
-    return util::avg(distances);
+
+    return totalPosition/right->size();
 }
 
 float Odom::get_left_encoder_travelled() {
-    std::vector<double> positions = this->left->get_position_all();
-    std::vector<float> distances;
-    for (int i = 0; i < positions.size(); i++) {
-        float in = 600;
-        distances.push_back(positions[i] * (wheelDiameter * M_PI / rpm));
+    float totalPosition = 0.0;
+
+    for (double position : left->get_position_all()) {
+        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI
+           * DRIVETRAIN_TUNING_SCALAR * WHEEL_RADIUS;
     }
-    return util::avg(distances);
+
+    return totalPosition/left->size();
 }
 
 void Odom::update() {

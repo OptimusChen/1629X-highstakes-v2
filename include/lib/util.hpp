@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <vector>
 
-#define METERS 0.254
+#define METERS 0.0254
 
 namespace util {
     float degrees(float radians);

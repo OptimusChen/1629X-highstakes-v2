@@ -37,8 +37,8 @@ auto imu = Imu(INERTIAL_PORT);
 auto pl = TrackingWheel(&r, -0.7f, 2.0f);
 auto pd = TrackingWheel(&r2, -8.0f, 2.75f);
 
-MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue);
-MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue);
+MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
+MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
 
 Odom odom(450, 2.75, 11.5, &left_motor_group, &right_motor_group, &imu);
 
@@ -70,7 +70,7 @@ constexpr Angle ANGLE_NOISE = 8_deg; // The noise on the angle that's desired
 Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
 
 Angle angle() {
-    return Angle(robot.get_pose().theta + (M_PI / 2));
+    return Angle(fmod(robot.get_pose().theta + (M_PI / 2), (2 * M_PI)));
 
     // Invert the angle into the loco coordinate system
     const Angle angle = -imu.get_rotation() * degree;
@@ -109,27 +109,26 @@ void initialize() {
 	pros::lcd::initialize();
 
 	robot.calibrate();
-    robot.set_constants(2.75, 450, 5.669905, 11.5, 0.1);
+    robot.set_constants(2.75, 450, 6, 11.5, 0.2);
 
     robot.set_pose(0, 0, 90);
 
-    robot.set_pose_mode(MCL);
-
-    robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}}, true);
+    // robot.set_pose_mode(MCL);
+    // robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 1}, {0, 0.5}, {0, 1}}, true);
+    // robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}}, true);
 
     Task trackingTask = Task {[&] {
 		while (true) {	
             auto pose = robot.get_pose();
 
-			pros::lcd::print(0, "x: %f", pose.x); // print the x position
-			pros::lcd::print(1, "y: %f", pose.y); // print the y position
-			pros::lcd::print(2, "heading: %f", pose.theta); // print the heading
+			pros::lcd::print(0, "x: %f", pose.x * METERS); // print the x position
+			pros::lcd::print(1, "y: %f", pose.y * METERS); // print the y position
+			pros::lcd::print(2, "x: %f", pose.x); // print the x position
+			pros::lcd::print(3, "y: %f", pose.y); // print the y position
+			pros::lcd::print(4, "heading: %f", pose.theta); // print the heading
 			pros::delay(10);
 		}
 	}};
-
-    return;
-
 
     particleFilter.addSensor(&leftDistance);
     particleFilter.addSensor(&rightDistance);
@@ -180,12 +179,8 @@ void initialize() {
             pros::c::task_delay_until(&start_time, 10);
         }
     });
-
    	
-
-    delay(2000);
-    
-    // bestautonfr::skills(robot);
+    bestautonfr::skills(robot);
 }
 
 void disabled() {}

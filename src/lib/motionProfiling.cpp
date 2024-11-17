@@ -73,7 +73,7 @@ ProfileGenerator::ProfileGenerator(Constraints *constraints, double dd)
     this->dd = dd;
 }
 
-void ProfileGenerator::generateProfile(bezier::Bezier<3> path)
+void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
 {
     this->profile.clear();
 
@@ -84,7 +84,9 @@ void ProfileGenerator::generateProfile(bezier::Bezier<3> path)
     std::vector<ProfilePoint> forwardPass;
     std::vector<ProfilePoint> backwardPass;
 
-    double t = 0;
+    double localT = 0;
+    int segmentIndex = 0;
+
     double curvature;
     double angular_vel = 0;
     double angular_accel = 0;
@@ -94,16 +96,27 @@ void ProfileGenerator::generateProfile(bezier::Bezier<3> path)
     bezier::Point deriv;
     bezier::Point derivSecond;
 
-    while (t <= 1)
-    {
-        auto p1 = path.valueAt(t);
+    std::cout << path.segments[0].valueAt(1).x << ", " << path.segments[0].valueAt(1).y << std::endl;
 
-        deriv = path.derivative().valueAt(t);
-        derivSecond = path.derivative().derivative().valueAt(t);
+    int i = 0;
+
+    while (true)
+    {
+        if (segmentIndex == path.segments.size()) {
+            // std::cout << "breaking: " << forwardPass.at(forwardPass.size()-1).t << std::endl;
+            break;
+        }
+
+        auto segment = path.segments[segmentIndex];
+
+        auto p1 = segment.valueAt(localT);
+
+        deriv = segment.derivative().valueAt(localT);
+        derivSecond = segment.derivative().derivative().valueAt(localT);
 
         theta = std::atan2(deriv.y, deriv.x);
 
-        curvature = path.curvatureAt(deriv, derivSecond);
+        curvature = segment.curvatureAt(deriv, derivSecond);
 
         double maxSpeed = constraints->maxSpeed(curvature);
 
@@ -112,36 +125,48 @@ void ProfileGenerator::generateProfile(bezier::Bezier<3> path)
         last_angular_vel = angular_vel;
         max_accel = this->constraints->max_acc - fabs(angular_accel * this->constraints->track_width / 2);
 
+        max_accel = this->constraints->max_acc;
+
         double maxAchievable = vel + dt * max_accel;
 
         vel = std::min(maxSpeed, maxAchievable);
 
         double angular = vel*curvature;
 
-        std::cout << vel << " * " << curvature << " = " << angular << std::endl;
-
-        forwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, angular));
+        forwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, segmentIndex + localT, vel, angular));
 
         double distance = vel * dt + 0.5 * max_accel * dt * dt;
 
-        t += distance / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
+        localT += distance / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
+
+        if (localT > 1) {
+            segmentIndex++;
+            localT = 0;
+        }
+
+        // std::cout << segmentIndex + localT << std::endl;
     }
 
-    vel = 0.00001;
+    vel = 0;
     last_angular_vel = 0;
     angular_accel = 0;
-    t = 1;
+    localT = 1;
+    segmentIndex = path.segments.size() - 1;
 
-    while (t >= 0)
+    while (true)
     {
-        auto p1 = path.valueAt(t);
+        if (segmentIndex == -1) break;
 
-        deriv = path.derivative().valueAt(t);
-        derivSecond = path.derivative().derivative().valueAt(t);
+        auto segment = path.segments[segmentIndex];
+
+        auto p1 = segment.valueAt(localT);
+
+        deriv = segment.derivative().valueAt(localT);
+        derivSecond = segment.derivative().derivative().valueAt(localT);
 
         theta = std::atan2(deriv.y, deriv.x);
 
-        curvature = path.curvatureAt(deriv, derivSecond);
+        curvature = segment.curvatureAt(deriv, derivSecond);
 
         double maxSpeed = constraints->maxSpeed(curvature);
 
@@ -150,56 +175,40 @@ void ProfileGenerator::generateProfile(bezier::Bezier<3> path)
         last_angular_vel = angular_vel;
         max_accel = this->constraints->max_dec - fabs(angular_accel * this->constraints->track_width / 2);
 
+        max_accel = this->constraints->max_dec;
+
         double maxAchievable = vel + max_accel * dt;
 
         vel = std::min(maxSpeed, maxAchievable);
 
         double angular = vel*curvature;
 
-        backwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, t, vel, angular));
+        backwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, segmentIndex + localT, vel, angular));
 
         double distance = vel * dt + 0.5 * max_accel * dt * dt;
 
-        t -= distance / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
+        localT -= distance / sqrt(deriv.x * deriv.x + deriv.y * deriv.y);
+
+        if (localT < 0) {
+            segmentIndex--;
+            localT = 1;
+        }
     }
 
+    std::cout << backwardPass.size() << " " << forwardPass.size() << std::endl;
+
     // Get lower of the two velocities at each point and store in trajectory
-    for (int i = 0; i < backwardPass.size(); ++i)
+    for (int i = 0; i < std::min(forwardPass.size(), backwardPass.size()); ++i)
     {
         auto forward = forwardPass[i];
         auto backward = backwardPass[backwardPass.size() - i - 1];
         auto vel = std::min(forward.vel, backward.vel);
-        auto avel = vel*forward.curvature;
 
-        this->profile.push_back(ProfilePoint(forward.x, forward.y, forward.theta, forward.curvature, forward.t, vel, avel));
+        this->profile.push_back(ProfilePoint(forward.x, forward.y, forward.theta, forward.curvature, backward.curvature, vel, max_accel));
     }
-
-    // double time = 0.0;  // Initialize cumulative time
-    // double lastDistance = 0.0;  // Track the distance at the previous point
-    // for (int i = 1; i < this->profile.size(); ++i) {
-    //     auto& point = this->profile[i];
-
-    //     // Calculate the distance increment from the last point
-    //     double deltaDistance = (i == 0) ? 0.0 : std::sqrt(
-    //         std::pow(point.x - this->profile[i - 1].x, 2) +
-    //         std::pow(point.y - this->profile[i - 1].y, 2)
-    //     );
-
-    //     double a = (pow(point.vel, 2) - pow(this->profile[i - 1].vel, 2) / (2 * deltaDistance));
-
-    //     if (std::abs(a) > 0.0001) {
-    //         time += (point.vel - this->profile[i - 1].vel) / a;
-    //     } else {
-    //         time += deltaDistance / point.vel;
-    //     }
-
-    //     std::cout << time << std::endl;
-    // }
     
     for (auto p : getProfile()) {
-        // std::cout << p << std::endl;
-        // std::cout << p.curvature << " * " << p.vel << " = " << (p.curvature * p.vel) << std::endl;
-		std::cout << p.x << ", " << p.y << ", " << p.theta << ", " << p.vel << ", " << (p.accel) << std::endl;
+		std::cout << p.x << ", " << p.y << ", " << p.curvature << ", " << p.t << ", " << (p.vel*p.curvature) << ", " << (p.t) << std::endl;
 	}
     //? Removing this loop slows down code????
 }
