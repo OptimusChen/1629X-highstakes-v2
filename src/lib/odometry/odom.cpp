@@ -42,12 +42,13 @@ constexpr float DRIVE_RATIO = 48.0/36.0; // EX: 36 tooth driving gear to 48 toot
 constexpr double DRIVETRAIN_TUNING_SCALAR = 1; // Tuning variable to make sure distance matches
 constexpr float WHEEL_RADIUS = 2.75/2.0; // Wheel radius
 
+int ti = 2;
+
 float Odom::get_right_encoder_travelled() {
     float totalPosition = 0.0;
 
     for (double position : right->get_position_all()) {
-        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI
-           * DRIVETRAIN_TUNING_SCALAR * WHEEL_RADIUS;
+        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI * DRIVETRAIN_TUNING_SCALAR * WHEEL_RADIUS;
     }
 
     return totalPosition/right->size();
@@ -57,8 +58,7 @@ float Odom::get_left_encoder_travelled() {
     float totalPosition = 0.0;
 
     for (double position : left->get_position_all()) {
-        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI
-           * DRIVETRAIN_TUNING_SCALAR * WHEEL_RADIUS;
+        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI * DRIVETRAIN_TUNING_SCALAR * WHEEL_RADIUS;
     }
 
     return totalPosition/left->size();

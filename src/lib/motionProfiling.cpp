@@ -203,6 +203,8 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
         startPoint.curvature, currentTime, startPoint.vel, startPoint.accel
     ));
 
+    float interpolatedVel = 0.;
+
     // Iterate through the distance-based profile and calculate fixed time steps
     for (size_t i = 1; i < distanceBasedProfile.size(); i++) {
         auto current = distanceBasedProfile[i];
@@ -219,8 +221,9 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
 
             // Interpolate position, velocity, and acceleration
             float ratio = t / segmentDuration;
-            float interpolatedVel = last.vel + ratio * (current.vel - last.vel);
-            float interpolatedAccel = a;  // Acceleration is constant within this segment
+            float newInterp = last.vel + ratio * (current.vel - last.vel);
+            float interpolatedAccel = (newInterp - interpolatedVel) / dt;  // Acceleration is constant within this segment
+            interpolatedVel = newInterp;
 
             // Interpolate position (for x, y, theta, curvature)
             float interpolatedX = last.x + ratio * (current.x - last.x);

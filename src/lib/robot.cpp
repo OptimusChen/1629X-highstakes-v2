@@ -150,6 +150,8 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         // Calculate the Euclidean distance (magnitude) to the target
         float dist = sqrt(deltaX * deltaX + deltaY * deltaY);
 
+        std::cout << dist << std::endl;
+
         // Calculate the robot's heading vector
         float robot_heading_x = cos(adjustedTheta);
         float robot_heading_y = sin(adjustedTheta);
@@ -231,13 +233,15 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
 #define BUFFER 50
 
+const float LOOP_PERIOD_MS = 10;
+
 void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwards) {
     float max_speed = ((this->rpm / 60.0f) * (M_PI * this->wheelDiameter * METERS));
 
     max_speed *= pct;
 
     float trackWidthMeters = this->trackWidth * METERS;
-    float motorConst = 0.185;
+    float motorConst = 0.175;
 
     // NOTE: ASSUMES 6 MOTOR DRIVE ON BLUE CARTS
 	double force = motorConst / ((this->wheelDiameter * METERS) / 2);
@@ -256,39 +260,30 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
 
     profileGenerator->generateProfile(bezierPath);
 
-    int mx = 12000 * pct;
-
     RamseteController controller(2, 0.7);
-    FeedforwardController ff(0, mx/max_speed, 0);
-    PID leftPID(0, 0, 0);
-    PID rightPID(0, 0, 0);
+    // in theory: 175
+    FeedforwardController ffLeft(1000, 300, 40);
+    FeedforwardController ffRight(1000, 300, 40);
+    PID leftPID(150, 0, 0);
+    PID rightPID(150, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
-    size_t path_index = 0;
-
-    // Target loop time (10 ms)
-    float LOOP_PERIOD_MS = 10;
-
-    bool running = true;
-
-    float lastTheta = get_pose().theta;
-
-    int bufferIndex = path.size() / BUFFER;
-    bool buffing = false;
+    int path_index = 0;
 
     float lastLeft = odometry->get_left_encoder_travelled();
     float lastRight = odometry->get_right_encoder_travelled();
 
-    while (running) {
+    float leftCurrentVelocity = 0;
+    float rightCurrentVelocity = 0;
+
+    std::vector<std::pair<float, float>> coords;
+    std::vector<std::pair<float, float>> idealCoords;
+
+    while (true) {
         auto loop_start = pros::micros();
 
-        // if (path_index > 100) return;
-
-        if (path_index >= path.size()) {
-                running = false;
-                break;
-        }
+        if (path_index >= path.size()) break;
 
         // Get target point from the motion path
         ProfilePoint point = path[path_index];
@@ -299,7 +294,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
         float x = pose.x * METERS;
         float y = pose.y * METERS;
 
-        std::cout << x << ", " << y << ", " << point.x << ", " << point.y << std::endl;
+        idealCoords.push_back(std::make_pair(point.x, point.y));
 
         float adjustedTheta = pose.theta;
 
@@ -307,42 +302,50 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
             adjustedTheta = fmod(adjustedTheta + M_PI, 2 * M_PI);  // Adjust by π for reverse            
         }
 
-        // adjustedTheta = util::no_big_angles_pls(adjustedTheta);
-
         // Calculate left and right motor power using Ramsete controller
         auto [v, w] = controller.calculate(x, y, adjustedTheta, point.x, point.y, point.theta, point.vel, point.vel * point.curvature);
 
+		// std::cout << x << ", " << y << ", " << adjustedTheta << ", " << v << ", " << w << ", " << (point.t) << std::endl;
+ 
+        // convert back to inches
+        v /= METERS;
+
         if (!forwards) w = -w;
 
-        float leftVelocity = (v - w * trackWidthMeters * 0.5);
-        float rightVelocity = (v + w * trackWidthMeters * 0.5);
+        // float lt = odometry->get_left_encoder_travelled();
+        // float rt = odometry->get_right_encoder_travelled();
 
-        // double leftPower = ff.calculate(leftVelocity, point.accel);
-        // double rightPower = ff.calculate(rightVelocity, point.accel);
+        // float deltaLeft = lt - lastLeft;
+        // float deltaRight = rt - lastRight;
+        // lastLeft = lt;
+        // lastRight = rt;
+        // if (deltaLeft != 0) 
+        //     leftCurrentVelocity = deltaLeft / 0.01;
+        // if (deltaRight != 0) 
+        //     rightCurrentVelocity = deltaRight / 0.01;
 
-        float lt = odometry->get_left_encoder_travelled();
-        float rt = odometry->get_right_encoder_travelled();
+        float leftVelocity = (v - (w * trackWidth * 0.5));
+        float rightVelocity = (v + (w * trackWidth * 0.5));
 
-        float deltaLeft = lt - lastLeft;
-        float deltaRight = rt - lastRight;
+        // // std::cout << leftVelocity << ", " << leftCurrentVelocity << ", " << rightVelocity << ", " << rightCurrentVelocity << std::endl;
 
-        deltaLeft *= METERS;
-        deltaRight *= METERS;
+        // float leftError = leftVelocity - leftCurrentVelocity;
+        // float rightError = rightVelocity - rightCurrentVelocity;
 
-        lastLeft = lt;
-        lastRight = rt;
+        // // std::cout << leftError << ", " << rightError << std::endl;
 
-        float leftError = leftVelocity - (deltaLeft / 0.01);
-        float rightError = rightVelocity - (deltaRight / 0.01);
+        // float acceleration = point.accel / METERS;
 
-        float leftPower = ff.calculate(leftVelocity, point.accel * trackWidthMeters * 0.5);
-        float rightPower = ff.calculate(rightVelocity, point.accel * trackWidthMeters * 0.5);
+        // float leftPower = ffLeft.calculate(leftVelocity, acceleration) + leftPID.calculate(leftError);
+        // float rightPower = ffRight.calculate(rightVelocity, acceleration) + rightPID.calculate(rightError);
 
-        const float ratio = std::max(std::fabs(leftPower), std::fabs(rightPower)) / (mx);
-        if (ratio > 1) {
-            leftPower /= ratio;
-            rightPower /= ratio;
-        }
+        float leftPower = leftVelocity * ((12000*pct)/(max_speed/METERS));
+        float rightPower = rightVelocity * ((12000*pct)/(max_speed/METERS));
+
+        leftPower *= pct;
+        rightPower *= pct;
+
+        // std::cout << "0, 0, " << leftPower << ", " << rightPower << ", 0, 0, 0, 0, 0" << std::endl;
 
         if (!forwards) {
             leftPower *= -1;
@@ -351,23 +354,23 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
 
         left->move_voltage(leftPower);
         right->move_voltage(rightPower);
-        
-        // if (path_index % bufferIndex == 0 && !buffing) {
-        //     buffing = true;
-        // } else {
-        //     path_index++;
-        //     buffing = false;
-        // }
+
         path_index++;
 
         float duration_loop = pros::micros() - loop_start;
-        duration_loop /= 1000;
+        duration_loop /= 1000.0f;
 
         // Calculate the remaining time to sleep to maintain the desired loop period
         double sleep_time_ms = LOOP_PERIOD_MS - duration_loop;
         if (sleep_time_ms > 0) {
             pros::delay(sleep_time_ms);
         }
+
+        coords.push_back(std::make_pair(x, y));
+    }
+
+    for (int i = 0; i < coords.size(); i++) {
+        std::cout << coords[i].first << ", " << coords[i].second << ", " << idealCoords[i].first << ", " << idealCoords[i].second << std::endl;
     }
 
     // Stop motors after finishing the path or timeout

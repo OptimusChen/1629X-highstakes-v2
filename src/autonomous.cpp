@@ -1,11 +1,23 @@
 #include "autonomous.hpp"
+#include "lib/util.hpp"
 
 void bestautonfr::skills(Robot robot) {
-    // robot.set_arm_pistons(true);
+    // robot.turnToHeading(180, 500);
+    // robot.turnToHeading(90, 500);
+    
+    // robot.set_pose_mode(MCL);
 
-    // robot.ramsete({{0, 1.546}, {0.04, 1.147}, {-0.364, 1.245}, {-0.518, 1.216}});
+    // left
+    robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}}, 1, true);
+    // right
+    // robot.ramsete({{0, 0}, {0, 0.5}, {0, 0.5}, {0.5, 0.5}}, 0.5, true);
+    // robot.moveToPoint(0, 24, 2000);
 
-    robot.ramsete({{0, 0}, {0, 1.2}, {1.2, 0}, {1.2, 1.2}}, 1, true);
+    return;
+
+    // robot.turnToHeading(0, 500);
+
+    // robot.ramsete({{0, 0}, {0, 1.2}, {1.2, 0}, {1.2, 1.2}}, 0.5, true);
     // robot.ramsete({{1.2, 1.2}, {1.2, 0}, {0, 1.2}, {0, 0}}, 0.5, false);
 
     return;
