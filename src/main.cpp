@@ -28,6 +28,8 @@ using namespace pros::c;
 using namespace controls;
 using namespace lib;
 
+#define TRACK_WIDTH 11.5
+
 Controller master(E_CONTROLLER_MASTER);
 
 auto r = Rotation(-VERTICAL);
@@ -40,7 +42,7 @@ auto pd = TrackingWheel(&r2, -8.0f, 2.75f);
 MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
 MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
 
-Odom odom(450, 2.75, 11.5, &left_motor_group, &right_motor_group, &imu);
+Odom odom(450, 2.75, TRACK_WIDTH, &left_motor_group, &right_motor_group, &imu);
 
 PID linear(	
         5, // kP
@@ -109,8 +111,9 @@ void initialize() {
 	pros::lcd::initialize();
 
 	robot.calibrate();
-    robot.set_constants(2.75, 450, 5.3, 11.5, 0.1);
+    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 0.3);
 
+    // robot.set_pose(-60, 0, 0);
     robot.set_pose(0, 0, 90);
 
     // robot.set_pose_mode(MCL);

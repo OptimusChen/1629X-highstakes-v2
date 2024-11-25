@@ -54,5 +54,6 @@ namespace lib {
 
             void set_arm_pistons(bool value);
             void set_mogo(bool value);
+            void intake(bool reverse);
     };
 }

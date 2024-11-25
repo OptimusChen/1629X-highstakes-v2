@@ -2,45 +2,21 @@
 #include "lib/util.hpp"
 
 void bestautonfr::skills(Robot robot) {
-    // robot.turnToPoint(10, 10, 2000);
-    // robot.moveToPoint(10, 10, 2000);
-    // robot.moveToPoint(0, 0, 2000, false);
-    // robot.turnToHeading(180, 500);
-    // robot.turnToHeading(90, 500);
-    
-    // robot.set_pose_mode(MCL);
-
-    // robot.ramsete({{0, 0}, {0, 2}, {0, 0}, {0, 2}}, 1, true);
-    // left
-    robot.ramsete({{0, 0}, {0, 1}, {1, 0}, {1, 1}, {1, 1}, {1, 2}, {0.5, 1.1}, {0, 1.2}}, 1, true);
-    // right
-    // robot.ramsete({{0, 0}, {0, 0.5}, {0, 0.5}, {0.5, 0.5}}, 0.5, true);
-    // robot.moveToPoint(0, 24, 2000);
-
+    robot.ramsete({{0, 0}, {0, 40}, {40, 0}, {40, 40}});
     return;
 
-    // robot.turnToHeading(0, 500);
+    robot.moveToPoint(-50, 0, 1000);
+    robot.turnToHeading(90, 500);
+    robot.moveToPoint(-50, -23, 1000, false);
 
-    // robot.ramsete({{0, 0}, {0, 1.2}, {1.2, 0}, {1.2, 1.2}}, 0.5, true);
-    // robot.ramsete({{1.2, 1.2}, {1.2, 0}, {0, 1.2}, {0, 0}}, 0.5, false);
+    robot.turnToHeading(0, 500);
+
+    robot.intake(false);
+
+    robot.ramsete({
+        {-46.864, -23.636}, {-30.755, -13.971}, {-16.162, -26.858}, {0.326, -47.516},
+        {0.326, -47.516}, {16.814, -68.173}, {35.576, -40.314}, {23.447, -23.636}
+    });
 
     return;
-
-    robot.ramsete({{-1.543, -0.018}, {-1.071, 0.048}, {-1.21, 0}, {-1.21, -0.672}}, 1, false);
-
-    delay(500);
-
-    // robot.set_mogo(true);
-
-    robot.ramsete({{-1.213, -0.68}, {-0.753, -0.563}, {-0.481, -0.272}, {0.1, -1.507}});
-
-
-    // 
-    // , {0.596, -1.186}, {-0.081, -1.888}, {-0.414, -1.198}, {-0.626, -1.198}, {-0.626, -1.198}, {-0.947, -1.186}, {-1.101, -1.195}, {-1.576, -1.192}
-
-    robot.set_pose_mode(MCL);
-
-    delay(3000);
-
-    // robot.ramsete({{-1.21, -0.472}, {-1.21, 0}, {-1.071, 0.048}, {-1.543, -0.018}}, true);
 }   

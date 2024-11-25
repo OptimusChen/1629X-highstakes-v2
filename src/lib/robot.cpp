@@ -16,6 +16,8 @@ ADIDigitalOut arm_right(ARM_PISTON_RIGHT);
 ADIDigitalOut mogo_left(MOGO_LEFT);
 ADIDigitalOut mogo_right(MOGO_RIGHT);
 
+Motor hooks(HOOKS);
+
 Robot::Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular) {
     this->odometry = odom;
 
@@ -230,14 +232,14 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 }
 
 #define METERS 0.0254
-#define BUFFER 10
 
+const float bruh = 1;
 const float LOOP_PERIOD_MS = 10;
 
 void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwards) {
     float max_speed = ((this->rpm / 60.0f) * (M_PI * this->wheelDiameter * METERS));
 
-    max_speed *= pct;
+    max_speed *= pct * bruh;
 
     float trackWidthMeters = this->trackWidth * METERS;
     float motorConst = 0.175;
@@ -245,6 +247,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
     // NOTE: ASSUMES 6 MOTOR DRIVE ON BLUE CARTS
 	double force = motorConst / ((this->wheelDiameter * METERS) / 2);
 	double accel = (force * 6) / this->mass;
+    accel *= bruh;
 
 	double jerk = accel * 2;
 
@@ -255,15 +258,21 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
 
 	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
 
-    bezier::BezierSpline<3> bezierPath(waypoints);
+    std::vector<bezier::Point> waypointsMeters;
+
+    for (auto waypoint : waypoints) {
+        waypointsMeters.push_back({waypoint.x * METERS, waypoint.y * METERS});
+    }
+
+    bezier::BezierSpline<3> bezierPath(waypointsMeters);
 
     profileGenerator->generateProfile(bezierPath);
 
     RamseteController controller(2, 0.7);
     // in theory: 175
 
-    FeedforwardController ff(900, 130, 26.7);
-    PID pLoop(1.2, 0, 0);
+    FeedforwardController ff(900, 140, 26.7);
+    PID pLoop(1.5, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
@@ -274,9 +283,6 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
 
     float leftCurrentVelocity = 0;
     float rightCurrentVelocity = 0;
-
-    std::vector<std::pair<float, float>> coords;
-    std::vector<std::pair<float, float>> idealCoords;
 
     while (true) {
         auto loop_start = pros::micros();
@@ -291,8 +297,6 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
         // Convert chassis position to meters
         float x = pose.x * METERS;
         float y = pose.y * METERS;
-
-        idealCoords.push_back(std::make_pair(point.x, point.y));
 
         float adjustedTheta = pose.theta;
 
@@ -330,14 +334,10 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
         float leftError = leftVelocity - leftCurrentVelocity;
         float rightError = rightVelocity - rightCurrentVelocity;
 
-        // std::cout << leftError << ", " << rightError << std::endl;
-
         float acceleration = point.accel / METERS;
 
         float leftPower = ff.calculate(leftVelocity, acceleration) + pLoop.calculate(leftError);
         float rightPower = ff.calculate(rightVelocity, acceleration) + pLoop.calculate(rightError);
-
-        // std::cout << "0, 0, " << leftPower << ", " << rightPower << ", 0, 0, 0, 0, 0" << std::endl;
 
         if (!forwards) {
             leftPower *= -1;
@@ -357,12 +357,6 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
         if (sleep_time_ms > 0) {
             pros::delay(sleep_time_ms);
         }
-
-        coords.push_back(std::make_pair(x, y));
-    }
-
-    for (int i = 0; i < coords.size(); i++) {
-        // std::cout << coords[i].first << ", " << coords[i].second << ", " << idealCoords[i].first << ", " << idealCoords[i].second << std::endl;
     }
 
     // Stop motors after finishing the path or timeout
@@ -382,4 +376,8 @@ void Robot::set_arm_pistons(bool value) {
 void Robot::set_mogo(bool value) {
     mogo_left.set_value(value);
     mogo_left.set_value(value);
+}
+
+void Robot::intake(bool reverse) {
+    hooks.move(reverse ? -127 : 127);
 }
