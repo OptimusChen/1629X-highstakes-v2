@@ -230,8 +230,7 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 }
 
 #define METERS 0.0254
-
-#define BUFFER 50
+#define BUFFER 10
 
 const float LOOP_PERIOD_MS = 10;
 
@@ -262,10 +261,9 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
 
     RamseteController controller(2, 0.7);
     // in theory: 175
-    FeedforwardController ffLeft(1000, 300, 40);
-    FeedforwardController ffRight(1000, 300, 40);
-    PID leftPID(150, 0, 0);
-    PID rightPID(150, 0, 0);
+
+    FeedforwardController ff(900, 130, 26.7);
+    PID pLoop(1.2, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
@@ -312,38 +310,32 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
 
         if (!forwards) w = -w;
 
-        // float lt = odometry->get_left_encoder_travelled();
-        // float rt = odometry->get_right_encoder_travelled();
+        float lt = odometry->get_left_encoder_travelled();
+        float rt = odometry->get_right_encoder_travelled();
 
-        // float deltaLeft = lt - lastLeft;
-        // float deltaRight = rt - lastRight;
-        // lastLeft = lt;
-        // lastRight = rt;
-        // if (deltaLeft != 0) 
-        //     leftCurrentVelocity = deltaLeft / 0.01;
-        // if (deltaRight != 0) 
-        //     rightCurrentVelocity = deltaRight / 0.01;
+        float deltaLeft = lt - lastLeft;
+        float deltaRight = rt - lastRight;
+        lastLeft = lt;
+        lastRight = rt;
+        if (deltaLeft != 0) 
+            leftCurrentVelocity = deltaLeft / 0.01;
+        if (deltaRight != 0) 
+            rightCurrentVelocity = deltaRight / 0.01;
 
         float leftVelocity = (v - (w * trackWidth * 0.5));
         float rightVelocity = (v + (w * trackWidth * 0.5));
 
-        // // std::cout << leftVelocity << ", " << leftCurrentVelocity << ", " << rightVelocity << ", " << rightCurrentVelocity << std::endl;
+        std::cout << leftVelocity << ", " << leftCurrentVelocity << ", " << rightVelocity << ", " << rightCurrentVelocity << std::endl;
 
-        // float leftError = leftVelocity - leftCurrentVelocity;
-        // float rightError = rightVelocity - rightCurrentVelocity;
+        float leftError = leftVelocity - leftCurrentVelocity;
+        float rightError = rightVelocity - rightCurrentVelocity;
 
-        // // std::cout << leftError << ", " << rightError << std::endl;
+        // std::cout << leftError << ", " << rightError << std::endl;
 
-        // float acceleration = point.accel / METERS;
+        float acceleration = point.accel / METERS;
 
-        // float leftPower = ffLeft.calculate(leftVelocity, acceleration) + leftPID.calculate(leftError);
-        // float rightPower = ffRight.calculate(rightVelocity, acceleration) + rightPID.calculate(rightError);
-
-        float leftPower = leftVelocity * ((12000*pct)/(max_speed/METERS));
-        float rightPower = rightVelocity * ((12000*pct)/(max_speed/METERS));
-
-        leftPower *= pct;
-        rightPower *= pct;
+        float leftPower = ff.calculate(leftVelocity, acceleration) + pLoop.calculate(leftError);
+        float rightPower = ff.calculate(rightVelocity, acceleration) + pLoop.calculate(rightError);
 
         // std::cout << "0, 0, " << leftPower << ", " << rightPower << ", 0, 0, 0, 0, 0" << std::endl;
 
@@ -370,7 +362,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
     }
 
     for (int i = 0; i < coords.size(); i++) {
-        std::cout << coords[i].first << ", " << coords[i].second << ", " << idealCoords[i].first << ", " << idealCoords[i].second << std::endl;
+        // std::cout << coords[i].first << ", " << coords[i].second << ", " << idealCoords[i].first << ", " << idealCoords[i].second << std::endl;
     }
 
     // Stop motors after finishing the path or timeout

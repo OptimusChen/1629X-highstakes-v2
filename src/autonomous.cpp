@@ -2,13 +2,17 @@
 #include "lib/util.hpp"
 
 void bestautonfr::skills(Robot robot) {
+    // robot.turnToPoint(10, 10, 2000);
+    // robot.moveToPoint(10, 10, 2000);
+    // robot.moveToPoint(0, 0, 2000, false);
     // robot.turnToHeading(180, 500);
     // robot.turnToHeading(90, 500);
     
     // robot.set_pose_mode(MCL);
 
+    // robot.ramsete({{0, 0}, {0, 2}, {0, 0}, {0, 2}}, 1, true);
     // left
-    robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}}, 1, true);
+    robot.ramsete({{0, 0}, {0, 1}, {1, 0}, {1, 1}, {1, 1}, {1, 2}, {0.5, 1.1}, {0, 1.2}}, 1, true);
     // right
     // robot.ramsete({{0, 0}, {0, 0.5}, {0, 0.5}, {0.5, 0.5}}, 0.5, true);
     // robot.moveToPoint(0, 24, 2000);

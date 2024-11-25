@@ -78,8 +78,6 @@ void Odom::update() {
         parallelTravel = get_left_encoder_travelled();
     }
 
-    // std::cout << parallelTravel << std::endl;
-
     // calculate the change in sensor values
     float deltaTheta = recordedTheta - prevTheta;
 
@@ -98,8 +96,8 @@ void Odom::update() {
     float deltaX = 0;
     float deltaY = 0;
 
-    deltaX = parallelTravel - prevParallel;
     deltaY = perpendicularTravel - prevPerpendicular;
+    deltaX = parallelTravel - prevParallel;
     
     prevParallel = parallelTravel;
     prevPerpendicular = perpendicularTravel;
@@ -112,13 +110,13 @@ void Odom::update() {
         localY = deltaY;
     } else {
         localX = 2 * sin(deltaHeading / 2) * (deltaX / deltaHeading + (encoders ? 0 : perpendicular->offset));
-        localY = 2 * sin(deltaHeading / 2) * (deltaY / deltaHeading + (encoders ? -(trackWidth / 2) : parallel->offset));
+        localY = 2 * sin(deltaHeading / 2) * (deltaY / deltaHeading + (encoders ? (trackWidth / 2) : parallel->offset));
     }
 
     // calculate global x and y
     // std::cout << localX << ", " << localY << ", " << avgHeading << std::endl;
     x += localY * sin(avgHeading);
-    y += localY * -cos(avgHeading);
+    y += localY * cos(avgHeading);
     x += localX * cos(avgHeading);
     y += localX * sin(avgHeading);
     theta = heading;
