@@ -5,5 +5,5 @@
 using namespace lib;
 
 namespace bestautonfr {
-    void skills(Robot robot);
+    void skills(Robot* robot);
 }

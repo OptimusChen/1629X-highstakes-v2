@@ -15,6 +15,12 @@ using namespace pros;
 #define ODOM 0
 #define MCL 1
 
+struct MPConstraint {
+    float speed;
+    float accel;
+    int unit;
+};
+
 namespace lib {
     class Robot {
         public:
@@ -26,7 +32,7 @@ namespace lib {
             PID* lateral;
             PID* angular;
 
-            loco::ParticleFilter<150> particleFilter;
+            loco::ParticleFilter<150>* particleFilter;
 
             int poseMode = ODOM;
 
@@ -35,7 +41,7 @@ namespace lib {
             void set_pose(float x, float y, float theta, bool radians=false);
             Pose get_pose();
             void calibrate();
-            void set_pf(loco::ParticleFilter<150> particleFilter);
+            void set_pf(loco::ParticleFilter<150>* particleFilter);
             void set_pose_mode(int mde);
 
             float wheelDiameter;
@@ -50,7 +56,7 @@ namespace lib {
             void turnToHeading(float heading, int timeout);
             void turnToPoint(float x, float y, int timeout);
             void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false);
-            void ramsete(std::vector<bezier::Point>, float pct = 1.0, bool forwards=true);
+            void ramsete(std::vector<bezier::Point>, MPConstraint constraint, bool forwards=true);
 
             void set_arm_pistons(bool value);
             void set_mogo(bool value);

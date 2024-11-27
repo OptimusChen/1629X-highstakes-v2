@@ -39,29 +39,42 @@ Pose Odom::get_pose() {
 }
 
 constexpr float DRIVE_RATIO = 48.0/36.0; // EX: 36 tooth driving gear to 48 tooth driven gear.
-constexpr double DRIVETRAIN_TUNING_SCALAR = 1; // Tuning variable to make sure distance matches
 constexpr float WHEEL_RADIUS = 2.75/2.0; // Wheel radius
 
 int ti = 2;
 
 float Odom::get_right_encoder_travelled() {
-    float totalPosition = 0.0;
-
-    for (double position : right->get_position_all()) {
-        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI * DRIVETRAIN_TUNING_SCALAR * WHEEL_RADIUS;
+    std::vector<pros::MotorGears> gearsets = this->right->get_gearing_all();
+    std::vector<double> positions = this->right->get_position_all();
+    std::vector<float> distances;
+    for (int i = 0; i < this->right->size(); i++) {
+        float in;
+        switch (gearsets[i]) {
+            case pros::MotorGears::red: in = 100; break;
+            case pros::MotorGears::green: in = 200; break;
+            case pros::MotorGears::blue: in = 600; break;
+            default: in = 200; break;
+        }
+        distances.push_back(positions[i] * (WHEEL_RADIUS * 2 * M_PI) * (rpm / in));
     }
-
-    return totalPosition/right->size();
+    return util::avg(distances);
 }
 
 float Odom::get_left_encoder_travelled() {
-    float totalPosition = 0.0;
-
-    for (double position : left->get_position_all()) {
-        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI * DRIVETRAIN_TUNING_SCALAR * WHEEL_RADIUS;
+    std::vector<pros::MotorGears> gearsets = this->left->get_gearing_all();
+    std::vector<double> positions = this->left->get_position_all();
+    std::vector<float> distances;
+    for (int i = 0; i < this->left->size(); i++) {
+        float in;
+        switch (gearsets[i]) {
+            case pros::MotorGears::red: in = 100; break;
+            case pros::MotorGears::green: in = 200; break;
+            case pros::MotorGears::blue: in = 600; break;
+            default: in = 200; break;
+        }
+        distances.push_back(positions[i] * (WHEEL_RADIUS * 2 * M_PI) * (rpm / in));
     }
-
-    return totalPosition/left->size();
+    return util::avg(distances);
 }
 
 void Odom::update() {

@@ -28,7 +28,7 @@ using namespace pros::c;
 using namespace controls;
 using namespace lib;
 
-#define TRACK_WIDTH 11.5
+#define TRACK_WIDTH 13.5
 
 Controller master(E_CONTROLLER_MASTER);
 
@@ -72,18 +72,19 @@ constexpr Angle ANGLE_NOISE = 8_deg; // The noise on the angle that's desired
 Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
 
 Angle angle() {
-    return Angle(fmod(robot.get_pose().theta + (M_PI / 2), (2 * M_PI)));
+    float angle = fmod(robot.get_pose().theta - (M_PI / 2), (2 * M_PI));
+    if (angle < 0) angle = 2 * M_PI + angle;
 
-    // Invert the angle into the loco coordinate system
-    const Angle angle = -imu.get_rotation() * degree;
-
-    // Check to make sure the angle isn't nan, if it is it can cause issues in the position change calculations
-    return isfinite(angle.getValue()) ? angle : 0.0;
+    return Angle(angle);
 }
 
-loco::DistanceSensorModel rightDistance(Eigen::Vector3f((-3.75_in).getValue(), (-5.75_in).getValue(), (270_deg).getValue()), right_dist);
-loco::DistanceSensorModel leftDistance(Eigen::Vector3f((-3.25_in).getValue(), (5.75_in).getValue(), (90_deg).getValue()), left_dist);
-loco::DistanceSensorModel backDistance(Eigen::Vector3f((-4.375_in).getValue(), (5.25_in).getValue(), (180_deg).getValue()), back_dist);
+// loco::DistanceSensorModel rightDistance(Eigen::Vector3f((-3.75_in).getValue(), (-5.75_in).getValue(), (270_deg).getValue()), right_dist);
+// loco::DistanceSensorModel leftDistance(Eigen::Vector3f((-3.25_in).getValue(), (5.75_in).getValue(), (90_deg).getValue()), left_dist);
+// loco::DistanceSensorModel backDistance(Eigen::Vector3f((-4.375_in).getValue(), (5.25_in).getValue(), (180_deg).getValue()), back_dist);
+
+loco::DistanceSensorModel rightDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (270_deg).getValue()), right_dist);
+loco::DistanceSensorModel leftDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (90_deg).getValue()), left_dist);
+loco::DistanceSensorModel backDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (180_deg).getValue()), back_dist);
 
 loco::ParticleFilter<150> particleFilter(angle);
 std::ranlux24_base de;
@@ -113,8 +114,8 @@ void initialize() {
 	robot.calibrate();
     robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 0.3);
 
-    // robot.set_pose(-60, 0, 0);
-    robot.set_pose(0, 0, 90);
+    robot.set_pose(-60, 0, 0);
+    // robot.set_pose(0, 0, 90);
 
     // robot.set_pose_mode(MCL);
     // robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 1}, {0, 0.5}, {0, 1}}, true);
@@ -124,11 +125,10 @@ void initialize() {
 		while (true) {	
             auto pose = robot.get_pose();
 
-			pros::lcd::print(0, "x: %f", pose.x * METERS); // print the x position
-			pros::lcd::print(1, "y: %f", pose.y * METERS); // print the y position
-			pros::lcd::print(2, "x: %f", pose.x); // print the x position
-			pros::lcd::print(3, "y: %f", pose.y); // print the y position
-			pros::lcd::print(4, "heading: %f", pose.theta); // print the heading
+			pros::lcd::print(0, "x: %f", pose.x); // print the x position
+			pros::lcd::print(1, "y: %f", pose.y); // print the y position
+			pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
+			pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the heading
 			pros::delay(10);
 		}
 	}};
@@ -137,7 +137,15 @@ void initialize() {
     particleFilter.addSensor(&rightDistance);
     particleFilter.addSensor(&backDistance);
 
-    particleFilter.initUniform(-70_in, -70_in, 70_in, 70_in);
+    // particleFilter.initUniform(-70_in, -70_in, 70_in, 70_in);
+
+    Eigen::Vector2f mean(0 * inch.Convert(metre), 60 * inch.Convert(metre)); // Example values for mean.
+
+    Eigen::Matrix2f covariance;
+    covariance << 0.2f, 0.0f,
+                0.0f, 0.2f;
+
+    particleFilter.initNormal(mean, covariance, false);
 
     pros::Task locoTask = pros::Task([&]() {
         uint32_t start_time = 0;
@@ -182,8 +190,10 @@ void initialize() {
             pros::c::task_delay_until(&start_time, 10);
         }
     });
+
+    robot.set_pf(&particleFilter);
    	
-    bestautonfr::skills(robot);
+    bestautonfr::skills(&robot);
 }
 
 void disabled() {}

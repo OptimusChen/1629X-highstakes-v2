@@ -38,10 +38,10 @@ void Robot::set_pose_mode(int mode) {
 
 Pose Robot::get_pose() {
     if (this->poseMode == MCL) {
-        auto pred = particleFilter.getPrediction();
+        auto pred = particleFilter->getPrediction();
         float cartesianX = -pred.y() * metre.Convert(inch);
         float cartesianY = -pred.x() * metre.Convert(inch);
-        return Pose(cartesianX, cartesianY, odometry->get_pose().theta);
+        return Pose(cartesianX, cartesianY, odometry->get_pose().theta, true);
     }
     return odometry->get_pose();
 }
@@ -51,10 +51,6 @@ void Robot::calibrate() {
 
     odometry->start();
 }
-
-// void Robot::set_velocityController(VelocityController vel) {
-//     this->vel = vel;
-// }
 
 void Robot::set_constants(float wheelDiameter, int rpm, float mass, float trackWidth, float friction_coef) {
     this->wheelDiameter = wheelDiameter;
@@ -233,28 +229,30 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
 #define METERS 0.0254
 
-const float bruh = 1;
 const float LOOP_PERIOD_MS = 10;
 
-void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwards) {
-    float max_speed = ((this->rpm / 60.0f) * (M_PI * this->wheelDiameter * METERS));
+/*
+# Assuming you have a VEX motor object called "motor" and its wheel radius is 0.025 meters
 
-    max_speed *= pct * bruh;
+motor_rpm = motor.get_velocity()  # Get motor RPM from encoder data
 
-    float trackWidthMeters = this->trackWidth * METERS;
-    float motorConst = 0.175;
+linear_velocity_m_s = (motor_rpm * 2 * math.pi) / 60 * 0.025 
 
-    // NOTE: ASSUMES 6 MOTOR DRIVE ON BLUE CARTS
-	double force = motorConst / ((this->wheelDiameter * METERS) / 2);
-	double accel = (force * 6) / this->mass;
-    accel *= bruh;
+print("Linear velocity:", linear_velocity_m_s, "m/s") 
 
-	double jerk = accel * 2;
+*/
 
+void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constraint, bool forwards) {
 	const double delta_d = 0.01;
+    float trackWidthMeters = this->trackWidth * METERS;
+
+    if (constraint.unit == INCH) {
+        constraint.speed = constraint.speed * METERS;
+        constraint.accel = constraint.accel * METERS;
+    }
 
 	// Test Motion Profile
-	auto constraints = new Constraints(max_speed, accel, this->friction_coef, accel, jerk, trackWidthMeters);
+	auto constraints = new Constraints(constraint.speed, constraint.accel, this->friction_coef, constraint.accel, 2*constraint.accel, trackWidthMeters);
 
 	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
 
@@ -271,8 +269,8 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
     RamseteController controller(2, 0.7);
     // in theory: 175
 
-    FeedforwardController ff(900, 140, 26.7);
-    PID pLoop(1.5, 0, 0);
+    FeedforwardController ff(900, 150, 20);
+    PID pLoop(10, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
@@ -364,7 +362,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, float pct, bool forwar
     right->move(0);
 }
 
-void Robot::set_pf(loco::ParticleFilter<150> particleFilter) {
+void Robot::set_pf(loco::ParticleFilter<150>* particleFilter) {
     this->particleFilter = particleFilter;
 }
 
