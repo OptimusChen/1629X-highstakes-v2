@@ -40,7 +40,7 @@ Pose Robot::get_pose() {
     if (this->poseMode == MCL) {
         auto pred = particleFilter->getPrediction();
         float cartesianX = -pred.y() * metre.Convert(inch);
-        float cartesianY = -pred.x() * metre.Convert(inch);
+        float cartesianY = pred.x() * metre.Convert(inch);
         return Pose(cartesianX, cartesianY, odometry->get_pose().theta, true);
     }
     return odometry->get_pose();
@@ -267,20 +267,15 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
     profileGenerator->generateProfile(bezierPath);
 
     RamseteController controller(2, 0.7);
-    // in theory: 175
 
-    FeedforwardController ff(900, 150, 20);
-    PID pLoop(10, 0, 0);
+    FeedforwardController ffLeft(900, 115, 13);
+    PID pLoopLeft(0, 0, 0);
+    FeedforwardController ffRight(900, 105, 13);
+    PID pLoopRight(0, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
     int path_index = 0;
-
-    float lastLeft = odometry->get_left_encoder_travelled();
-    float lastRight = odometry->get_right_encoder_travelled();
-
-    float leftCurrentVelocity = 0;
-    float rightCurrentVelocity = 0;
 
     while (true) {
         auto loop_start = pros::micros();
@@ -312,30 +307,22 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 
         if (!forwards) w = -w;
 
-        float lt = odometry->get_left_encoder_travelled();
-        float rt = odometry->get_right_encoder_travelled();
-
-        float deltaLeft = lt - lastLeft;
-        float deltaRight = rt - lastRight;
-        lastLeft = lt;
-        lastRight = rt;
-        if (deltaLeft != 0) 
-            leftCurrentVelocity = deltaLeft / 0.01;
-        if (deltaRight != 0) 
-            rightCurrentVelocity = deltaRight / 0.01;
+        float leftCurrentVelocity = (left->get_actual_velocity() * 2 * M_PI) / 60 * (wheelDiameter / 2);
+        float rightCurrentVelocity = (right->get_actual_velocity() * 2 * M_PI) / 60 * (wheelDiameter / 2);
 
         float leftVelocity = (v - (w * trackWidth * 0.5));
         float rightVelocity = (v + (w * trackWidth * 0.5));
+
+        float acceleration = point.accel / METERS;
+        float angularAcceleration = acceleration * point.curvature;
 
         std::cout << leftVelocity << ", " << leftCurrentVelocity << ", " << rightVelocity << ", " << rightCurrentVelocity << std::endl;
 
         float leftError = leftVelocity - leftCurrentVelocity;
         float rightError = rightVelocity - rightCurrentVelocity;
 
-        float acceleration = point.accel / METERS;
-
-        float leftPower = ff.calculate(leftVelocity, acceleration) + pLoop.calculate(leftError);
-        float rightPower = ff.calculate(rightVelocity, acceleration) + pLoop.calculate(rightError);
+        float leftPower = ffLeft.calculate(leftVelocity, acceleration - angularAcceleration) + pLoopLeft.calculate(leftError);
+        float rightPower = ffRight.calculate(rightVelocity, acceleration + angularAcceleration) + pLoopRight.calculate(rightError);
 
         if (!forwards) {
             leftPower *= -1;
@@ -362,7 +349,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
     right->move(0);
 }
 
-void Robot::set_pf(loco::ParticleFilter<150>* particleFilter) {
+void Robot::set_pf(loco::ParticleFilter<PARTICLES>* particleFilter) {
     this->particleFilter = particleFilter;
 }
 

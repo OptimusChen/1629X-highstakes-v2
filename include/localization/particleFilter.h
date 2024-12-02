@@ -6,6 +6,7 @@
 
 #include <random>
 #include <algorithm>
+#include <iostream>
 
 #include "config.h"
 
@@ -30,7 +31,6 @@ namespace loco {
          */
         std::array<std::array<float, 2>, L> particles;
         std::array<std::array<float, 2>, L> oldParticles;
-        std::array<float, L> weights;
 
         Eigen::Vector3f prediction{};
 
@@ -48,6 +48,8 @@ namespace loco {
         std::uniform_real_distribution<> fieldDist{-1.78308, 1.78308};
 
     public:
+        std::array<float, L> weights;
+
         explicit ParticleFilter(std::function<Angle()> angle_function)
             : angleFunction(std::move(angle_function)) {
             for (auto &&particle: particles) {
@@ -119,6 +121,7 @@ namespace loco {
 
                 for (const auto sensor: sensors) {
                     if (auto weight = sensor->p(particle); weight.has_value() && isfinite(weight.value())) {
+                        // std::cout << i << " " << sensor << ": " << weight.value() << std::endl;
                         weights[i] = weights[i] * weight.value();
                     }
                 }
@@ -198,6 +201,12 @@ namespace loco {
 
         void addSensor(SensorModel *sensor) {
             this->sensors.emplace_back(sensor);
+        }
+
+        void printsensors() {
+            for (auto sensor : sensors) {
+                std::cout << sensor << std::endl;
+            }
         }
 
         Angle getAngle() {

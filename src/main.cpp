@@ -28,7 +28,7 @@ using namespace pros::c;
 using namespace controls;
 using namespace lib;
 
-#define TRACK_WIDTH 13.5
+#define TRACK_WIDTH 11.5
 
 Controller master(E_CONTROLLER_MASTER);
 
@@ -57,14 +57,11 @@ PID angular(
 	1 // derivative gain (kD)
 );
 
-// VelocityController vel(&robot, 0.01, 1, 0.01, 0.1);
-
 Distance left_dist(L_DISTANCE);
 Distance right_dist(R_DISTANCE);
 Distance back_dist(B_DISTANCE);
 
 constexpr float DRIVE_RATIO = 48.0/36.0; // EX: 36 tooth driving gear to 48 tooth driven gear.
-constexpr double DRIVETRAIN_TUNING_SCALAR = 1; // Tuning variable to make sure distance matches
 constexpr QLength WHEEL_RADIUS = 2.75_in/2.0; // Wheel radius
 constexpr float DRIVE_NOISE = 0.35; // The desired amount in % of noise on the drive
 constexpr Angle ANGLE_NOISE = 8_deg; // The noise on the angle that's desired
@@ -74,19 +71,19 @@ Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
 Angle angle() {
     float angle = fmod(robot.get_pose().theta - (M_PI / 2), (2 * M_PI));
     if (angle < 0) angle = 2 * M_PI + angle;
-
-    return Angle(angle);
+    
+    return angle * radian;
 }
 
-// loco::DistanceSensorModel rightDistance(Eigen::Vector3f((-3.75_in).getValue(), (-5.75_in).getValue(), (270_deg).getValue()), right_dist);
-// loco::DistanceSensorModel leftDistance(Eigen::Vector3f((-3.25_in).getValue(), (5.75_in).getValue(), (90_deg).getValue()), left_dist);
-// loco::DistanceSensorModel backDistance(Eigen::Vector3f((-4.375_in).getValue(), (5.25_in).getValue(), (180_deg).getValue()), back_dist);
+loco::DistanceSensorModel rightDistance(Eigen::Vector3f((-3.75_in).getValue(), (-5.75_in).getValue(), (270_deg).getValue()), right_dist);
+loco::DistanceSensorModel leftDistance(Eigen::Vector3f((-3.25_in).getValue(), (5.75_in).getValue(), (90_deg).getValue()), left_dist);
+loco::DistanceSensorModel backDistance(Eigen::Vector3f((-4.375_in).getValue(), (5.25_in).getValue(), (180_deg).getValue()), back_dist);
 
-loco::DistanceSensorModel rightDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (270_deg).getValue()), right_dist);
-loco::DistanceSensorModel leftDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (90_deg).getValue()), left_dist);
-loco::DistanceSensorModel backDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (180_deg).getValue()), back_dist);
+// loco::DistanceSensorModel rightDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (270_deg).getValue()), right_dist);
+// loco::DistanceSensorModel leftDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (90_deg).getValue()), left_dist);
+// loco::DistanceSensorModel backDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (180_deg).getValue()), back_dist);
 
-loco::ParticleFilter<150> particleFilter(angle);
+loco::ParticleFilter<PARTICLES> particleFilter(angle);
 std::ranlux24_base de;
 
 #define BLUE 0
@@ -101,8 +98,7 @@ QLength getDistance(const pros::MotorGroup& motor) {
     QLength totalPosition = 0.0;
 
     for (double position : motor.get_position_all()) {
-        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI
-           * DRIVETRAIN_TUNING_SCALAR * WHEEL_RADIUS;
+        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI * WHEEL_RADIUS;
     }
 
     return totalPosition/motor.size();
@@ -112,10 +108,10 @@ void initialize() {
 	pros::lcd::initialize();
 
 	robot.calibrate();
-    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 0.3);
+    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 0.5);
 
-    robot.set_pose(-60, 0, 0);
-    // robot.set_pose(0, 0, 90);
+    // robot.set_pose(-60, 0, 0);
+    robot.set_pose(0, 0, 90);
 
     // robot.set_pose_mode(MCL);
     // robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 1}, {0, 0.5}, {0, 1}}, true);
@@ -129,6 +125,14 @@ void initialize() {
 			pros::lcd::print(1, "y: %f", pose.y); // print the y position
 			pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
 			pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the heading
+
+            // int i = 0;
+
+            // for (auto p : robot.particleFilter->getParticles()) {
+            //     std::cout << "Particle " << i << ": " << robot.particleFilter->weights[i] << " " << p.x() * metre.Convert(inch) << ", " << p.y() * metre.Convert(inch) << std::endl;
+            //     i++;
+            // }
+
 			pros::delay(10);
 		}
 	}};
@@ -137,13 +141,17 @@ void initialize() {
     particleFilter.addSensor(&rightDistance);
     particleFilter.addSensor(&backDistance);
 
+    std::cout << "left: " << &leftDistance << std::endl;
+    std::cout << "right: " << &rightDistance << std::endl;
+    std::cout << "back: " << &backDistance << std::endl;
+
     // particleFilter.initUniform(-70_in, -70_in, 70_in, 70_in);
 
     Eigen::Vector2f mean(0 * inch.Convert(metre), 60 * inch.Convert(metre)); // Example values for mean.
 
     Eigen::Matrix2f covariance;
-    covariance << 0.2f, 0.0f,
-                0.0f, 0.2f;
+    covariance << 0.1f, 0.0f,
+                0.0f, 0.1f;
 
     particleFilter.initNormal(mean, covariance, false);
 

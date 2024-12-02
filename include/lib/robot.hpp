@@ -15,6 +15,8 @@ using namespace pros;
 #define ODOM 0
 #define MCL 1
 
+#define PARTICLES 50
+
 struct MPConstraint {
     float speed;
     float accel;
@@ -32,7 +34,7 @@ namespace lib {
             PID* lateral;
             PID* angular;
 
-            loco::ParticleFilter<150>* particleFilter;
+            loco::ParticleFilter<PARTICLES>* particleFilter;
 
             int poseMode = ODOM;
 
@@ -41,7 +43,7 @@ namespace lib {
             void set_pose(float x, float y, float theta, bool radians=false);
             Pose get_pose();
             void calibrate();
-            void set_pf(loco::ParticleFilter<150>* particleFilter);
+            void set_pf(loco::ParticleFilter<PARTICLES>* particleFilter);
             void set_pose_mode(int mde);
 
             float wheelDiameter;

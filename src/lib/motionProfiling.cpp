@@ -203,7 +203,7 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
         startPoint.curvature, currentTime, startPoint.vel, startPoint.accel
     ));
 
-    float interpolatedVel = 0.;
+    float interpolatedVel = 0.0;
 
     // Iterate through the distance-based profile and calculate fixed time steps
     for (size_t i = 1; i < distanceBasedProfile.size(); i++) {
@@ -222,7 +222,7 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
             // Interpolate position, velocity, and acceleration
             float ratio = t / segmentDuration;
             float newInterp = last.vel + ratio * (current.vel - last.vel);
-            float interpolatedAccel = (newInterp - interpolatedVel) / dt;  // Acceleration is constant within this segment
+            float interpolatedAccel = (newInterp - interpolatedVel) / dt;
             interpolatedVel = newInterp;
 
             // Interpolate position (for x, y, theta, curvature)
@@ -234,13 +234,13 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
             // Add the interpolated point to the time-based profile
             profile.push_back(ProfilePoint(
                 interpolatedX, interpolatedY, interpolatedTheta,
-                interpolatedCurvature, currentTime, (((i == (distanceBasedProfile.size() - 1)) && ((t + dt) > segmentDuration)) ? 0 : interpolatedVel), interpolatedAccel
+                interpolatedCurvature, currentTime, (((i == (distanceBasedProfile.size() - 1)) && ((t + dt) > segmentDuration)) ? 0 : interpolatedVel), a
             ));
         }
     }
 
     for (auto p : profile) {
-		std::cout << p.x << ", " << p.y << ", " << p.theta << ", " << p.vel << ", " << (p.vel*p.curvature) << ", " << (p.t) << std::endl;
+		std::cout << p.x << ", " << p.y << ", " << p.accel << ", " << p.vel << ", " << (p.vel*p.curvature) << ", " << (p.t) << std::endl;
 	}
     //? Removing this loop slows down code????
 }
