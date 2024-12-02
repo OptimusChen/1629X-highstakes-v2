@@ -6,7 +6,7 @@ MPConstraint slow{30, 150, INCH};
 
 void bestautonfr::skills(Robot* robot) {
     // robot->ramsete({{0, 0}, {0, 60}, {0, 0}, {0, 60}}, fast);
-    robot->ramsete({{0, 0}, {0, 40}, {0, 40}, {40, 40}}, fast);
+    robot->ramsete({{0, 0}, {0, 40}, {40, 0}, {40, 40}}, fast);
     return;
 
     robot->set_pose_mode(MCL);

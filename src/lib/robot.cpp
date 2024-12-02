@@ -268,14 +268,17 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 
     RamseteController controller(2, 0.7);
 
-    FeedforwardController ffLeft(900, 115, 13);
-    PID pLoopLeft(0, 0, 0);
-    FeedforwardController ffRight(900, 105, 13);
-    PID pLoopRight(0, 0, 0);
+    FeedforwardController ffLeft(900, 110, 13);
+    PID pLoopLeft(20, 0, 0);
+    FeedforwardController ffRight(900, 110, 13);
+    PID pLoopRight(20, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
     int path_index = 0;
+
+    float llv = 0;
+    float lrv = 0;
 
     while (true) {
         auto loop_start = pros::micros();
@@ -313,16 +316,19 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         float leftVelocity = (v - (w * trackWidth * 0.5));
         float rightVelocity = (v + (w * trackWidth * 0.5));
 
-        float acceleration = point.accel / METERS;
-        float angularAcceleration = acceleration * point.curvature;
+        float leftAcceleration = (leftVelocity - llv) / 0.01;
+        float rightAcceleration = (rightVelocity - lrv) / 0.01;
+
+        llv = leftVelocity;
+        lrv = rightVelocity;
 
         std::cout << leftVelocity << ", " << leftCurrentVelocity << ", " << rightVelocity << ", " << rightCurrentVelocity << std::endl;
 
         float leftError = leftVelocity - leftCurrentVelocity;
         float rightError = rightVelocity - rightCurrentVelocity;
 
-        float leftPower = ffLeft.calculate(leftVelocity, acceleration - angularAcceleration) + pLoopLeft.calculate(leftError);
-        float rightPower = ffRight.calculate(rightVelocity, acceleration + angularAcceleration) + pLoopRight.calculate(rightError);
+        float leftPower = ffLeft.calculate(leftVelocity, leftAcceleration) + pLoopLeft.calculate(leftError);
+        float rightPower = ffRight.calculate(rightVelocity, rightAcceleration) + pLoopRight.calculate(rightError);
 
         if (!forwards) {
             leftPower *= -1;
