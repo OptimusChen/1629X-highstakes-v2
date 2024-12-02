@@ -34,7 +34,7 @@ std::pair<float, float> RamseteController::calculate(float currentX, float curre
 
     float ex = local_error[0];
     float ey = local_error[1];
-    float et = util::no_big_angles_pls(local_error[2]);
+    double et = util::no_big_angles_pls(local_error[2]);
 
     // Gain factor (unit: 1/sec)
     float k = 2 * zeta * std::sqrt(std::pow(wd, 2) + b * std::pow(vd, 2));
@@ -43,7 +43,12 @@ std::pair<float, float> RamseteController::calculate(float currentX, float curre
     float v = vd * std::cos(et) + k * ex;
 
     // Angular velocity (unit: rad/s)
-    float w = wd + k * et + (b * vd * std::sin(et) * ey) / et;
+    float w;
+    if (std::abs(et) < 1e-6) {
+        w = wd + k * et + (b * vd * ey);
+    } else {
+        w = wd + k * et + (b * vd * std::sin(et) * ey) / et;
+    }
 
     return {v, w};
 }

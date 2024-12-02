@@ -268,10 +268,10 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 
     RamseteController controller(2, 0.7);
 
-    FeedforwardController ffLeft(900, 110, 13);
-    PID pLoopLeft(20, 0, 0);
-    FeedforwardController ffRight(900, 110, 13);
-    PID pLoopRight(20, 0, 0);
+    FeedforwardController ffLeft(900, 110, 10);
+    PID pLoopLeft(100, 0, 0);
+    FeedforwardController ffRight(900, 110, 10);
+    PID pLoopRight(100, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
@@ -308,6 +308,8 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         // convert back to inches
         v /= METERS;
 
+        std::cout << x << ", " << y << ", " << adjustedTheta << ", " << point.x << ", " << point.y << ", " << point.theta << ", " << point.vel << ", " << (point.vel * point.curvature) << ", " << v << ", " << w << std::endl;
+
         if (!forwards) w = -w;
 
         float leftCurrentVelocity = (left->get_actual_velocity() * 2 * M_PI) / 60 * (wheelDiameter / 2);
@@ -322,7 +324,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         llv = leftVelocity;
         lrv = rightVelocity;
 
-        std::cout << leftVelocity << ", " << leftCurrentVelocity << ", " << rightVelocity << ", " << rightCurrentVelocity << std::endl;
+        // std::cout << leftVelocity << ", " << leftCurrentVelocity << ", " << rightVelocity << ", " << rightCurrentVelocity << std::endl;
 
         float leftError = leftVelocity - leftCurrentVelocity;
         float rightError = rightVelocity - rightCurrentVelocity;
@@ -346,7 +348,9 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         // Calculate the remaining time to sleep to maintain the desired loop period
         double sleep_time_ms = LOOP_PERIOD_MS - duration_loop;
         if (sleep_time_ms > 0) {
-            pros::delay(sleep_time_ms);
+            pros::delay(std::round(sleep_time_ms));
+        } else {
+            std::cout << "negative time" << std::endl;
         }
     }
 
