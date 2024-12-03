@@ -269,9 +269,9 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
     RamseteController controller(2, 0.7);
 
     FeedforwardController ffLeft(900, 110, 10);
-    PID pLoopLeft(100, 0, 0);
+    PID pLoopLeft(200, 0, 0);
     FeedforwardController ffRight(900, 110, 10);
-    PID pLoopRight(100, 0, 0);
+    PID pLoopRight(200, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
@@ -308,7 +308,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         // convert back to inches
         v /= METERS;
 
-        std::cout << x << ", " << y << ", " << adjustedTheta << ", " << point.x << ", " << point.y << ", " << point.theta << ", " << point.vel << ", " << (point.vel * point.curvature) << ", " << v << ", " << w << std::endl;
+        // std::cout << x << ", " << y << ", " << adjustedTheta << ", " << point.x << ", " << point.y << ", " << point.theta << ", " << point.vel << ", " << (point.vel * point.curvature) << ", " << v << ", " << w << std::endl;
 
         if (!forwards) w = -w;
 
@@ -324,7 +324,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         llv = leftVelocity;
         lrv = rightVelocity;
 
-        // std::cout << leftVelocity << ", " << leftCurrentVelocity << ", " << rightVelocity << ", " << rightCurrentVelocity << std::endl;
+        std::cout << leftVelocity << ", " << leftCurrentVelocity << ", " << rightVelocity << ", " << rightCurrentVelocity << std::endl;
 
         float leftError = leftVelocity - leftCurrentVelocity;
         float rightError = rightVelocity - rightCurrentVelocity;
