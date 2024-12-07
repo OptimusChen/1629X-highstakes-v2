@@ -114,7 +114,7 @@ void Robot::turnToHeading(float target_angle, int timeout) {
         turnToHeading(util::get_angle_to_target(pose.x, pose.y, x, y), timeout);
     }
 
-void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnFirst) {
+void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnFirst, int maxSpeed) {
     // Reset the PID controllers for lateral and angular control
     lateral->reset();
     angular->reset();
@@ -200,10 +200,10 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         float right_motor_speed = moveOut - turnOut;
 
         // Clamp motor speeds to the maximum allowed speed
-        left_motor_speed = util::clamp(left_motor_speed, -127, 127);
-        right_motor_speed = util::clamp(right_motor_speed, -127, 127);
+        left_motor_speed = util::clamp(left_motor_speed, -maxSpeed, maxSpeed);
+        right_motor_speed = util::clamp(right_motor_speed, -maxSpeed, maxSpeed);
 
-        const float ratio = std::max(std::fabs(left_motor_speed), std::fabs(right_motor_speed)) / 127;
+        const float ratio = std::max(std::fabs(left_motor_speed), std::fabs(right_motor_speed)) / maxSpeed;
         if (ratio > 1) {
             left_motor_speed /= ratio;
             right_motor_speed /= ratio;
@@ -231,16 +231,13 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
 const float LOOP_PERIOD_MS = 10;
 
-/*
-# Assuming you have a VEX motor object called "motor" and its wheel radius is 0.025 meters
+// void Robot::ramseteFile(std::string path, MPConstraint constraint, bool forwards=true) {
+//     this->ramsete(util::parseBezierControlPoints(path), constraint, forwards);
+// }
 
-motor_rpm = motor.get_velocity()  # Get motor RPM from encoder data
-
-linear_velocity_m_s = (motor_rpm * 2 * math.pi) / 60 * 0.025 
-
-print("Linear velocity:", linear_velocity_m_s, "m/s") 
-
-*/
+// void Robot::ramseteString(std::string path, MPConstraint constraint, bool forwards=true) {
+//     this->ramsete(util::parseControlPointsFromString(path), constraint, forwards);
+// }
 
 void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constraint, bool forwards) {
 	const double delta_d = 0.01;
@@ -370,9 +367,13 @@ void Robot::set_arm_pistons(bool value) {
 
 void Robot::set_mogo(bool value) {
     mogo_left.set_value(value);
-    mogo_left.set_value(value);
+    mogo_right.set_value(value);
 }
 
 void Robot::intake(bool reverse) {
     hooks.move(reverse ? -127 : 127);
+}
+
+void Robot::stop_intake() {
+    hooks.move(0);
 }

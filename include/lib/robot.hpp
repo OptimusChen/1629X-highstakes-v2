@@ -3,7 +3,6 @@
 #include "pose.hpp"
 #include "odometry/odom.hpp"
 #include "lib/controller/pid.hpp"
-#include "lib/controller/velocityController.hpp"
 #include "lib/bezier.h"
 #include "pros/motor_group.hpp"
 #include "pros/adi.hpp"
@@ -57,11 +56,14 @@ namespace lib {
             // movement stuff
             void turnToHeading(float heading, int timeout);
             void turnToPoint(float x, float y, int timeout);
-            void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false);
+            void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false, int maxSpeed = 127);
             void ramsete(std::vector<bezier::Point>, MPConstraint constraint, bool forwards=true);
+            // void ramseteString(std::string path, MPConstraint constraint, bool forwards=true);
+            // void ramseteFile(std::string path, MPConstraint constraint, bool forwards=true);
 
             void set_arm_pistons(bool value);
             void set_mogo(bool value);
             void intake(bool reverse);
+            void stop_intake();
     };
 }

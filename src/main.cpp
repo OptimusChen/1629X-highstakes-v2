@@ -20,7 +20,6 @@
 #include "lib/util.hpp"
 #include "lib/robot.hpp"
 #include "lib/controller/pid.hpp"
-#include "lib/controller/velocityController.hpp"
 #include "autonomous.hpp"
 
 using namespace pros;
@@ -110,7 +109,7 @@ void initialize() {
 	robot.calibrate();
     robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 0.3);
 
-    robot.set_pose(-60, 0, 0);
+    robot.set_pose(-63, 0, 0);
     // robot.set_pose(0, 0, 90);
 
     // robot.set_pose_mode(MCL);
@@ -266,8 +265,6 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
         [&](bool firstActivation) {
-            // leftArm.move(100);
-            // rightArm.move(100);
             armTarget += 1;
         },
         [&]() {

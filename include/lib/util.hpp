@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <vector>
+#include <string>
+#include "lib/bezier.h"
 
 #define METERS 0.0254
 
@@ -16,4 +18,6 @@ namespace util {
     int sign(double value);
     float cheap_norm_pdf(const float x);
     float avg(std::vector<float> values);
+    std::vector<bezier::Point> parseBezierControlPoints(const std::string& filePath);
+    std::vector<bezier::Point> parseControlPointsFromString(const std::string& jsonString);
 }
