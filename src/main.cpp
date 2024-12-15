@@ -222,14 +222,14 @@ void opcontrol() {
 	auto arm_right = ADIDigitalOut(ARM_PISTON_RIGHT);
     auto corner_arm = ADIDigitalOut(DOINKER);
     auto lift_intake = ADIDigitalOut(INTAKE_LIFT);
-    bool mogoActive = true;
-    bool armActive = true;
+    bool mogoActive = false;
+    bool armActive = false;
 
     bool loading = false;
     bool reverse_intake = false;
     bool stop_intake = false;
     bool holding_ring = false;
-    bool color_sort = true;
+    bool color_sort = false;
 
     motor_set_gearing(HOOKS, E_MOTOR_GEAR_BLUE);
 

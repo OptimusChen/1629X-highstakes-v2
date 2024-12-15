@@ -23,6 +23,11 @@ struct MPConstraint {
 };
 
 namespace lib {
+    enum Direction {
+        FORWARDS,
+        BACKWARDS
+    };
+
     class Robot {
         public:
             Odom* odometry;
@@ -57,7 +62,7 @@ namespace lib {
             void turnToHeading(float heading, int timeout);
             void turnToPoint(float x, float y, int timeout);
             void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false, int maxSpeed = 127);
-            void ramsete(std::vector<bezier::Point>, MPConstraint constraint, bool forwards=true);
+            void ramsete(std::vector<bezier::Point>, MPConstraint constraint, Direction direction = Direction::FORWARDS);
             // void ramseteString(std::string path, MPConstraint constraint, bool forwards=true);
             // void ramseteFile(std::string path, MPConstraint constraint, bool forwards=true);
 

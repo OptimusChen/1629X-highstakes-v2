@@ -231,17 +231,10 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
 const float LOOP_PERIOD_MS = 10;
 
-// void Robot::ramseteFile(std::string path, MPConstraint constraint, bool forwards=true) {
-//     this->ramsete(util::parseBezierControlPoints(path), constraint, forwards);
-// }
-
-// void Robot::ramseteString(std::string path, MPConstraint constraint, bool forwards=true) {
-//     this->ramsete(util::parseControlPointsFromString(path), constraint, forwards);
-// }
-
-void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constraint, bool forwards) {
+void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constraint, Direction direction) {
 	const double delta_d = 0.01;
     float trackWidthMeters = this->trackWidth * METERS;
+    bool backwards = direction == Direction::BACKWARDS;
 
     if (constraint.unit == INCH) {
         constraint.speed = constraint.speed * METERS;
@@ -293,7 +286,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 
         float adjustedTheta = pose.theta;
 
-        if (!forwards) {
+        if (backwards) {
             adjustedTheta = fmod(adjustedTheta + M_PI, 2 * M_PI);  // Adjust by π for reverse            
         }
 
@@ -307,7 +300,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 
         // std::cout << x << ", " << y << ", " << adjustedTheta << ", " << point.x << ", " << point.y << ", " << point.theta << ", " << point.vel << ", " << (point.vel * point.curvature) << ", " << v << ", " << w << std::endl;
 
-        if (!forwards) w = -w;
+        if (backwards) w = -w;
 
         float leftCurrentVelocity = (left->get_actual_velocity() * 2 * M_PI) / 60 * (wheelDiameter / 2);
         float rightCurrentVelocity = (right->get_actual_velocity() * 2 * M_PI) / 60 * (wheelDiameter / 2);
@@ -329,7 +322,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         float leftPower = ffLeft.calculate(leftVelocity, leftAcceleration) + pLoopLeft.calculate(leftError);
         float rightPower = ffRight.calculate(rightVelocity, rightAcceleration) + pLoopRight.calculate(rightError);
 
-        if (!forwards) {
+        if (backwards) {
             leftPower *= -1;
             rightPower *= -1;
         }
