@@ -192,7 +192,7 @@ void initialize() {
 
                 // Calculate the translation with the sensor readings
                 return Eigen::Rotation2Df(angle) * Eigen::Vector2f({noisy, 0.0});
-            });
+            }, pros::millis() * millisecond);
 
             pros::c::task_delay_until(&start_time, 10);
         }

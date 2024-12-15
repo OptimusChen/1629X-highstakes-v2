@@ -221,6 +221,7 @@ constexpr QVolume mile3 = mile2 * mile;
 // Predefined time-derived units:
 constexpr QTime second(1.0);                        // SI base unit
 constexpr QTime millisecond = second / 1000;
+constexpr QTime microsecond = millisecond / 1000;
 constexpr QTime minute = 60 * second;
 constexpr QTime hour = 60 * minute;
 constexpr QTime day = 24 * hour;

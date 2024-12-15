@@ -82,12 +82,10 @@ namespace loco {
             return {this->particles[i][0], this->particles[i][1], angleFunction().getValue()};
         }
 
-        void update(const std::function<Eigen::Vector2f()> &predictionFunction) {
+        void update(const std::function<Eigen::Vector2f()> &predictionFunction, QTime now) {
             if (!isfinite(angleFunction().getValue())) {
                 return;
             }
-
-            auto start = pros::micros();
 
             const Angle angle = angleFunction();
 
@@ -99,7 +97,7 @@ namespace loco {
 
             distanceSinceUpdate += predictionFunction().norm();
 
-            if (distanceSinceUpdate < maxDistanceSinceUpdate && maxUpdateInterval > pros::millis() * millisecond) {
+            if (distanceSinceUpdate < maxDistanceSinceUpdate && maxUpdateInterval > now) {
                 return;
             }
 
@@ -170,7 +168,7 @@ namespace loco {
 
             prediction = Eigen::Vector3f(xSum / static_cast<float>(L), ySum / static_cast<float>(L), angle.getValue());
 
-            lastUpdateTime = pros::millis() * millisecond;
+            lastUpdateTime = now;
             distanceSinceUpdate = 0.0;
         }
 
@@ -197,6 +195,11 @@ namespace loco {
                 particle[0] = xDistribution(de);
                 particle[1] = yDistribution(de);
             }
+        }
+
+        const std::vector<SensorModel *> &getSensors() const
+        {
+            return sensors;
         }
 
         void addSensor(SensorModel *sensor) {
