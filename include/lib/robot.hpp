@@ -14,7 +14,7 @@ using namespace pros;
 #define ODOM 0
 #define MCL 1
 
-#define PARTICLES 50
+#define PARTICLES 400
 
 struct MPConstraint {
     float speed;

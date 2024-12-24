@@ -109,8 +109,8 @@ void initialize() {
 	robot.calibrate();
     robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 0.3);
 
-    robot.set_pose(-63, 0, 0);
-    // robot.set_pose(0, 0, 90);
+    // robot.set_pose(-63, 0, 0);
+    robot.set_pose(0, 0, 90);
 
     // robot.set_pose_mode(MCL);
     // robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 1}, {0, 0.5}, {0, 1}}, true);
@@ -200,7 +200,7 @@ void initialize() {
 
     robot.set_pf(&particleFilter);
    	
-    bestautonfr::skills(&robot);
+    // bestautonfr::skills(&robot);
 }
 
 void disabled() {}
@@ -216,10 +216,7 @@ float get_rotation_degrees(Rotation rot) {
 }
 
 void opcontrol() {
-	auto mogo_left = ADIDigitalOut(MOGO_LEFT);
-	auto mogo_right = ADIDigitalOut(MOGO_RIGHT);
-	auto arm_left = ADIDigitalOut(ARM_PISTON_LEFT);
-	auto arm_right = ADIDigitalOut(ARM_PISTON_RIGHT);
+	auto mogo = ADIDigitalOut(MOGO);
     auto corner_arm = ADIDigitalOut(DOINKER);
     auto lift_intake = ADIDigitalOut(INTAKE_LIFT);
     bool mogoActive = false;
@@ -238,34 +235,30 @@ void opcontrol() {
     std::unordered_set<controller_digital_e_t> held;
 
     // arm
-    Motor leftArm(-LEFT_ARM, MotorGears::green);
-    Motor rightArm(RIGHT_ARM, MotorGears::green);
+    Motor leftArm(ARM_LEFT, MotorGears::green);
+    Motor rightArm(-ARM_RIGHT, MotorGears::green);
 
     Optical optical(OPTICAL);
     optical.set_led_pwm(100);
 
-    Rotation leftRotation(-LEFT_ROTATION);
-    Rotation rightRotation(-RIGHT_ROTATION);
+    Rotation rotation(LB_ROTATION);
 
-    PID leftLift(1.5, 0, 0.1);
-    PID rightLift(1.5, 0, 0.1);
+    PID liftPID(1.5, 0, 0.1);
 
-    leftLift.reset();
-    rightLift.reset();
+    liftPID.reset();
 
-    leftRotation.reset();
-    rightRotation.reset();
-    leftRotation.reset_position();
-    rightRotation.reset_position();
+    rotation.reset();
+    rotation.reset_position();
 
     float REST_LOAD = 0;
-    float SCORE = 300;
+    float SCORE = 18;
 
     float armTarget = REST_LOAD;
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
         [&](bool firstActivation) {
-            armTarget += 1;
+            leftArm.move(127);
+            rightArm.move(127);
         },
         [&]() {
             armTarget = SCORE;
@@ -278,8 +271,6 @@ void opcontrol() {
         }, 
         [&]() {
             armTarget = REST_LOAD;
-
-            lift_intake.set_value(false);
         }
     ));
 
@@ -287,38 +278,8 @@ void opcontrol() {
 
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_RIGHT, [&]() {
         mogoActive = !mogoActive;
-        mogo_left.set_value(mogoActive);
-        mogo_right.set_value(mogoActive);
+        mogo.set_value(mogoActive);
     });
-
-    toggle_controls.emplace(E_CONTROLLER_DIGITAL_LEFT, [&]() {
-        armActive = !armActive;
-        arm_left.set_value(armActive);
-        arm_right.set_value(armActive);
-    });
-
-    hold_controls.emplace(E_CONTROLLER_DIGITAL_Y, std::make_pair(
-        [&](bool firstActivation) {
-            loading = true;
-            color_sort = false;
-
-            arm_left.set_value(false);
-            arm_right.set_value(false);
-        },
-        [&]() {
-            loading = false;
-            color_sort = true;
-            stop_intake = false;
-            if (holding_ring) {
-                armActive = true;
-                armTarget = SCORE;
-
-                lift_intake.set_value(true);
-                arm_left.set_value(armActive);
-                arm_right.set_value(armActive);
-            }
-        }
-    ));
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R1, std::make_pair(
         [&](bool firstActivation) {
@@ -327,7 +288,7 @@ void opcontrol() {
                 return;
             }
 
-            int power = loading ? 80 : 127;
+            int power = loading ? 80 : -127;
 
             // std::cout << power << ", " << reverse_intake << ", " << stop_intake << std::endl;
 
@@ -340,7 +301,7 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R2, std::make_pair(
         [&](bool firstActivation) {
-            motor_move(HOOKS, -127);
+            motor_move(HOOKS, 127);
         },
         [&]() {
             motor_brake(HOOKS);
@@ -357,11 +318,10 @@ void opcontrol() {
         lib::opcontrol::arcade(robot, leftY, rightX);
 
         // if arm PID is enabled recalculate the error and set voltage based off PID output
-        float leftPower = leftLift.calculate(armTarget - get_rotation_degrees(leftRotation));
-        float rightPower = rightLift.calculate(armTarget - get_rotation_degrees(rightRotation));
+        float liftPower = liftPID.calculate(armTarget - get_rotation_degrees(rotation));
 
-        leftArm.move(leftPower);
-        rightArm.move(rightPower);
+        leftArm.move(liftPower);
+        rightArm.move(liftPower);
 
         for (auto control : toggle_controls) {
             if (master.get_digital_new_press(control.first) && !held.contains(control.first)) {
@@ -398,21 +358,6 @@ void opcontrol() {
                 delay(100);
                 reverse_intake = false;
             }};   
-        }
-
-        if (loading) { 
-            if (optical.get_proximity() > 100) {
-                if (!holding_ring) {
-                    motor_move(HOOKS, -50);
-                    delay(50);
-                    motor_brake(HOOKS);
-
-                    stop_intake = true;
-                    holding_ring = true;
-                }
-            } else {
-                holding_ring = false;
-            }
         }
         
         double battery = battery_get_capacity();

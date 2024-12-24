@@ -11,10 +11,7 @@
 
 using namespace lib;
 
-ADIDigitalOut arm_left(ARM_PISTON_LEFT);
-ADIDigitalOut arm_right(ARM_PISTON_RIGHT);
-ADIDigitalOut mogo_left(MOGO_LEFT);
-ADIDigitalOut mogo_right(MOGO_RIGHT);
+ADIDigitalOut mogo(MOGO);
 
 Motor hooks(HOOKS);
 
@@ -259,9 +256,9 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
     RamseteController controller(2, 0.7);
 
     FeedforwardController ffLeft(900, 110, 10);
-    PID pLoopLeft(200, 0, 0);
+    PID pLoopLeft(150, 0, 0);
     FeedforwardController ffRight(900, 110, 10);
-    PID pLoopRight(200, 0, 0);
+    PID pLoopRight(150, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
@@ -270,13 +267,34 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
     float llv = 0;
     float lrv = 0;
 
+    int start_time = pros::millis();
+
     while (true) {
-        auto loop_start = pros::micros();
+        auto loop_start = pros::millis();
 
-        if (path_index >= path.size()) break;
+        float current_time = (loop_start - start_time) / 1000.0; // Convert to seconds
 
-        // Get target point from the motion path
-        ProfilePoint point = path[path_index];
+        if (current_time > path.back().t) break;
+
+        // Find the two points surrounding the current time
+        ProfilePoint point1(0, 0);
+        ProfilePoint point2(0, 0);
+        for (size_t i = 0; i < path.size() - 1; ++i) {
+            if (path[i].t <= current_time && path[i + 1].t > current_time) {
+                point1 = path[i];
+                point2 = path[i + 1];
+                break;
+            }
+        }
+
+        // Linearly interpolate to get the target point
+        float alpha = (current_time - point1.t) / (point2.t - point1.t);
+        ProfilePoint target(0, 0);
+        target.x = point1.x + alpha * (point2.x - point1.x);
+        target.y = point1.y + alpha * (point2.y - point1.y);
+        target.theta = point1.theta + alpha * (point2.theta - point1.theta);
+        target.vel = point1.vel + alpha * (point2.vel - point1.vel);
+        target.curvature = point1.curvature + alpha * (point2.curvature - point1.curvature);
 
         Pose pose = get_pose();
 
@@ -291,7 +309,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         }
 
         // Calculate left and right motor power using Ramsete controller
-        auto [v, w] = controller.calculate(x, y, adjustedTheta, point.x, point.y, point.theta, point.vel, point.vel * point.curvature);
+        auto [v, w] = controller.calculate(x, y, adjustedTheta, target.x, target.y, target.theta, target.vel, target.vel * target.curvature);
 
 		// std::cout << x << ", " << y << ", " << adjustedTheta << ", " << v << ", " << w << ", " << (point.t) << std::endl;
  
@@ -332,16 +350,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 
         path_index++;
 
-        float duration_loop = pros::micros() - loop_start;
-        duration_loop /= 1000.0f;
-
-        // Calculate the remaining time to sleep to maintain the desired loop period
-        double sleep_time_ms = LOOP_PERIOD_MS - duration_loop;
-        if (sleep_time_ms > 0) {
-            pros::delay(std::round(sleep_time_ms));
-        } else {
-            std::cout << "negative time" << std::endl;
-        }
+        pros::c::task_delay_until(&loop_start, 10);
     }
 
     // Stop motors after finishing the path or timeout
@@ -354,13 +363,10 @@ void Robot::set_pf(loco::ParticleFilter<PARTICLES>* particleFilter) {
 }
 
 void Robot::set_arm_pistons(bool value) {
-    arm_left.set_value(value);
-    arm_right.set_value(value);
 }
 
 void Robot::set_mogo(bool value) {
-    mogo_left.set_value(value);
-    mogo_right.set_value(value);
+    mogo.set_value(value);
 }
 
 void Robot::intake(bool reverse) {

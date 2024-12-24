@@ -9,20 +9,21 @@
 #include "localization/distance.h"
 
 #define L_DRIVE_FRONT 12
-#define L_DRIVE_MID 14
-#define L_DRIVE_BACK 3
+#define L_DRIVE_MID 11
+#define L_DRIVE_BACK 20
 
-#define R_DRIVE_FRONT 11
-#define R_DRIVE_MID 13
-#define R_DRIVE_BACK 2
+#define R_DRIVE_FRONT 2
+#define R_DRIVE_MID 1
+#define R_DRIVE_BACK 10
 
-#define HOOKS 1
+#define HOOKS 15
 
-#define R_DISTANCE 4
-#define L_DISTANCE 8
-#define B_DISTANCE 10
+#define R_DISTANCE 8
+#define L_DISTANCE 18
+#define B_DISTANCE 4
+#define F_DISTANCE 3
 
-#define OPTICAL 20
+#define OPTICAL 21
 
 #define ARM_PISTON_LEFT 5
 #define ARM_PISTON_RIGHT 1
@@ -31,22 +32,18 @@
 
 #define DOINKER 0
 
-#define MOGO_LEFT 2
-#define MOGO_RIGHT 4
+#define MOGO 8
 
-#define MOGO 0
 #define CORNER_ARM 0
 
 #define VERTICAL 10
 #define HORIZONTAL 21
 
-#define INERTIAL_PORT 7
+#define INERTIAL_PORT 13
 
-#define LEFT_ROTATION 5
-#define RIGHT_ROTATION 15
-
-#define LEFT_ARM 6
-#define RIGHT_ARM 9
+#define LB_ROTATION 5
+#define ARM_LEFT 14
+#define ARM_RIGHT 6
 
 using namespace pros;
 
