@@ -23,7 +23,7 @@
 #define B_DISTANCE 4
 #define F_DISTANCE 3
 
-#define OPTICAL 21
+#define OPTICAL 17
 
 #define ARM_PISTON_LEFT 5
 #define ARM_PISTON_RIGHT 1

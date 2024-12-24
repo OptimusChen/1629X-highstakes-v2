@@ -4,8 +4,7 @@
 #include "paths.hpp"
 #include "controls.hpp"
 
-MPConstraint fast{60, 150, INCH};
-MPConstraint slow{30, 150, INCH};
+MPConstraint fast{60, 200, INCH};
 
 float ret(Rotation rot) {
     float measure = rot.get_angle() / 100.0f;
@@ -14,25 +13,11 @@ float ret(Rotation rot) {
 }
 
 void bestautonfr::skills(Robot* robot) {
-     robot->ramsete({
-        {0, 0}, {0, 40}, {40, 0}, {40, 40}
-    }, fast);
-
-    return;
-
-    // robot->set_pose_mode(MCL);
+    robot->set_pose_mode(MCL);
 
     pros::delay(3000);
-    pros::delay(3000);
 
-    robot->intake(false);
-
-    robot->ramsete({
-        {-58.82, -0.01}, {-42.86, 0.23}, {-45.48, -10.24}, {-45.48, -18.11}, 
-        {-45.48, -18.11}, {-45.48, -25.99}, {-40.48, -22.99}, {-23.57, -23.83}, 
-        {-23.57, -23.83}, {-6.66, -24.66}, {10.49, -37.64}, {10.25, -44.31}, 
-        {10.25, -44.31}, {10.01, -50.98}, {-29.05, -47.65}, {-58.82, -47.17}
-    }, fast);
+    robot->ramsete({{60.00, 0.00}, {5.632, 0}, {58.51, -39.64}, {58.51, -47.52}}, fast);
 
     // pros::delay(3000);
 

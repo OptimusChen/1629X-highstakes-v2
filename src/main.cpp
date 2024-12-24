@@ -74,13 +74,10 @@ Angle angle() {
     return angle * radian;
 }
 
-loco::DistanceSensorModel rightDistance(Eigen::Vector3f((-3.75_in).getValue(), (-5.75_in).getValue(), (270_deg).getValue()), right_dist);
-loco::DistanceSensorModel leftDistance(Eigen::Vector3f((-3.25_in).getValue(), (5.75_in).getValue(), (90_deg).getValue()), left_dist);
-loco::DistanceSensorModel backDistance(Eigen::Vector3f((-4.375_in).getValue(), (5.25_in).getValue(), (180_deg).getValue()), back_dist);
-
-// loco::DistanceSensorModel rightDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (270_deg).getValue()), right_dist);
-// loco::DistanceSensorModel leftDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (90_deg).getValue()), left_dist);
-// loco::DistanceSensorModel backDistance(Eigen::Vector3f((0_in).getValue(), (0_in).getValue(), (180_deg).getValue()), back_dist);
+loco::DistanceSensorModel rightDistance(Eigen::Vector3f((-3_in).getValue(), (-3.5_in).getValue(), (270_deg).getValue()), right_dist);
+loco::DistanceSensorModel leftDistance(Eigen::Vector3f((-3_in).getValue(), (3.5_in).getValue(), (90_deg).getValue()), left_dist);
+loco::DistanceSensorModel backDistance(Eigen::Vector3f((0_in).getValue(), (-6_in).getValue(), (180_deg).getValue()), back_dist);
+loco::DistanceSensorModel frontDistance(Eigen::Vector3f((-2_in).getValue(), (-6_in).getValue(), (0_deg).getValue()), back_dist);
 
 loco::ParticleFilter<PARTICLES> particleFilter(angle);
 std::ranlux24_base de;
@@ -89,7 +86,7 @@ std::ranlux24_base de;
 #define RED 1
 #define NONE -1
 
-int color = RED;
+int color = BLUE;
 
 QLength lastLeft, lastRight;
 
@@ -107,14 +104,9 @@ void initialize() {
 	pros::lcd::initialize();
 
 	robot.calibrate();
-    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 0.3);
+    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 0.5);
 
-    // robot.set_pose(-63, 0, 0);
-    robot.set_pose(0, 0, 90);
-
-    // robot.set_pose_mode(MCL);
-    // robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 1}, {0, 0.5}, {0, 1}}, true);
-    // robot.ramsete({{0, 0}, {0, 0.5}, {0.5, 0}, {0.5, 0.5}}, true);
+    robot.set_pose(60, 0, 180);
 
     Task trackingTask = Task {[&] {
 		while (true) {	
@@ -125,13 +117,6 @@ void initialize() {
 			pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
 			pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the heading
 
-            // int i = 0;
-
-            // for (auto p : robot.particleFilter->getParticles()) {
-            //     std::cout << "Particle " << i << ": " << robot.particleFilter->weights[i] << " " << p.x() * metre.Convert(inch) << ", " << p.y() * metre.Convert(inch) << std::endl;
-            //     i++;
-            // }
-
 			pros::delay(10);
 		}
 	}};
@@ -139,14 +124,13 @@ void initialize() {
     particleFilter.addSensor(&leftDistance);
     particleFilter.addSensor(&rightDistance);
     particleFilter.addSensor(&backDistance);
+    particleFilter.addSensor(&frontDistance);
 
     std::cout << "left: " << &leftDistance << std::endl;
     std::cout << "right: " << &rightDistance << std::endl;
     std::cout << "back: " << &backDistance << std::endl;
 
-    // particleFilter.initUniform(-70_in, -70_in, 70_in, 70_in);
-
-    Eigen::Vector2f mean(0 * inch.Convert(metre), 60 * inch.Convert(metre)); // Example values for mean.
+    Eigen::Vector2f mean(robot.get_pose().y * inch.Convert(metre), -robot.get_pose().x * inch.Convert(metre)); // Example values for mean.
 
     Eigen::Matrix2f covariance;
     covariance << 0.1f, 0.0f,
@@ -200,7 +184,7 @@ void initialize() {
 
     robot.set_pf(&particleFilter);
    	
-    // bestautonfr::skills(&robot);
+    bestautonfr::skills(&robot);
 }
 
 void disabled() {}
@@ -226,7 +210,7 @@ void opcontrol() {
     bool reverse_intake = false;
     bool stop_intake = false;
     bool holding_ring = false;
-    bool color_sort = false;
+    bool color_sort = true;
 
     motor_set_gearing(HOOKS, E_MOTOR_GEAR_BLUE);
 
@@ -290,8 +274,6 @@ void opcontrol() {
 
             int power = loading ? 80 : -127;
 
-            // std::cout << power << ", " << reverse_intake << ", " << stop_intake << std::endl;
-
             motor_move(HOOKS, reverse_intake ? -power : power);
         },
         [&]() {
@@ -344,19 +326,24 @@ void opcontrol() {
         // std::cout << opticalMeasure.red << ", " << opticalMeasure.green << ", " << opticalMeasure.blue << std::endl;
         // std::cout << optical.get_proximity() << std::endl;
 
-        if (color == BLUE && opticalMeasure.red > 300.0f && !reverse_intake && color_sort) {
-            // std::cout << "story" << std::endl;
-            reverse_intake = true;
+        if (color == BLUE && opticalMeasure.red > 150.0f && !reverse_intake && color_sort) {
+            color_sort = false;
             Task {[&] {
                 delay(100);
+                reverse_intake = true;
+                delay(100);
                 reverse_intake = false;
-            }};
+                color_sort = true;
+            }};   
         }
-        if (color == RED && opticalMeasure.blue > 200.0f && !reverse_intake && color_sort) {
-            reverse_intake = true;
+        if (color == RED && opticalMeasure.blue > 100.0f && !reverse_intake && color_sort) {
+            color_sort = false;
             Task {[&] {
                 delay(100);
+                reverse_intake = true;
+                delay(100);
                 reverse_intake = false;
+                color_sort = true;
             }};   
         }
         
@@ -383,9 +370,9 @@ void opcontrol() {
 
         temperatureSum = 0.0;
 
-        master.print(0, 0, "Battery: %.0f%c", battery, 37);
+        // master.print(0, 0, "Battery: %.0f%c", battery, 37);
         // pros::delay(0.1);
-        // master.print(1, 0, "Temps: %.0f°C", averageTemperature);
+        master.print(0, 0, "Temps: %.0f°C", averageTemperature);
         // pros::delay(0.1);
         // master.print(2, 0, "Port %d: %.0f°C", hotspotPort, hotspot);
 
