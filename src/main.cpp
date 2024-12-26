@@ -44,7 +44,7 @@ MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorG
 Odom odom(450, 2.75, TRACK_WIDTH, &left_motor_group, &right_motor_group, &imu);
 
 PID linear(	
-        5, // kP
+        10, // kP
         0.02, // kI
         0.1 // kD
 );
@@ -104,10 +104,9 @@ void initialize() {
 	pros::lcd::initialize();
 
 	robot.calibrate();
-    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 0.5);
+    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 1);
 
-    robot.set_pose(60, 0, 180);
-
+    robot.set_pose(-60, 0, 0);
     Task trackingTask = Task {[&] {
 		while (true) {	
             auto pose = robot.get_pose();
@@ -210,7 +209,7 @@ void opcontrol() {
     bool reverse_intake = false;
     bool stop_intake = false;
     bool holding_ring = false;
-    bool color_sort = true;
+    bool color_sort = false;
 
     motor_set_gearing(HOOKS, E_MOTOR_GEAR_BLUE);
 
@@ -372,7 +371,7 @@ void opcontrol() {
 
         // master.print(0, 0, "Battery: %.0f%c", battery, 37);
         // pros::delay(0.1);
-        master.print(0, 0, "Temps: %.0f°C", averageTemperature);
+        master.print(0, 0, "Intake: %.0f°C", motor_get_temperature(HOOKS));
         // pros::delay(0.1);
         // master.print(2, 0, "Port %d: %.0f°C", hotspotPort, hotspot);
 

@@ -255,10 +255,10 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 
     RamseteController controller(2, 0.7);
 
-    FeedforwardController ffLeft(900, 110, 10);
-    PID pLoopLeft(150, 0, 0);
-    FeedforwardController ffRight(900, 110, 10);
-    PID pLoopRight(150, 0, 0);
+    FeedforwardController ffLeft(900, 130, 10);
+    PID pLoopLeft(200, 0, 0);
+    FeedforwardController ffRight(900, 130, 10);
+    PID pLoopRight(200, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
@@ -332,7 +332,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         llv = leftVelocity;
         lrv = rightVelocity;
 
-        std::cout << leftVelocity << ", " << leftCurrentVelocity << ", " << rightVelocity << ", " << rightCurrentVelocity << std::endl;
+        // std::cout << leftVelocity << ", " << leftCurrentVelocity << ", " << rightVelocity << ", " << rightCurrentVelocity << std::endl;
 
         float leftError = leftVelocity - leftCurrentVelocity;
         float rightError = rightVelocity - rightCurrentVelocity;
@@ -370,7 +370,7 @@ void Robot::set_mogo(bool value) {
 }
 
 void Robot::intake(bool reverse) {
-    hooks.move(reverse ? -127 : 127);
+    hooks.move(reverse ? 127 : -127);
 }
 
 void Robot::stop_intake() {

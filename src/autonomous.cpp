@@ -4,7 +4,8 @@
 #include "paths.hpp"
 #include "controls.hpp"
 
-MPConstraint fast{60, 200, INCH};
+MPConstraint fast{64, 300, INCH};
+MPConstraint huh{64, 200, INCH};
 
 float ret(Rotation rot) {
     float measure = rot.get_angle() / 100.0f;
@@ -13,11 +14,38 @@ float ret(Rotation rot) {
 }
 
 void bestautonfr::skills(Robot* robot) {
-    robot->set_pose_mode(MCL);
+    robot->intake(false);
 
-    pros::delay(3000);
+    delay(1000);
 
-    robot->ramsete({{60.00, 0.00}, {5.632, 0}, {58.51, -39.64}, {58.51, -47.52}}, fast);
+    robot->stop_intake();
+
+    robot->set_pose_mode(MCL);  
+
+    pros::delay(250);
+
+    robot->moveToPoint(-47, robot->get_pose().y, 750, true, false);
+
+    robot->turnToHeading(90, 500);
+    robot->moveToPoint(robot->get_pose().x, -25, 1500, false, false, 60);
+
+    robot->set_mogo(true);
+    
+    robot->intake(false);
+
+    robot->ramsete({
+        {-46.34, -25.72}, {-48.10, -12.46}, {14.55, -38.70}, {11.60, -51.21}, 
+        {11.60, -51.21}, {8.06, -66.20}, {-3.46, -38.70}, {-48.95, -46.09}, 
+        {-48.95, -46.09}, {-67.40, -49.09}, {-57.99, -64.19}, {-30.00, -58.60}
+    }, huh);
+
+    robot->moveToPoint(-60, -60, 1000, false, false, 60);
+
+    robot->set_mogo(false);
+
+    delay(5000);
+
+    // robot->ramsete({{60.00, 0.00}, {5.632, 0}, {58.51, -39.64}, {58.51, -47.52}}, fast);
 
     // pros::delay(3000);
 
