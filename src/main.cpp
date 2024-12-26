@@ -1,5 +1,4 @@
 #include "main.h"
-#include "arm.hpp"
 #include "controls.hpp"
 #include "lib/bezier.h"
 #include "lib/opcontrol.hpp"
@@ -19,8 +18,11 @@
 #include "lib/odometry/odom.hpp"
 #include "lib/util.hpp"
 #include "lib/robot.hpp"
+#include "lib/subsystem.hpp"
 #include "lib/controller/pid.hpp"
 #include "autonomous.hpp"
+#include "intake.hpp"
+#include "arm.hpp"
 
 using namespace pros;
 using namespace pros::c;
@@ -182,8 +184,10 @@ void initialize() {
     });
 
     robot.set_pf(&particleFilter);
+    robot.add_subsystem(new Intake());
+    robot.add_subsystem(new Arm());
    	
-    bestautonfr::skills(&robot);
+    // bestautonfr::skills(&robot);
 }
 
 void disabled() {}
@@ -199,61 +203,37 @@ float get_rotation_degrees(Rotation rot) {
 }
 
 void opcontrol() {
+    for (Subsystem* subsystem : robot.subsystems) {
+        subsystem->initialize();
+    }
+
+    Intake* intake = robot.get_subsystem<Intake>();
+    Arm* arm = robot.get_subsystem<Arm>();
+
 	auto mogo = ADIDigitalOut(MOGO);
     auto corner_arm = ADIDigitalOut(DOINKER);
     auto lift_intake = ADIDigitalOut(INTAKE_LIFT);
     bool mogoActive = false;
-    bool armActive = false;
-
-    bool loading = false;
-    bool reverse_intake = false;
-    bool stop_intake = false;
-    bool holding_ring = false;
-    bool color_sort = false;
-
-    motor_set_gearing(HOOKS, E_MOTOR_GEAR_BLUE);
 
     std::unordered_map<controller_digital_e_t, std::function<void()>> toggle_controls;
     std::unordered_map<controller_digital_e_t, std::pair<std::function<void(bool)>, std::function<void()>>> hold_controls;
     std::unordered_set<controller_digital_e_t> held;
 
-    // arm
-    Motor leftArm(ARM_LEFT, MotorGears::green);
-    Motor rightArm(-ARM_RIGHT, MotorGears::green);
-
-    Optical optical(OPTICAL);
-    optical.set_led_pwm(100);
-
-    Rotation rotation(LB_ROTATION);
-
-    PID liftPID(1.5, 0, 0.1);
-
-    liftPID.reset();
-
-    rotation.reset();
-    rotation.reset_position();
-
-    float REST_LOAD = 0;
-    float SCORE = 18;
-
-    float armTarget = REST_LOAD;
-
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
         [&](bool firstActivation) {
-            leftArm.move(127);
-            rightArm.move(127);
+            arm->move(127);
         },
         [&]() {
-            armTarget = SCORE;
+            arm->set_target(SCORE);
         }
     ));
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L2, std::make_pair(
         [&](bool firstActivation) {
-            armTarget = REST_LOAD;
+            arm->set_target(REST_LOAD);
         }, 
         [&]() {
-            armTarget = REST_LOAD;
+            arm->set_target(REST_LOAD);
         }
     ));
 
@@ -266,26 +246,19 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R1, std::make_pair(
         [&](bool firstActivation) {
-            if (stop_intake) {
-                motor_brake(HOOKS);
-                return;
-            }
-
-            int power = loading ? 80 : -127;
-
-            motor_move(HOOKS, reverse_intake ? -power : power);
+            intake->forwards();
         },
         [&]() {
-            motor_brake(HOOKS);
+            intake->stop();
         }
     ));
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R2, std::make_pair(
         [&](bool firstActivation) {
-            motor_move(HOOKS, 127);
+            intake->backwards();
         },
         [&]() {
-            motor_brake(HOOKS);
+            intake->stop();
         }
     ));
 
@@ -293,16 +266,11 @@ void opcontrol() {
         int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-        // move the robot
-		// soon tm
-        // auton::arcade(leftY, rightX);
         lib::opcontrol::arcade(robot, leftY, rightX);
 
-        // if arm PID is enabled recalculate the error and set voltage based off PID output
-        float liftPower = liftPID.calculate(armTarget - get_rotation_degrees(rotation));
-
-        leftArm.move(liftPower);
-        rightArm.move(liftPower);
+        for (Subsystem* subsystem : robot.subsystems) {
+            subsystem->update();
+        }
 
         for (auto control : toggle_controls) {
             if (master.get_digital_new_press(control.first) && !held.contains(control.first)) {
@@ -320,32 +288,6 @@ void opcontrol() {
             }
         }
 
-        auto opticalMeasure = optical.get_rgb();
-        
-        // std::cout << opticalMeasure.red << ", " << opticalMeasure.green << ", " << opticalMeasure.blue << std::endl;
-        // std::cout << optical.get_proximity() << std::endl;
-
-        if (color == BLUE && opticalMeasure.red > 150.0f && !reverse_intake && color_sort) {
-            color_sort = false;
-            Task {[&] {
-                delay(100);
-                reverse_intake = true;
-                delay(100);
-                reverse_intake = false;
-                color_sort = true;
-            }};   
-        }
-        if (color == RED && opticalMeasure.blue > 100.0f && !reverse_intake && color_sort) {
-            color_sort = false;
-            Task {[&] {
-                delay(100);
-                reverse_intake = true;
-                delay(100);
-                reverse_intake = false;
-                color_sort = true;
-            }};   
-        }
-        
         double battery = battery_get_capacity();
 
         auto drivetrainMotors = {L_DRIVE_FRONT, L_DRIVE_MID, L_DRIVE_BACK, R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK};
@@ -369,11 +311,7 @@ void opcontrol() {
 
         temperatureSum = 0.0;
 
-        // master.print(0, 0, "Battery: %.0f%c", battery, 37);
-        // pros::delay(0.1);
         master.print(0, 0, "Intake: %.0f°C", motor_get_temperature(HOOKS));
-        // pros::delay(0.1);
-        // master.print(2, 0, "Port %d: %.0f°C", hotspotPort, hotspot);
 
         pros::delay(1);
     }

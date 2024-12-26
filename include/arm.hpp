@@ -1,51 +1,29 @@
 #pragma once
 
 #include "lib/controller/pid.hpp"
-#include <unordered_set>
-#include "controls.hpp"
+#include "lib/subsystem.hpp"
 #include "pros/motors.hpp"
 #include "pros/rotation.hpp"
 
 using namespace pros;
+using namespace lib;
 
-#define rest 0
-#define load 28
-#define inter 60
-#define limit 115
+#define REST_LOAD 0
+#define SCORE 18
 
-class Arm {
-    public:
-        int motorPort;
-        int rotPort;
+class Arm : public Subsystem {
+public:
+    int armTarget;
 
-        float armError = 0;
-        float armTarget = rest;
-        bool useArmPid = true;
-        bool canControl = true;
-        bool canScore = armTarget != rest;
+    Motor* left;
+    Motor* right;
+    Rotation* rotation;
+    PID liftPID = PID(1.5, 0, 0.1);
 
-        Rotation* rotation;
-        Motor* arm;
+    void initialize() override;
+    void update() override;
+    void stop() override;
 
-        lib::PID armPid = lib::PID(
-            0.8, // kP
-            0, // kI
-            2 // kD
-        );
-
-        Arm(Motor* m, Rotation* r);
-
-        void toggle_l2();
-        void hold_l1();
-        void release_l1();
-        void hold_l2();
-        void release_l2();
-
-        void score();
-        void prime();
-        void with_ring();
-        void stow();
-
-        void tick(std::unordered_set<controller_digital_e_t> held);
-        float arm_pos();
+    void set_target(int target);
+    void move(int power);
 };

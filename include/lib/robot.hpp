@@ -4,6 +4,7 @@
 #include "odometry/odom.hpp"
 #include "lib/controller/pid.hpp"
 #include "lib/bezier.h"
+#include "lib/subsystem.hpp"
 #include "pros/motor_group.hpp"
 #include "pros/adi.hpp"
 #include <vector>
@@ -39,6 +40,7 @@ namespace lib {
             PID* angular;
 
             loco::ParticleFilter<PARTICLES>* particleFilter;
+            std::vector<Subsystem*> subsystems;
 
             int poseMode = ODOM;
 
@@ -49,6 +51,11 @@ namespace lib {
             void calibrate();
             void set_pf(loco::ParticleFilter<PARTICLES>* particleFilter);
             void set_pose_mode(int mde);
+
+            void add_subsystem(Subsystem* subsystem);
+            Subsystem* get_subsystem(const std::string& name);
+            template <typename T>
+            T* get_subsystem();
 
             float wheelDiameter;
             int rpm;
@@ -63,12 +70,20 @@ namespace lib {
             void turnToPoint(float x, float y, int timeout);
             void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false, int maxSpeed = 127);
             void ramsete(std::vector<bezier::Point>, MPConstraint constraint, Direction direction = Direction::FORWARDS);
-            // void ramseteString(std::string path, MPConstraint constraint, bool forwards=true);
-            // void ramseteFile(std::string path, MPConstraint constraint, bool forwards=true);
 
-            void set_arm_pistons(bool value);
             void set_mogo(bool value);
             void intake(bool reverse);
             void stop_intake();
     };
+
+    template <typename T>
+    T* Robot::get_subsystem() {
+        for (auto* subsystem : subsystems) {
+            T* specificSubsystem = dynamic_cast<T*>(subsystem);
+            if (specificSubsystem) {
+                return specificSubsystem;
+            }
+        }
+        return nullptr;
+    }
 }
