@@ -3,9 +3,14 @@
 #include "lib/controller/pid.hpp"
 #include "paths.hpp"
 #include "controls.hpp"
+#include "intake.hpp"
+#include "arm.hpp"
 
 MPConstraint fast{64, 300, INCH};
+MPConstraint medium{50, 200, INCH};
 MPConstraint huh{64, 200, INCH};
+
+MPConstraint slow{30, 300, INCH};
 
 float ret(Rotation rot) {
     float measure = rot.get_angle() / 100.0f;
@@ -14,11 +19,30 @@ float ret(Rotation rot) {
 }
 
 void bestautonfr::skills(Robot* robot) {
-    robot->intake(false);
+//     robot->ramsete({{0.00, 0.00}, {0.00, 24.00}, {24.39, 47.36}, {24.39, 23.36}, 
+// {24.39, 23.36}, {24.39, -0.64}, {32.35, -2.60}, {-0.81, -1.46}}, slow);
+//     return;
+
+    for (Subsystem* subsystem : robot->subsystems) {
+        subsystem->initialize();
+    }
+
+    Intake* intake = robot->get_subsystem<Intake>();
+    Arm* arm = robot->get_subsystem<Arm>();
+
+    Task updates([&]() {
+        while (true) {
+            arm->update();
+            intake->update();
+            delay(10);
+        }
+    });
+
+    intake->forwards();
 
     delay(1000);
 
-    robot->stop_intake();
+    intake->stop();
 
     robot->set_pose_mode(MCL);  
 
@@ -27,14 +51,14 @@ void bestautonfr::skills(Robot* robot) {
     robot->moveToPoint(-47, robot->get_pose().y, 750, true, false);
 
     robot->turnToHeading(90, 500);
-    robot->moveToPoint(robot->get_pose().x, -25, 1500, false, false, 60);
+    robot->moveToPoint(robot->get_pose().x, -27, 2500, false, false, 30);
 
     robot->set_mogo(true);
     
-    robot->intake(false);
+    intake->forwards();
 
     robot->ramsete({
-        {-46.34, -25.72}, {-48.10, -12.46}, {14.55, -38.70}, {11.60, -51.21}, 
+        {-46.34, -25.72}, {-48.095, -9.802}, {14.55, -38.70}, {11.60, -51.21}, 
         {11.60, -51.21}, {8.06, -66.20}, {-3.46, -38.70}, {-48.95, -46.09}, 
         {-48.95, -46.09}, {-67.40, -49.09}, {-57.99, -64.19}, {-30.00, -58.60}
     }, huh);
@@ -43,104 +67,76 @@ void bestautonfr::skills(Robot* robot) {
 
     robot->set_mogo(false);
 
-    delay(5000);
+    intake->stop();
+    intake->forwards(70);
+    intake->set_stop_condition([&] {
+        return intake->detected_ring();
+    });
 
-    // robot->ramsete({{60.00, 0.00}, {5.632, 0}, {58.51, -39.64}, {58.51, -47.52}}, fast);
+    robot->ramsete({{-60.00, -60.00}, {3.64, -58.32}, {20.13, -41.64}, {46.85, -48.27}}, fast);
+    robot->ramsete({{46.85, -48.27}, {31.69, -42.11}, {-0.15, -68.46}, {0, -47.61}}, medium, Direction::BACKWARDS);
 
-    // pros::delay(3000);
+    robot->moveToPoint(0, -56, 1000, true, false, 40);
 
-    // robot->moveToPoint(-23.5, 0, 7000, true, false, 20);
-    // robot->turnToHeading(270, 7000);
-    // robot->moveToPoint(-23.5, -23.5, 10000, true, false, 20);
-    // robot->turnToHeading(180, 3000);
-    // robot->moveToPoint(-50, -23.5, 4000, true, false, 20);
-    // robot->turnToHeading(90, 3000);
-    // robot->moveToPoint(-50, -50, 4000, true, false, 20);
+    robot->left->move(40);
+    robot->right->move(40);
+    delay(1000);
+    robot->left->move(0);
+    robot->right->move(0);
 
-    // robot->ramsete({
-    //     {-59.42, 0.06}, {-32.80, 0.26}, {-59.42, -55.36}, {0.13, -47.66}, 
-    //     {0.13, -47.66}, {35.24, -43.13}, {52.59, -43.32}, {47.07, 0.06},
-    //     {47.07, 0.06}, {41.55, 43.45}, {38.59, 51.14}, {-0.26, 47.39}, 
-    //     {-0.26, 47.39}, {-39.11, 43.65}, {-51.93, 35.36}, {-47.39, -0.13}
-    // }, fast);
+    intake->stop();    
+    intake->set_stop_condition(nullptr);
 
-    // robot->ramsete({
-    //     {0, 0}, {0, 40}, {40, 0}, {40, 40}
-    // }, fast, fast);
+    arm->set_target(SCORE);
 
-    return;
+    intake->forwards();
 
-    // float REST_LOAD = 0;
-    // float SCORE = 300;
-    // float armTarget = REST_LOAD;
+    delay(1500);
 
-    // Motor leftArm(-LEFT_ARM, MotorGears::green);
-    // Motor rightArm(RIGHT_ARM, MotorGears::green);
+    for (int i = 0; i < 4; i++) {
+        intake->stop();
+        delay(100);
+        intake->forwards();
+        delay(100);
+    }
 
-    // auto arm_left = ADIDigitalOut(ARM_PISTON_LEFT);
-	// auto arm_right = ADIDigitalOut(ARM_PISTON_RIGHT);
+    intake->stop();
 
-    // Rotation leftRotation(-LEFT_ROTATION);
-    // Rotation rightRotation(-RIGHT_ROTATION);
+    arm->set_target(DESCORE);
+    delay(500);
 
-    // PID leftLiftPID(1.5, 0, 0.1);
-    // PID rightLiftPID(1.5, 0, 0.1);
+    robot->left->move(-40);
+    robot->right->move(-40);
+    delay(500);
+    robot->left->move(0);
+    robot->right->move(0);
 
-    // leftLiftPID.reset();
-    // rightLiftPID.reset();
+    arm->set_target(SCORE);
 
-    // leftRotation.reset();
-    // rightRotation.reset();
-    // leftRotation.reset_position();
-    // rightRotation.reset_position();
-    
-    // Task arm([&]() {
-    //     while (true) {
-    //         float leftPower = leftLiftPID.calculate(armTarget - ret(leftRotation));
-    //         float rightPower = rightLiftPID.calculate(armTarget - ret(rightRotation));
+    intake->forwards();
 
-    //         leftArm.move(leftPower);
-    //         rightArm.move(rightPower);
+    delay(1000);
 
-    //         delay(10);
-    //     }
-    // });
+    robot->left->move(40);
+    robot->right->move(40);
+    delay(1000);
+    robot->left->move(0);
+    robot->right->move(0);
 
-    // robot->set_pose_mode(MCL);
+    for (int i = 0; i < 4; i++) {
+        intake->stop();
+        delay(100);
+        intake->forwards();
+        delay(100);
+    }
 
-    // pros::delay(3000);
+    intake->stop();
 
-    // // robot->intake(false);
-    // // delay(2000);
-    // // robot->stop_intake();
+    arm->set_target(DESCORE);
 
-    // robot->moveToPoint(-42, 0, 1000, true, false, 60);
-    // robot->turnToHeading(90, 1000);
+    delay(1000);
 
-    // robot->moveToPoint(-42, -25, 3000, false, false, 20);
+    arm->set_target(SCORE);
 
-    // delay(500);
-
-    // robot->set_mogo(true);
-
-    // delay(500);
-
-    // robot->turnToHeading(0, 1000);
-
-    // robot->intake(false);
-    
-    // robot->ramsete({
-    //     {-47.00, -24.19}, {-13.67, -16.70}, {10.65, -46.10}, {4.47, -53.97},
-    //     {4.47, -53.97}, {-5.59, -66.79}, {-4.40, -40.17}, {-47.20, -47.07},
-    //     {-47.20, -47.07}, {-72.91, -51.22}, {-47.30, -52.89}, {-47.39, -58.71}
-    // }, fast);
-
-    // delay(5000);
-
-    // return;
-
-    // robot->ramsete({
-    //     {-47.79, -58.71}, {-47.79, -47.60}, {-53.51, -49.04}, {-64.16, -64.62}
-    // }, fast, false);
-    // return;
-}   
+    delay(100000);
+}

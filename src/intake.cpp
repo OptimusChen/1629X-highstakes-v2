@@ -28,6 +28,7 @@ void Intake::update() {
             color_sort = true;
         }};   
     }
+
     if (color == RED && opticalMeasure.blue > 100.0f && !reversed && color_sort) {
         color_sort = false;
         Task {[&] {
@@ -38,20 +39,32 @@ void Intake::update() {
             color_sort = true;
         }};   
     }
+
+    if (stop_condition && stop_condition()) {
+        stop();
+    }
 }
 
 void Intake::set_color(int color) {
     this->color = color;
 }
 
-void Intake::forwards() {
-    hooks->move(reversed ? -127 : 127);
+void Intake::forwards(int power) {
+    hooks->move(reversed ? -power : power);
 }
 
-void Intake::backwards() {
-    hooks->move(-127);
+void Intake::backwards(int power) {
+    hooks->move(-power);
 }
 
 void Intake::stop() {
     hooks->move(0);
+}
+
+bool Intake::detected_ring() {
+    return optical->get_proximity() > 240;
+}
+
+void Intake::set_stop_condition(std::function<bool()> condition) {
+    stop_condition = condition;
 }

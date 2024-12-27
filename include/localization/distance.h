@@ -80,50 +80,29 @@ namespace loco {
 
             // std::cout << "after: "  << x.x() << ", " << x.y() << std::endl;
 
-            auto predicted = 50.0f;
-            float theta = 0;
+            double predicted = 50.0;
+            double theta = 0;
 
-            if (abs(angle - 0) < M_PI_2) {
+            if (theta = abs(angle - 0); theta < M_PI_2) {
                 predicted = std::min((WALL_0_X - x.x()) / cos(theta), predicted);
             }
 
-            if (abs(angle - M_PI_2) < M_PI_2) {
+            if (theta = abs(angle - M_PI_2); theta < M_PI_2) {
                 predicted = std::min((WALL_1_Y - x.y()) / cos(theta), predicted);
             }
 
-            if (abs(angle - M_PI) < M_PI_2) {
+            if (theta = abs(angle - M_PI); theta < M_PI_2) {
                 predicted = std::min((x.x() - WALL_2_X) / cos(theta), predicted);
             }
 
-            if (abs(angle - (3*M_PI)/2) < M_PI_2) {
+            if (theta = abs(angle - (3*M_PI)/2); theta < M_PI_2) {
                 predicted = std::min((x.y() - WALL_3_Y) / cos(theta), predicted);
             }
 
-            if (abs(angle - 2*M_PI) < M_PI_2) {
+            if (theta = abs(angle - 2*M_PI); theta < M_PI_2) {
                 predicted = std::min((WALL_0_X - x.x()) / cos(theta), predicted);
             }
-
-            // if (const auto theta = abs(std::remainder(0.0f, angle)); theta < M_PI_2) {
-            //     predicted = std::min((WALL_0_X - x.x()) / cos(theta), predicted);
-            //     std::cout << "wall0x " << predicted << std::endl;
-            // }
-
-            // if (const auto theta = abs(std::remainder(static_cast<float>(M_PI_2), angle)); theta < M_PI_2) {
-            //     predicted = std::min((WALL_1_Y - x.y()) / cos(theta), predicted);
-            //     std::cout << "wall1y " << predicted << std::endl;
-            // }
-
-            // if (const auto theta = abs(std::remainder(static_cast<float>(M_PI), angle)); theta < M_PI_2) {
-            //     predicted = std::min((x.x() - WALL_2_X) / cos(theta), predicted);
-            //     std::cout << "wall2x " << predicted << std::endl;
-            // }
-
-            // if (const auto theta = abs(std::remainder(static_cast<float>(M_3PI_4), angle)); theta < M_PI_2) {
-            //     predicted = std::min((x.y() - WALL_3_Y) / cos(theta), predicted);
-            //     std::cout << "wall3y " << predicted << std::endl;
-            // }
-
-            // std::cout << this << " " << predicted << " " << measured.getValue() << " " << std.getValue() << std::endl;
+            
             return cheap_norm_pdf((predicted - measured.getValue()) / std.getValue()) * LOCO_CONFIG::DISTANCE_WEIGHT;
         }
 

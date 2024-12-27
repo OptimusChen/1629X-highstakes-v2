@@ -4,8 +4,8 @@
 
 // bad system ik
 #define DEADZONE 5
-#define MINIMUM 0
-#define CURVE 1.014
+#define MINIMUM 15
+#define CURVE 1.01
 
 namespace lib::opcontrol {
     float curve(float val) {

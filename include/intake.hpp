@@ -19,11 +19,15 @@ public:
     Optical* optical;
     Motor* hooks;
 
+    std::function<bool()> stop_condition;
+
     void initialize() override;
     void update() override;
     void stop() override;
 
     void set_color(int color);
-    void forwards();
-    void backwards();
+    void forwards(int power = 127);
+    void backwards(int power = 127);
+    void set_stop_condition(std::function<bool()> condition);
+    bool detected_ring();
 };

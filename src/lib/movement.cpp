@@ -85,25 +85,30 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         float y = pose.y * METERS;
 
         float adjustedTheta = pose.theta;
+        float angular = target.vel * target.curvature;
 
         if (backwards) {
-            adjustedTheta = fmod(adjustedTheta + M_PI, 2 * M_PI);  // Adjust by π for reverse            
+            adjustedTheta = fmod(adjustedTheta + M_PI, 2 * M_PI);  // Adjust by π for reverse    
         }
 
         // Calculate left and right motor power using Ramsete controller
-        auto [v, w] = controller.calculate(x, y, adjustedTheta, target.x, target.y, target.theta, target.vel, target.vel * target.curvature);
+        auto [v, w] = controller.calculate(x, y, adjustedTheta, target.x, target.y, target.theta, target.vel, angular);
 
 		// std::cout << x << ", " << y << ", " << adjustedTheta << ", " << v << ", " << w << ", " << (point.t) << std::endl;
  
         // convert back to inches
         v /= METERS;
+        if (backwards) w = -w;
 
         // std::cout << x << ", " << y << ", " << adjustedTheta << ", " << point.x << ", " << point.y << ", " << point.theta << ", " << point.vel << ", " << (point.vel * point.curvature) << ", " << v << ", " << w << std::endl;
 
-        if (backwards) w = -w;
-
         float leftCurrentVelocity = (left->get_actual_velocity() * 2 * M_PI) / 60 * (wheelDiameter / 2);
         float rightCurrentVelocity = (right->get_actual_velocity() * 2 * M_PI) / 60 * (wheelDiameter / 2);
+
+        if (backwards) {
+            leftCurrentVelocity *= -1;
+            rightCurrentVelocity *= -1;
+        }
 
         float leftVelocity = (v - (w * trackWidth * 0.5));
         float rightVelocity = (v + (w * trackWidth * 0.5));
@@ -140,7 +145,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
     right->move(0);
 }
 
-void Robot::turnToHeading(float target_angle, int timeout) {
+void Robot::turnToHeading(float target_angle, int timeout, int minSpeed) {
     angular->reset();
     
     // Record the start time using std::chrono
@@ -189,9 +194,9 @@ void Robot::turnToHeading(float target_angle, int timeout) {
     right->move(0);
 }
 
-void Robot::turnToPoint(float x, float y, int timeout) {
+void Robot::turnToPoint(float x, float y, int timeout, int minSpeed) {
     Pose pose = get_pose();
-    turnToHeading(util::get_angle_to_target(pose.x, pose.y, x, y), timeout);
+    turnToHeading(util::get_angle_to_target(pose.x, pose.y, x, y), timeout, minSpeed);
 }
 
 void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnFirst, int maxSpeed) {
