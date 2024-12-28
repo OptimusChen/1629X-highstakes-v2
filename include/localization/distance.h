@@ -80,8 +80,8 @@ namespace loco {
 
             // std::cout << "after: "  << x.x() << ", " << x.y() << std::endl;
 
-            double predicted = 50.0;
-            double theta = 0;
+            float predicted = 50.0f;
+            float theta = 0;
 
             if (theta = abs(angle - 0); theta < M_PI_2) {
                 predicted = std::min((WALL_0_X - x.x()) / cos(theta), predicted);

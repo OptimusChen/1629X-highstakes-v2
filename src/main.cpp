@@ -61,6 +61,7 @@ PID angular(
 Distance left_dist(L_DISTANCE);
 Distance right_dist(R_DISTANCE);
 Distance back_dist(B_DISTANCE);
+Distance front_dist(F_DISTANCE);
 
 constexpr float DRIVE_RATIO = 48.0/36.0; // EX: 36 tooth driving gear to 48 tooth driven gear.
 constexpr QLength WHEEL_RADIUS = 2.75_in/2.0; // Wheel radius
@@ -79,7 +80,7 @@ Angle angle() {
 loco::DistanceSensorModel rightDistance(Eigen::Vector3f((-3_in).getValue(), (-3.5_in).getValue(), (270_deg).getValue()), right_dist);
 loco::DistanceSensorModel leftDistance(Eigen::Vector3f((-3_in).getValue(), (3.5_in).getValue(), (90_deg).getValue()), left_dist);
 loco::DistanceSensorModel backDistance(Eigen::Vector3f((0_in).getValue(), (-6_in).getValue(), (180_deg).getValue()), back_dist);
-loco::DistanceSensorModel frontDistance(Eigen::Vector3f((-2_in).getValue(), (-6_in).getValue(), (0_deg).getValue()), back_dist);
+loco::DistanceSensorModel frontDistance(Eigen::Vector3f((-2_in).getValue(), (-6_in).getValue(), (0_deg).getValue()), front_dist);
 
 loco::ParticleFilter<PARTICLES> particleFilter(angle);
 std::ranlux24_base de;
@@ -127,10 +128,6 @@ void initialize() {
     particleFilter.addSensor(&rightDistance);
     particleFilter.addSensor(&backDistance);
     particleFilter.addSensor(&frontDistance);
-
-    std::cout << "left: " << &leftDistance << std::endl;
-    std::cout << "right: " << &rightDistance << std::endl;
-    std::cout << "back: " << &backDistance << std::endl;
 
     Eigen::Vector2f mean(robot.get_pose().y * inch.Convert(metre), -robot.get_pose().x * inch.Convert(metre)); // Example values for mean.
 

@@ -19,9 +19,12 @@ float ret(Rotation rot) {
 }
 
 void bestautonfr::skills(Robot* robot) {
-//     robot->ramsete({{0.00, 0.00}, {0.00, 24.00}, {24.39, 47.36}, {24.39, 23.36}, 
-// {24.39, 23.36}, {24.39, -0.64}, {32.35, -2.60}, {-0.81, -1.46}}, slow);
-//     return;
+    // delay(3000);
+    // robot->set_pose_mode(MCL);  
+
+    // robot->ramsete({{-56.00, 0.00}, {-27.17, 1.57}, {-47.83, -35.77}, {-47.83, -47.33}}, fast);
+
+    // return;
 
     for (Subsystem* subsystem : robot->subsystems) {
         subsystem->initialize();
@@ -68,7 +71,7 @@ void bestautonfr::skills(Robot* robot) {
     robot->set_mogo(false);
 
     intake->stop();
-    intake->forwards(70);
+    intake->forwards(80);
     intake->set_stop_condition([&] {
         return intake->detected_ring();
     });
@@ -89,6 +92,8 @@ void bestautonfr::skills(Robot* robot) {
 
     arm->set_target(SCORE);
 
+    delay(500);
+
     intake->forwards();
 
     delay(1500);
@@ -103,6 +108,7 @@ void bestautonfr::skills(Robot* robot) {
     intake->stop();
 
     arm->set_target(DESCORE);
+
     delay(500);
 
     robot->left->move(-40);
@@ -112,6 +118,8 @@ void bestautonfr::skills(Robot* robot) {
     robot->right->move(0);
 
     arm->set_target(SCORE);
+    
+    delay(500);
 
     intake->forwards();
 
@@ -138,5 +146,5 @@ void bestautonfr::skills(Robot* robot) {
 
     arm->set_target(SCORE);
 
-    delay(100000);
+    delay(5000);
 }
