@@ -15,9 +15,6 @@ void Intake::initialize() {
 void Intake::update() {
     auto opticalMeasure = optical->get_rgb();
     
-    // std::cout << opticalMeasure.red << ", " << opticalMeasure.green << ", " << opticalMeasure.blue << std::endl;
-    // std::cout << optical->get_proximity() << std::endl;
-
     if (color == BLUE && opticalMeasure.red > 150.0f && !reversed && color_sort) {
         color_sort = false;
         Task {[&] {
@@ -40,6 +37,22 @@ void Intake::update() {
         }};   
     }
 
+    if (moving && antijam && (abs(hooks->get_actual_velocity()) < 10)) {
+        counter++;
+
+        if (counter > 5) {
+            antijam = false;
+            Task {[&] {
+                reversed = true;
+                delay(250);
+                reversed = false;
+                antijam = true;
+            }};
+        }
+    } else {
+        counter = 0;
+    }
+
     if (stop_condition && stop_condition()) {
         stop();
     }
@@ -51,20 +64,27 @@ void Intake::set_color(int color) {
 
 void Intake::forwards(int power) {
     hooks->move(reversed ? -power : power);
+    moving = true;
 }
 
 void Intake::backwards(int power) {
     hooks->move(-power);
+    moving = true;
 }
 
 void Intake::stop() {
     hooks->move(0);
+    moving = false;
 }
 
-bool Intake::detected_ring() {
-    return optical->get_proximity() > 240;
+bool Intake::detected_ring(int threshold) {
+    return optical->get_proximity() > threshold;
 }
 
 void Intake::set_stop_condition(std::function<bool()> condition) {
     stop_condition = condition;
+}
+
+void Intake::set_anti_jam(bool antijam) {
+    this->antijam = antijam;
 }

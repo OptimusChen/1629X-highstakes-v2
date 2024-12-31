@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <string>
+#include <functional>
 #include "lib/bezier.h"
 
 #define METERS 0.0254
@@ -18,4 +19,5 @@ namespace util {
     int sign(double value);
     float cheap_norm_pdf(const float x);
     float avg(std::vector<float> values);
+    void delay(int ms, std::function<void()> callback);
 }

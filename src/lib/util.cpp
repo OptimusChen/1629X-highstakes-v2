@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <fstream>
 
+#include "pros/rtos.hpp"
+
 namespace util {
     float degrees(float radians) {
         return radians*(180/M_PI);
@@ -69,5 +71,12 @@ namespace util {
         float sum = 0;
         for (float value : values) { sum += value; }
         return sum / values.size();
+    }
+
+    void delay(int ms, std::function<void()> callback) {
+        pros::Task updates([&]() {
+            pros::delay(ms);
+            callback();
+        });
     }
 }

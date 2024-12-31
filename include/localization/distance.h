@@ -57,7 +57,14 @@ namespace loco {
 
             measured = measuredMM * millimetre;
 
-            std = 0.20 * measured / (distance.get_confidence() / 64.0);
+            auto confidence = distance.get_confidence();
+
+            if (confidence == 0) {
+                std = 0.0;
+                return;
+            }
+
+            std = 0.20 * measured / (confidence / 64.0);
         }
 
         /**

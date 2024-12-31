@@ -8,9 +8,11 @@
 using namespace pros;
 using namespace lib;
 
-#define REST_LOAD 0
-#define SCORE 22
-#define DESCORE 150
+#define REST 0
+#define LOAD 13
+#define MID 40
+#define SCORE 200
+#define ALLIANCE_STAKE 200
 
 class Arm : public Subsystem {
 public:

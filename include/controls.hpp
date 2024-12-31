@@ -8,42 +8,41 @@
 #include "localization/particleFilter.h"
 #include "localization/distance.h"
 
-#define L_DRIVE_FRONT 12
-#define L_DRIVE_MID 11
-#define L_DRIVE_BACK 20
+#define L_DRIVE_FRONT 3
+#define L_DRIVE_MID 2
+#define L_DRIVE_BACK 5
 
-#define R_DRIVE_FRONT 2
-#define R_DRIVE_MID 1
-#define R_DRIVE_BACK 10
+#define R_DRIVE_FRONT 13
+#define R_DRIVE_MID 14
+#define R_DRIVE_BACK 11
 
-#define HOOKS 15
+#define HOOKS 1
 
-#define R_DISTANCE 8
-#define L_DISTANCE 18
-#define B_DISTANCE 4
-#define F_DISTANCE 3
+#define R_DISTANCE 9
+#define L_DISTANCE 8
+#define B_DISTANCE 12
+#define F_DISTANCE 16
 
-#define OPTICAL 17
+#define OPTICAL 6
 
 #define ARM_PISTON_LEFT 5
 #define ARM_PISTON_RIGHT 1
 
 #define INTAKE_LIFT 3
 
-#define DOINKER 0
-
-#define MOGO 8
+#define DOINKER 2
+#define MOGO 1
 
 #define CORNER_ARM 0
 
 #define VERTICAL 10
 #define HORIZONTAL 21
 
-#define INERTIAL_PORT 13
+#define INERTIAL_PORT 4
 
-#define LB_ROTATION 5
-#define ARM_LEFT 14
-#define ARM_RIGHT 6
+#define LB_ROTATION 17
+#define ARM_LEFT 19
+#define ARM_RIGHT 18
 
 using namespace pros;
 

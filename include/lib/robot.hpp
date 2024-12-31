@@ -52,6 +52,7 @@ namespace lib {
             void calibrate();
             void set_pf(loco::ParticleFilter<PARTICLES>* particleFilter);
             void set_pose_mode(int mde);
+            void initialize_particle_filter();
 
             void add_subsystem(Subsystem* subsystem);
             Subsystem* get_subsystem(const std::string& name);
@@ -71,10 +72,10 @@ namespace lib {
             void turnToPoint(float x, float y, int timeout, int minSpeed = 0);
             void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false, int maxSpeed = 127);
             void ramsete(std::vector<bezier::Point>, MPConstraint constraint, Direction direction = Direction::FORWARDS);
+            void timedMove(int power, int timeout);
 
             void set_mogo(bool value);
-            void intake(bool reverse);
-            void stop_intake();
+            void set_rush_arm(bool value);
     };
 
     template <typename T>

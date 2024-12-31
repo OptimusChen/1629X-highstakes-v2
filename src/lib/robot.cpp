@@ -12,6 +12,7 @@
 using namespace lib;
 
 ADIDigitalOut mogo(MOGO);
+ADIDigitalOut rush(DOINKER);
 
 Motor hooks(HOOKS);
 
@@ -78,10 +79,79 @@ void Robot::set_mogo(bool value) {
     mogo.set_value(value);
 }
 
-void Robot::intake(bool reverse) {
-    hooks.move(reverse ? 127 : -127);
+void Robot::set_rush_arm(bool value) {
+    rush.set_value(value);
 }
 
-void Robot::stop_intake() {
-    hooks.move(0);
+constexpr float DRIVE_RATIO = 48.0/36.0; // EX: 36 tooth driving gear to 48 tooth driven gear.
+constexpr QLength WHEEL_RADIUS = 2.75_in/2.0; // Wheel radius
+constexpr float DRIVE_NOISE = 0.35; // The desired amount in % of noise on the drive
+constexpr Angle ANGLE_NOISE = 8_deg; // The noise on the angle that's desired
+
+std::ranlux24_base de;
+
+QLength lastLeft, lastRight;
+
+QLength getDistance(const pros::MotorGroup* motor) {
+    QLength totalPosition = 0.0;
+
+    for (double position : motor->get_position_all()) {
+        totalPosition += position / DRIVE_RATIO * 2.0 * M_PI * WHEEL_RADIUS;
+    }
+
+    return totalPosition/motor->size();
+}
+
+void Robot::initialize_particle_filter() {
+    Eigen::Vector2f mean(get_pose().y * inch.Convert(metre), -get_pose().x * inch.Convert(metre)); // Example values for mean.
+
+    Eigen::Matrix2f covariance;
+    covariance << 0.1f, 0.0f,
+                0.0f, 0.1f;
+
+    particleFilter->initNormal(mean, covariance, false);
+
+    pros::Task locoTask = pros::Task([&]() {
+        uint32_t start_time = 0;
+
+        // Run localization forever
+        while (true) {
+            // Store the start time to ensure that the time between updates remains consistent
+            start_time = pros::millis();
+
+            // Store the current distance of the drivetrain
+            const QLength leftLength = getDistance(left);
+            const QLength rightLength = getDistance(right);
+
+            // Calculate the change from the previous position
+            const QLength leftChange = leftLength - lastLeft;
+            const QLength rightChange = rightLength - lastRight;
+            
+            // Store the current value as the last value for next frame
+            lastLeft = leftLength;
+            lastRight = rightLength;
+
+            // Calculate the average movement, this is a cheaper way to get the movement of the drive at the center for
+            // skid-steer based mechanics
+            auto avg = (leftChange + rightChange) / 2.0;
+
+            // Define the distributions to add noise to the sensor readings
+            std::uniform_real_distribution avgDistribution(avg.getValue() - DRIVE_NOISE * avg.getValue(),
+                                                        avg.getValue() + DRIVE_NOISE * avg.getValue());
+            std::uniform_real_distribution angleDistribution(
+                particleFilter->getAngle().getValue() - ANGLE_NOISE.getValue(),
+                particleFilter->getAngle().getValue() + ANGLE_NOISE.getValue());
+
+            particleFilter->update([&]() mutable {
+                // Calculate noisy sensor readings
+                const auto noisy = avgDistribution(de);
+                const auto angle = angleDistribution(de);
+
+                // Calculate the translation with the sensor readings
+                return Eigen::Rotation2Df(angle) * Eigen::Vector2f({noisy, 0.0});
+            }, pros::millis() * millisecond);
+
+            pros::c::task_delay_until(&start_time, 10);
+        }
+    });
 }

@@ -37,10 +37,8 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 
     RamseteController controller(2, 0.7);
 
-    FeedforwardController ffLeft(900, 110, 10);
-    PID pLoopLeft(200, 0, 0);
-    FeedforwardController ffRight(900, 110, 10);
-    PID pLoopRight(200, 0, 0);
+    FeedforwardController ff(900, 110, 10);
+    PID pLoop(200, 0, 0);
 
     auto path = profileGenerator->getProfile();
 
@@ -124,8 +122,8 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         float leftError = leftVelocity - leftCurrentVelocity;
         float rightError = rightVelocity - rightCurrentVelocity;
 
-        float leftPower = ffLeft.calculate(leftVelocity, leftAcceleration) + pLoopLeft.calculate(leftError);
-        float rightPower = ffRight.calculate(rightVelocity, rightAcceleration) + pLoopRight.calculate(rightError);
+        float leftPower = ff.calculate(leftVelocity, leftAcceleration) + pLoop.calculate(leftError);
+        float rightPower = ff.calculate(rightVelocity, rightAcceleration) + pLoop.calculate(rightError);
 
         if (backwards) {
             leftPower *= -1;
@@ -138,6 +136,10 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
         path_index++;
 
         pros::c::task_delay_until(&loop_start, 10);
+
+        // x = pose.x * METERS;
+        // y = pose.y * METERS;
+        // std::cout << x << ", " << y << ", " << target.x << ", " << target.y << std::endl;
     }
 
     // Stop motors after finishing the path or timeout
@@ -207,6 +209,7 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
     // Record the start time using std::chrono
     auto start_time = std::chrono::high_resolution_clock::now();
     float multiplier = forwards ? 1.0f : -1.0f;
+    int stability = 0;
 
     while (true) {
         Pose pose = get_pose();
@@ -278,16 +281,13 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
             moveOut = 0;
         }
 
-        // std::cout << moveOut << std::endl;
+        moveOut = util::clamp(moveOut, -maxSpeed, maxSpeed);
 
         // Calculate motor speeds for tank drive (left and right motor speeds)
         float left_motor_speed = moveOut + turnOut;
         float right_motor_speed = moveOut - turnOut;
 
         // Clamp motor speeds to the maximum allowed speed
-        left_motor_speed = util::clamp(left_motor_speed, -maxSpeed, maxSpeed);
-        right_motor_speed = util::clamp(right_motor_speed, -maxSpeed, maxSpeed);
-
         const float ratio = std::max(std::fabs(left_motor_speed), std::fabs(right_motor_speed)) / maxSpeed;
         if (ratio > 1) {
             left_motor_speed /= ratio;
@@ -299,11 +299,14 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         right->move(right_motor_speed);
 
         // Check if the robot is close enough to the target to stop
-        if (dist < 0.05f && fabs(angularError) < 0.05f) {
-            break;
+        if (abs(dist) < 0.5f) {
+            stability++;
+
+            if (stability > 10) break;
+        } else {
+            stability = 0;
         }
 
-        // Optionally, add a small delay to prevent overwhelming the control loop
         pros::delay(10);
     }
 
@@ -311,3 +314,13 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
     left->move(0);
     right->move(0);
 }
+
+void Robot::timedMove(int power, int time) {
+    left->move(power);
+    right->move(power);
+
+    pros::delay(time);
+
+    left->move(0);
+    right->move(0);
+} 
