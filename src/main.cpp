@@ -135,6 +135,10 @@ void opcontrol() {
 
     Intake* intake = robot.get_subsystem<Intake>();
     Arm* arm = robot.get_subsystem<Arm>();
+    
+    intake->arm = arm;
+    intake->color_sort = true;
+    intake->antijam = false;
 
 	auto mogo = ADIDigitalOut(MOGO);
     auto corner_arm = ADIDigitalOut(DOINKER);
@@ -177,7 +181,7 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R1, std::make_pair(
         [&](bool firstActivation) {
-            intake->forwards();
+            if (!intake->moving) intake->forwards();
         },
         [&]() {
             intake->stop();
@@ -186,7 +190,7 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R2, std::make_pair(
         [&](bool firstActivation) {
-            intake->backwards();
+            if (!intake->moving) intake->backwards();
         },
         [&]() {
             intake->stop();

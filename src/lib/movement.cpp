@@ -146,7 +146,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
     right->move(0);
 }
 
-void Robot::turnToHeading(float target_angle, int timeout, int minSpeed) {
+void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int minSpeed) {
     angular->reset();
     
     // Record the start time using std::chrono
@@ -169,7 +169,8 @@ void Robot::turnToHeading(float target_angle, int timeout, int minSpeed) {
         
         // Calculate the error in heading (shortest angle)
         float error = util::calculate_shortest_angle(current_angle, target_angle);
-        
+        if (reversed) error = util::calculate_longest_angle(current_angle, target_angle);
+
         // Get the output from the angular PID controller
         float output = angular->calculate(error);
         

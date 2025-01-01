@@ -14,6 +14,7 @@ namespace util {
     float radians(float degrees);
     float clamp(float val, float min, float max);
     float calculate_shortest_angle(float target, float current); 
+    float calculate_longest_angle(float target, float current);
     float get_angle_to_target(float robotX, float robotY, float targetX, float targetY);
     float no_big_angles_pls(float thetaInRadiansNoDegreesLOL);
     int sign(double value);

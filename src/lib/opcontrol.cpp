@@ -7,24 +7,28 @@
 #define MINIMUM 15
 #define CURVE 1.01
 
+#define DEADZONE_T 5
+#define MINIMUM_T 15
+#define CURVE_T 0.995
+
 namespace lib::opcontrol {
-    float curve(float val) {
+    float curve(float val, int deadzone, float curve, int minimum) {
         // return 0 if input is within deadzone
-        if (fabs(val) <= DEADZONE) return 0;
+        if (fabs(val) <= deadzone) return 0;
         // g is the output of g(x) as defined in the Desmos graph
-        const float g = fabs(val) - DEADZONE;
+        const float g = fabs(val) - deadzone;
         // g127 is the output of g(127) as defined in the Desmos graph
-        const float g127 = 127 - DEADZONE;
+        const float g127 = 127 - deadzone;
         // i is the output of i(x) as defined in the Desmos graph
-        const float i = pow(CURVE, g - 127) * g * util::sign(val);
+        const float i = pow(curve, g - 127) * g * util::sign(val);
         // i127 is the output of i(127) as defined in the Desmos graph
-        const float i127 = pow(CURVE, g127 - 127) * g127;
-        return (127.0 - MINIMUM) / (127) * i * 127 / i127 + MINIMUM * util::sign(val);
+        const float i127 = pow(curve, g127 - 127) * g127;
+        return (127.0 - minimum) / (127) * i * 127 / i127 + minimum * util::sign(val);
     }
 
     void arcade(Robot instance, float turn, float forward) {
-        forward = std::round(curve(forward));
-        turn = std::round(curve(turn));
+        forward = std::round(curve(forward, DEADZONE, CURVE, MINIMUM));
+        turn = std::round(curve(turn, DEADZONE_T, CURVE_T, MINIMUM_T));
         
         instance.left->move(forward + turn);
         instance.right->move(forward - turn);

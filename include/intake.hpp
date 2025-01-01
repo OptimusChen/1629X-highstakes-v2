@@ -19,7 +19,8 @@ class Intake : public Subsystem {
 public:
     bool reversed = false;
     bool color_sort = true;
-    bool antijam = true;
+    bool antijam = false;
+    bool moving = false;
     int color = RED;
     int volts = 0;
     Optical* optical;
@@ -39,6 +40,5 @@ public:
     void set_stop_condition(std::function<bool()> condition);
     bool detected_ring(int threshold = STAGE_2);
 private:
-    bool moving = false;
     int counter = 0;
 };

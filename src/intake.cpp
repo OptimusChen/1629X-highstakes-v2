@@ -28,10 +28,16 @@ void Intake::update() {
         }};   
     }
 
+    // 600, 175
+    // 300, 400
+
+    
+
     if (color == RED && ((opticalMeasure > 200) && (opticalMeasure < 250)) && color_sort) {
         color_sort = false;
         Task t{[&] {
-            delay(200);
+            float toDelay = (-3/4)*hooks->get_actual_velocity() + 625;
+            delay(toDelay);
             hooks->move(0);
             hooks->move(-127);
             delay(300);
@@ -69,8 +75,12 @@ void Intake::set_color(int color) {
 }
 
 void Intake::forwards(int power) {
-    hooks->move(reversed ? -power : power);
+    hooks->move(power);
     volts = power;
+    if (!antijam) {
+        moving = true;
+        return;
+    }
     Task t{[&] {
         delay(100);
         moving = true;
@@ -80,6 +90,10 @@ void Intake::forwards(int power) {
 void Intake::backwards(int power) {
     hooks->move(-power);
     volts = -power;
+    if (!antijam) {
+        moving = true;
+        return;
+    }
     Task t{[&] {
         delay(100);
         moving = true;
