@@ -13,7 +13,7 @@ MPConstraint huh2{55, 150, INCH};
 MPConstraint slow{40, 250, INCH};
 MPConstraint kinda_slow{45, 250, INCH};
 
-#define SPAM 1
+#define SPAM 2
 
 float ret(Rotation rot) {
     float measure = rot.get_angle() / 100.0f;
@@ -159,10 +159,10 @@ void bestautonfr::skills(Robot* robot) {
 
     // CORNER 1
 
-    robot->moveToPoint(-49, robot->get_pose().y, 500, true, false, 100);
+    robot->moveToPoint(-49, robot->get_pose().y, 500, true, false);
     robot->turnToHeading(90, 750);
-    robot->moveToPoint(robot->get_pose().x, -26, 2000, false, false, 30);
-    // robot->timedMove(-40, 250);
+    robot->moveToPoint(robot->get_pose().x, -23, 500, false, false, 80);
+    robot->moveToPoint(robot->get_pose().x, -26, 500, false, false, 30);
 
     arm->set_target(REST);
 
@@ -190,7 +190,7 @@ void bestautonfr::skills(Robot* robot) {
     arm->set_target(LOAD);
     
     robot->ramsete({{-60.00, -60.00}, {3.64, -58.32}, {13.78, -38.51}, {25.91, -50.07}}, {70, 400, INCH});
-    delay(500);
+    delay(1000);
 
     for (int i = 0; i < SPAM; i++) {
         intake->stop();
@@ -209,34 +209,35 @@ void bestautonfr::skills(Robot* robot) {
     intake->set_stop_condition(stage_1_stop);
     intake->forwards();
 
-    // robot->turnToHeading(317, 750);
     robot->ramsete({{25.91, -49.88}, {32.92, -57.18}, {37.43, -60.72}, {40.61, -60.72}}, slow);
 
     robot->ramsete({{40.00, -59.72}, {17.32, -59.90}, {-0.03, -61.40}, {0.00, -52.75}}, fast , BACKWARDS);
 
     robot->moveToPoint(1, -61, 750, true, false, 60);
 
-    robot->timedMove(40, 200);
+    // start logic ws
     arm->set_target(SCORE);
-    delay(500);
-    robot->timedMove(-40, 500);
-
-    arm->set_target(LOAD);
     robot->timedMove(40, 500);
+    delay(750);
+    arm->set_target(LOAD);
+    robot->timedMove(-40, 250);
+    delay(250);
+
     intake->set_stop_condition(nullptr);
     intake->forwards();
-    robot->timedMove(40, 500);
-    // for (int i = 0; i < SPAM; i++) {
-    //     intake->stop();
-    //     delay(50);
-    //     intake->forwards();
-    //     delay(50);
-    // }
+    robot->timedMove(40, 750);
+    for (int i = 0; i < SPAM; i++) {
+        intake->stop();
+        delay(100);
+        intake->forwards();
+        delay(100);
+    }
     intake->stop();
     arm->set_target(SCORE);
     robot->timedMove(40, 500);
-    robot->timedMove(-40, 1000);
-    robot->moveToPoint(0, -54, 500, true, false, 40);
+    robot->timedMove(-80, 400);
+    arm->set_target(LOAD);
+    // end logic ws
 
     // CORNER 2
 
@@ -247,7 +248,7 @@ void bestautonfr::skills(Robot* robot) {
     intake->forwards(); 
     robot->ramsete({{58.32, -24.02}, {23.69, -24.02}, {3.70, -48.00}, {31.57, -48.00}}, fast);
     arm->set_target(LOAD);
-    delay(500);
+    delay(1000);
     robot->moveToPoint(40, -48, 1000, true, true, 70);
     for (int i = 0; i < SPAM; i++) {
         intake->stop();
@@ -367,27 +368,27 @@ void bestautonfr::skills(Robot* robot) {
     intake->forwards(100);
     robot->moveToPoint(0, 61, 500, true, false, 80);
 
-    robot->timedMove(40, 250);
     arm->set_target(SCORE);
-    delay(500);
-    robot->timedMove(-40, 500);
-
+    robot->timedMove(40, 500);
+    delay(750);
     arm->set_target(LOAD);
-    robot->timedMove(60, 500);
-    // delay(500);
+    robot->timedMove(-40, 250);
+    delay(250);
+
     intake->set_stop_condition(nullptr);
     intake->forwards();
-    delay(1000);
-    // for (int i = 0; i < SPAM; i++) {
-    //     intake->stop();
-    //     delay(100);
-    //     intake->forwards();
-    //     delay(100);
-    // }
+    robot->timedMove(40, 750);
+    for (int i = 0; i < SPAM; i++) {
+        intake->stop();
+        delay(100);
+        intake->forwards();
+        delay(100);
+    }
     intake->stop();
     arm->set_target(SCORE);
     robot->timedMove(40, 500);
-    robot->timedMove(-40, 1000);
+    robot->timedMove(-80, 400);
+    arm->set_target(LOAD);
     robot->moveToPoint(0, 54, 500, true, false, 40);
     arm->set_target(REST);
     delay(500);

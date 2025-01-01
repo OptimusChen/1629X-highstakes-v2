@@ -5,11 +5,11 @@
 // bad system ik
 #define DEADZONE 5
 #define MINIMUM 15
-#define CURVE 1.01
+#define CURVE 1
 
 #define DEADZONE_T 5
 #define MINIMUM_T 15
-#define CURVE_T 0.995
+#define CURVE_T 1.01
 
 namespace lib::opcontrol {
     float curve(float val, int deadzone, float curve, int minimum) {
@@ -30,7 +30,24 @@ namespace lib::opcontrol {
         forward = std::round(curve(forward, DEADZONE, CURVE, MINIMUM));
         turn = std::round(curve(turn, DEADZONE_T, CURVE_T, MINIMUM_T));
         
-        instance.left->move(forward + turn);
-        instance.right->move(forward - turn);
+        float l = forward + turn;
+        float r = forward - turn;
+
+        const float ratio = std::max(std::fabs(l), std::fabs(r)) / 127;
+        if (ratio > 1) {
+            l /= ratio;
+            r /= ratio;
+        }
+
+        instance.left->move(l);
+        instance.right->move(r);
+    }
+
+    void tank(Robot instance, float left, float right) {
+        left = std::round(curve(left, DEADZONE, CURVE, MINIMUM));
+        right = std::round(curve(right, DEADZONE_T, CURVE_T, MINIMUM_T));
+        
+        instance.left->move(left);
+        instance.right->move(right);
     }
 }

@@ -133,11 +133,11 @@ void opcontrol() {
         subsystem->initialize();
     }
 
-    Intake* intake = robot.get_subsystem<Intake>();
+    Intake* intake = robot.get_subsystem<Intake> ();
     Arm* arm = robot.get_subsystem<Arm>();
     
     intake->arm = arm;
-    intake->color_sort = true;
+    intake->color_sort = false;
     intake->antijam = false;
 
 	auto mogo = ADIDigitalOut(MOGO);
@@ -181,7 +181,7 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R1, std::make_pair(
         [&](bool firstActivation) {
-            if (!intake->moving) intake->forwards();
+            intake->hooks->move(127);
         },
         [&]() {
             intake->stop();
@@ -190,7 +190,7 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R2, std::make_pair(
         [&](bool firstActivation) {
-            if (!intake->moving) intake->backwards();
+            intake->hooks->move(-127);
         },
         [&]() {
             intake->stop();
@@ -246,7 +246,9 @@ void opcontrol() {
 
         temperatureSum = 0.0;
 
-        master.print(0, 0, "Intake: %.0f°C", motor_get_temperature(HOOKS));
+        // master.print(0, 0, "Intake: %.0f°C", motor_get_temperature(HOOKS));
+        // delay(1);
+        master.print(0, 0, "Avg: %.0f°C", averageTemperature);
 
         pros::delay(1);
     }
