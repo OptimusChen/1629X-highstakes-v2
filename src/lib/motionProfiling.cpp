@@ -67,10 +67,9 @@ std::pair<double, double> Constraints::wheelSpeeds(double angularVel, double vel
     return std::make_pair(v_left, v_right);
 }
 
-ProfileGenerator::ProfileGenerator(Constraints *constraints, double dd)
+ProfileGenerator::ProfileGenerator(Constraints& constraints, double dd)
+    : constraints(constraints), dd(dd)
 {
-    this->constraints = constraints;
-    this->dd = dd;
 }
 
 void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
@@ -118,9 +117,9 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
 
         curvature = segment.curvatureAt(deriv, derivSecond);
 
-        double maxSpeed = constraints->maxSpeed(curvature);
+        double maxSpeed = constraints.maxSpeed(curvature);
 
-        max_accel = this->constraints->max_acc;
+        max_accel = constraints.max_acc;
 
         double maxAchievable = std::sqrt(vel * vel + 2 * max_accel * dd);
 
@@ -162,9 +161,9 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
 
         backwardPass.push_back(ProfilePoint(p1.x, p1.y, theta, curvature, distance, vel, max_accel));
 
-        double maxSpeed = constraints->maxSpeed(curvature);
+        double maxSpeed = constraints.maxSpeed(curvature);
 
-        max_accel = this->constraints->max_dec;
+        max_accel = constraints.max_dec;
 
         double maxAchievable = std::sqrt(vel * vel + 2 * max_accel * dd);
 

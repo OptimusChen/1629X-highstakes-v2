@@ -74,7 +74,7 @@ namespace util {
     }
 
     void delay(int ms, std::function<void()> callback) {
-        pros::Task updates([&]() {
+        pros::Task a([&]() {
             pros::delay(ms);
             callback();
         });

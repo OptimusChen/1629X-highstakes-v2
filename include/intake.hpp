@@ -3,6 +3,7 @@
 #include "lib/subsystem.hpp"
 #include "pros/motors.hpp"
 #include "pros/optical.hpp"
+#include "arm.hpp"
 
 using namespace pros;
 using namespace lib;
@@ -17,11 +18,13 @@ using namespace lib;
 class Intake : public Subsystem {
 public:
     bool reversed = false;
-    bool color_sort = false;
-    bool antijam = false;
-    int color = BLUE;
+    bool color_sort = true;
+    bool antijam = true;
+    int color = RED;
+    int volts = 0;
     Optical* optical;
     Motor* hooks;
+    Arm* arm;
 
     std::function<bool()> stop_condition;
 

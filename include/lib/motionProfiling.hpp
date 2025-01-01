@@ -54,12 +54,12 @@ namespace lib {
     class ProfileGenerator
     {
     public:
-        ProfileGenerator(Constraints *constraints, double dd);
+        ProfileGenerator(Constraints& constraints, double dd);
         void generateProfile(bezier::BezierSpline<3> path);
         auto getProfile() { return profile; }
 
     private:
-        Constraints *constraints;
+        Constraints& constraints;
         std::vector<ProfilePoint> profile;
         double dd;
         double duration;

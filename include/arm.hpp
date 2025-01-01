@@ -11,8 +11,8 @@ using namespace lib;
 #define REST 0
 #define LOAD 13
 #define MID 40
-#define SCORE 200
-#define ALLIANCE_STAKE 200
+#define SCORE 180
+#define ALLIANCE_STAKE 180
 
 class Arm : public Subsystem {
 public:

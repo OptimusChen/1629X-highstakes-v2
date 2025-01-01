@@ -10,47 +10,53 @@ void Intake::initialize() {
     hooks = new Motor(HOOKS);
     hooks->set_reversed(true);
     hooks->set_gearing(E_MOTOR_GEAR_BLUE);
+
+    antijam = true;
 }
 
 void Intake::update() {
-    auto opticalMeasure = optical->get_rgb();
-    
-    if (color == BLUE && opticalMeasure.red > 150.0f && !reversed && color_sort) {
+    auto opticalMeasure = optical->get_hue();
+
+    if (color == BLUE && ((opticalMeasure > 0) && (opticalMeasure < 30)) && color_sort) {
         color_sort = false;
-        Task {[&] {
+        Task t{[&] {
+            delay(500);
+            hooks->move(-127);
             delay(100);
-            reversed = true;
-            delay(100);
-            reversed = false;
+            hooks->move(volts);
             color_sort = true;
         }};   
     }
 
-    if (color == RED && opticalMeasure.blue > 100.0f && !reversed && color_sort) {
+    if (color == RED && ((opticalMeasure > 200) && (opticalMeasure < 250)) && color_sort) {
         color_sort = false;
-        Task {[&] {
-            delay(100);
-            reversed = true;
-            delay(100);
-            reversed = false;
-            color_sort = true;
+        Task t{[&] {
+            delay(200);
+            hooks->move(0);
+            hooks->move(-127);
+            delay(300);
+            hooks->move(volts);
+            this->color_sort = true;
         }};   
     }
 
-    if (moving && antijam && (abs(hooks->get_actual_velocity()) < 10)) {
-        counter++;
+    if (antijam && (arm->armTarget != LOAD)) {
+        if (moving && (abs(hooks->get_actual_velocity()) < 10)) {
+            counter++;
 
-        if (counter > 5) {
-            antijam = false;
-            Task {[&] {
-                reversed = true;
-                delay(250);
-                reversed = false;
-                antijam = true;
-            }};
+            if (counter >= 2) {
+                antijam = false;
+                counter = 0;
+                Task t{[&] {
+                    hooks->move(-127);
+                    delay(150);
+                    hooks->move(volts);
+                    antijam = true;
+                }};
+            }
+        } else {
+            counter = 0;
         }
-    } else {
-        counter = 0;
     }
 
     if (stop_condition && stop_condition()) {
@@ -64,12 +70,20 @@ void Intake::set_color(int color) {
 
 void Intake::forwards(int power) {
     hooks->move(reversed ? -power : power);
-    moving = true;
+    volts = power;
+    Task t{[&] {
+        delay(100);
+        moving = true;
+    }};
 }
 
 void Intake::backwards(int power) {
     hooks->move(-power);
-    moving = true;
+    volts = -power;
+    Task t{[&] {
+        delay(100);
+        moving = true;
+    }};
 }
 
 void Intake::stop() {

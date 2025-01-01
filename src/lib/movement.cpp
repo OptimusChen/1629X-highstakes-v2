@@ -21,9 +21,8 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
     }
 
 	// Test Motion Profile
-	auto constraints = new Constraints(constraint.speed, constraint.accel, this->friction_coef, constraint.accel, 2*constraint.accel, trackWidthMeters);
-
-	auto profileGenerator = new ProfileGenerator(constraints, delta_d);
+	Constraints constraints(constraint.speed, constraint.accel, this->friction_coef, constraint.accel, 2*constraint.accel, trackWidthMeters);
+	ProfileGenerator profileGenerator(constraints, delta_d);
 
     std::vector<bezier::Point> waypointsMeters;
 
@@ -33,14 +32,14 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 
     bezier::BezierSpline<3> bezierPath(waypointsMeters);
 
-    profileGenerator->generateProfile(bezierPath);
+    profileGenerator.generateProfile(bezierPath);
 
     RamseteController controller(2, 0.7);
 
     FeedforwardController ff(900, 110, 10);
     PID pLoop(200, 0, 0);
 
-    auto path = profileGenerator->getProfile();
+    auto path = profileGenerator.getProfile();
 
     int path_index = 0;
 
