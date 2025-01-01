@@ -151,8 +151,11 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
     
     // Record the start time using std::chrono
     auto start_time = std::chrono::high_resolution_clock::now();
-    
+    uint32_t start = 0;
+
     while (true) {
+        start = pros::millis();
+
         Pose pose = get_pose();
 
         // Calculate elapsed time
@@ -189,7 +192,7 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
         }
         
         // Optionally sleep to avoid overwhelming the control loop
-        pros::delay(10);
+        pros::c::task_delay_until(&start, 10);
     }
     
     left->move(0);
@@ -211,7 +214,10 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
     float multiplier = forwards ? 1.0f : -1.0f;
     int stability = 0;
 
+    uint32_t start = 0;
+
     while (true) {
+        start = pros::millis();
         Pose pose = get_pose();
 
         // Calculate elapsed time
@@ -306,8 +312,7 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         } else {
             stability = 0;
         }
-
-        pros::delay(10);
+        pros::c::task_delay_until(&start, 10);
     }
 
     // Stop the motors when the target is reached or timeout occurs

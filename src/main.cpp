@@ -31,65 +31,65 @@ using namespace lib;
 
 #define TRACK_WIDTH 11.5
 
-Controller master(E_CONTROLLER_MASTER);
+static Controller master(E_CONTROLLER_MASTER);
 
-auto r = Rotation(-VERTICAL);
-auto r2 = Rotation(HORIZONTAL);
-auto imu = Imu(INERTIAL_PORT);
+static auto r = Rotation(-VERTICAL);
+static auto r2 = Rotation(HORIZONTAL);
+static auto imu = Imu(INERTIAL_PORT);
 
-auto pl = TrackingWheel(&r, -0.7f, 2.0f);
-auto pd = TrackingWheel(&r2, -8.0f, 2.75f);
+static auto pl = TrackingWheel(&r, -0.7f, 2.0f);
+static auto pd = TrackingWheel(&r2, -8.0f, 2.75f);
 
-MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
-MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
+static MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
+static MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
 
-Odom odom(450, 2.75, TRACK_WIDTH, &left_motor_group, &right_motor_group, &imu);
+static Odom odom(450, 2.75, TRACK_WIDTH, &left_motor_group, &right_motor_group, &imu);
 
-PID linear(	
+static PID linear(	
         10, // kP
         0.02, // kI
         0.1 // kD
 );
 
 // turning PID
-PID angular(
+static PID angular(
 	1, // proportional gain (kP)
 	0.001, // integral gain (kI)
 	1 // derivative gain (kD)
 );
 
-Distance left_dist(L_DISTANCE);
-Distance right_dist(R_DISTANCE);
-Distance back_dist(B_DISTANCE);
-Distance front_dist(F_DISTANCE);
+static Distance left_dist(L_DISTANCE);
+static Distance right_dist(R_DISTANCE);
+static Distance back_dist(B_DISTANCE);
+static Distance front_dist(F_DISTANCE);
 
-Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
+static Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
 
-Angle angle() {
+static Angle angle() {
     float angle = fmod(robot.get_pose().theta - (M_PI / 2), (2 * M_PI));
     if (angle < 0) angle = 2 * M_PI + angle;
     
     return angle * radian;
 }
 
-loco::DistanceSensorModel rightDistance(Eigen::Vector3f((-3.5_in).getValue(), (-3.5_in).getValue(), (270_deg).getValue()), right_dist);
-loco::DistanceSensorModel leftDistance(Eigen::Vector3f((-3.5_in).getValue(), (3.5_in).getValue(), (90_deg).getValue()), left_dist);
-loco::DistanceSensorModel backDistance(Eigen::Vector3f((0_in).getValue(), (-6.25_in).getValue(), (180_deg).getValue()), back_dist);
-loco::DistanceSensorModel frontDistance(Eigen::Vector3f((4_in).getValue(), (-5.25_in).getValue(), (0_deg).getValue()), front_dist);
+static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((-3.5_in).getValue(), (-3.5_in).getValue(), (270_deg).getValue()), right_dist);
+static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((-3.5_in).getValue(), (3.5_in).getValue(), (90_deg).getValue()), left_dist);
+static loco::DistanceSensorModel backDistance(Eigen::Vector3f((0_in).getValue(), (-6.25_in).getValue(), (180_deg).getValue()), back_dist);
+static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((4_in).getValue(), (-5.25_in).getValue(), (0_deg).getValue()), front_dist);
 
-loco::ParticleFilter<PARTICLES> particleFilter(angle);
+static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 
 #define BLUE 0
 #define RED 1
 #define NONE -1
 
-int color = BLUE;
+static int color = BLUE;
 
 void initialize() {
 	pros::lcd::initialize();
 
 	robot.calibrate();
-    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 1);
+    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 2.5);
 
     Task trackingTask = Task {[&] {
 		while (true) {	

@@ -77,7 +77,7 @@ void ProfileGenerator::generateProfile(bezier::BezierSpline<3> path)
     this->profile.clear();
 
     // dont ask    
-    double dt = 0.01;
+    constexpr double dt = 0.01;
     double vel = 0;
 
     std::vector<ProfilePoint> forwardPass;

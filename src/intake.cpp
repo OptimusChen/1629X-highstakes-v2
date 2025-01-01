@@ -3,7 +3,11 @@
 #include "controls.hpp"
 #include <iostream>
 
+pros::Mutex movingMutex;
+pros::Mutex voltsMutex;
+
 void Intake::initialize() {
+    if (initialized) return;
     optical = new Optical(OPTICAL);
     optical->set_led_pwm(100);
 
@@ -12,6 +16,7 @@ void Intake::initialize() {
     hooks->set_gearing(E_MOTOR_GEAR_BLUE);
 
     antijam = true;
+    initialized = true;
 }
 
 void Intake::update() {
@@ -31,12 +36,10 @@ void Intake::update() {
     // 600, 175
     // 300, 400
 
-    
-
-    if (color == RED && ((opticalMeasure > 200) && (opticalMeasure < 250)) && color_sort) {
+    if (color == RED && ((opticalMeasure > 200) && (opticalMeasure < 230)) && color_sort) {
         color_sort = false;
         Task t{[&] {
-            float toDelay = (-3/4)*hooks->get_actual_velocity() + 625;
+            float toDelay = 150;
             delay(toDelay);
             hooks->move(0);
             hooks->move(-127);
@@ -46,8 +49,11 @@ void Intake::update() {
         }};   
     }
 
-    if (antijam && (arm->armTarget != LOAD)) {
-        if (moving && (abs(hooks->get_actual_velocity()) < 10)) {
+    if (antijam && (arm->armTarget != LOAD) && (arm->armTarget != MID)) {
+        movingMutex.take();
+        bool b = moving;
+        movingMutex.give();
+        if (b && (abs(hooks->get_actual_velocity()) < 10)) {
             counter++;
 
             if (counter >= 2) {
@@ -76,27 +82,39 @@ void Intake::set_color(int color) {
 
 void Intake::forwards(int power) {
     hooks->move(power);
+    voltsMutex.take();
     volts = power;
+    voltsMutex.give();
     if (!antijam) {
+        movingMutex.take();
         moving = true;
+        movingMutex.give();
         return;
     }
     Task t{[&] {
         delay(100);
+        movingMutex.take();
         moving = true;
+        movingMutex.give();
     }};
 }
 
 void Intake::backwards(int power) {
     hooks->move(-power);
+    voltsMutex.take();
     volts = -power;
+    voltsMutex.give();
     if (!antijam) {
+        movingMutex.take();
         moving = true;
+        movingMutex.give();
         return;
     }
     Task t{[&] {
         delay(100);
+        movingMutex.take();
         moving = true;
+        movingMutex.give();
     }};
 }
 

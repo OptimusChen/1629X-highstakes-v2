@@ -41,6 +41,7 @@ namespace loco {
 
         QLength maxDistanceSinceUpdate = 1_in;
         QTime maxUpdateInterval = 2_s;
+        pros::Mutex predmutex;
 
         std::function<Angle()> angleFunction;
         std::ranlux24_base de;
@@ -63,7 +64,10 @@ namespace loco {
         }
 
         Eigen::Vector3f getPrediction() {
-            return prediction;
+            predmutex.take();
+            auto a = prediction;
+            predmutex.give();
+            return a;
         }
 
         std::array<Eigen::Vector3f, L> getParticles() {
@@ -166,7 +170,9 @@ namespace loco {
                 ySum += particles[i][1];
             }
 
+            predmutex.take();
             prediction = Eigen::Vector3f(xSum / static_cast<float>(L), ySum / static_cast<float>(L), angle.getValue());
+            predmutex.give();
 
             lastUpdateTime = now;
             distanceSinceUpdate = 0.0;

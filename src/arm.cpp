@@ -2,6 +2,7 @@
 #include "controls.hpp"
 
 void Arm::initialize() {
+    if (initialized) return;
     left = new Motor(ARM_LEFT, MotorGears::green);
     right = new Motor(-ARM_RIGHT, MotorGears::green);
     rotation = new Rotation(LB_ROTATION);
@@ -12,6 +13,7 @@ void Arm::initialize() {
 
     rotation->reset();
     rotation->reset_position();
+    initialized = true;
 }
 
 void Arm::update() {
