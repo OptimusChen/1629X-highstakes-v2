@@ -91,18 +91,18 @@ void initialize() {
 	robot.calibrate();
     robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 3);
 
-    Task trackingTask = Task {[&] {
-		while (true) {	
-            auto pose = robot.get_pose();
+    // Task trackingTask = Task {[&] {
+	// 	while (true) {	
+    //         auto pose = robot.get_pose();
 
-			pros::lcd::print(0, "x: %f", pose.x); // print the x position
-			pros::lcd::print(1, "y: %f", pose.y); // print the y position
-			pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
-			pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the headings
+	// 		pros::lcd::print(0, "x: %f", pose.x); // print the x position
+	// 		pros::lcd::print(1, "y: %f", pose.y); // print the y position
+	// 		pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
+	// 		pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the headings
 
-			pros::delay(10);
-		}
-	}};
+	// 		pros::delay(10);
+	// 	}
+	// }};
 
     particleFilter.addSensor(&leftDistance);
     particleFilter.addSensor(&rightDistance);
@@ -112,8 +112,10 @@ void initialize() {
     robot.set_pf(&particleFilter);
     robot.add_subsystem(new Intake());
     robot.add_subsystem(new Arm());
+
+    selector::init();
    	
-    bestautonfr::skills(&robot);
+    // bestautonfr::skills(&robot);
 }
 
 void disabled() {}

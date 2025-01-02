@@ -644,7 +644,7 @@
       }
     },
     "upload_options": {
-      "after": "screen",
+      "after": "run",
       "icon": "planet",
       "slot": 1
     },
