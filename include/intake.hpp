@@ -4,6 +4,7 @@
 #include "pros/motors.hpp"
 #include "pros/optical.hpp"
 #include "arm.hpp"
+#include "controls.hpp"
 
 using namespace pros;
 using namespace lib;
@@ -22,9 +23,8 @@ public:
     bool antijam = false;
     bool moving = false;
     int color = RED;
-    int volts = 0;
-    Optical* optical;
-    Motor* hooks;
+    Optical optical{OPTICAL};
+    Motor hooks{HOOKS};
     Arm* arm;
 
     std::function<bool()> stop_condition;
@@ -41,4 +41,7 @@ public:
     bool detected_ring(int threshold = STAGE_2);
 private:
     int counter = 0;
+    int volts = 0;
+    pros::Mutex movingMutex {};
+    pros::Mutex voltsMutex {}; 
 };

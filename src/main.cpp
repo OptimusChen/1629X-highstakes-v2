@@ -48,7 +48,7 @@ static Odom odom(450, 2.75, TRACK_WIDTH, &left_motor_group, &right_motor_group, 
 static PID linear(	
         10, // kP
         0.02, // kI
-        0.1 // kD
+        0.2 // kD
 );
 
 // turning PID
@@ -181,7 +181,7 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R1, std::make_pair(
         [&](bool firstActivation) {
-            intake->hooks->move(127);
+            intake->hooks.move(127);
         },
         [&]() {
             intake->stop();
@@ -190,7 +190,7 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R2, std::make_pair(
         [&](bool firstActivation) {
-            intake->hooks->move(-127);
+            intake->hooks.move(-127);
         },
         [&]() {
             intake->stop();
@@ -246,9 +246,9 @@ void opcontrol() {
 
         temperatureSum = 0.0;
 
-        // master.print(0, 0, "Intake: %.0f°C", motor_get_temperature(HOOKS));
+        master.print(0, 0, "Intake: %.0f°C", motor_get_temperature(HOOKS));
         // delay(1);
-        master.print(0, 0, "Avg: %.0f°C", averageTemperature);
+        // master.print(0, 0, "Avg: %.0f°C", averageTemperature);
 
         pros::delay(1);
     }

@@ -153,6 +153,8 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
     auto start_time = std::chrono::high_resolution_clock::now();
     uint32_t start = 0;
 
+    int counter = 0;
+
     while (true) {
         start = pros::millis();
 
@@ -174,6 +176,16 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
         float error = util::calculate_shortest_angle(current_angle, target_angle);
         if (reversed) error = util::calculate_longest_angle(current_angle, target_angle);
 
+        if (fabs(error) < 1) {
+            counter++;
+        } else {
+            counter = 0;
+        }
+
+        if (counter > 5) {
+            break;
+        }
+
         // Get the output from the angular PID controller
         float output = angular->calculate(error);
         
@@ -185,11 +197,6 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
 
         left->move(left_speed);
         right->move(right_speed);
-        
-        // Check if the robot is within tolerance for both angle and position
-        if (fabs(error) < 0.05 && fabs(pose.theta) < 0.05) {
-            break;
-        }
         
         // Optionally sleep to avoid overwhelming the control loop
         pros::c::task_delay_until(&start, 10);
