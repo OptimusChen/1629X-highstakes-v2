@@ -115,7 +115,7 @@ void bestautonfr::skills(Robot* robot) {
     robot->set_pose(-58, 0, 0);
     
     robot->initialize_particle_filter();
-    // robot->set_pose_mode(MCL);  
+    robot->set_pose_mode(MCL);  
 
     delay(1000);
 
@@ -152,8 +152,6 @@ void bestautonfr::skills(Robot* robot) {
 
     intake->forwards();
     delay(500);
-
-    robot->set_pose_mode(MCL);  
 
     delay(250);
 
@@ -370,8 +368,8 @@ void bestautonfr::skills(Robot* robot) {
     robot->set_mogo(true);
     robot->turnToHeading(0, 500);
     robot->ramsete({
-        {-47.11, 23.48}, {-15.75, 23.31}, {-13.51, 22.79}, {-18.68, 38.47},
-        {-18.68, 38.47}, {-22.16, 49.03}, {-24.36, 45.71}, {-48.83, 45.71},
+        {-47.11, 23.48}, {-31.77, 23.48}, {-13.51, 22.79}, {-18.68, 38.47},
+        {-18.68, 38.47}, {-20.38, 43.65}, {-24.36, 45.71}, {-48.83, 45.71},
         {-48.83, 45.71}, {-73.30, 45.71}, {-53.31, 62.94}, {-40.73, 57.60}
     }, fast);
     
