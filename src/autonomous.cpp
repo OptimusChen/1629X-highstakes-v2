@@ -332,23 +332,26 @@ void bestautonfr::skills(Robot* robot) {
 
     robot->set_pose(27, 57, 0);
     robot->moveToPoint(50, 57, 500, true, false);
-    robot->turnToHeading(290, 500);
-    robot->timedMove(60, 500);
-    robot->timedMove(-60, 500);
+    robot->turnToHeading(300, 500);
+    robot->timedMove(60, 600);
+    robot->timedMove(-60, 600);
     robot->turnToHeading(225, 500, false, 20);
     robot->timedMove(90, 450);
     robot->moveToPoint(60, 60, 1000, false, false, 60);
 
     robot->set_mogo(false);
+    intake->backwards();
     
     Task abc5([&] {
-        delay(1500);
+        delay(500);
+        intake->forwards();
+        delay(1000);
         arm->set_target(LOAD);
     });
     robot->ramsete({
         {52.44, 52.78}, {35.44, 33.65}, {-0.24, 32.51}, {3.00, 59.00}
     }, medium);
-    delay(1000);
+    delay(500);
     for (int i = 0; i < SPAM; i++) {
         intake->stop();
         delay(100);
@@ -359,10 +362,11 @@ void bestautonfr::skills(Robot* robot) {
     robot->timedMove(40, 500);
     arm->set_target(SCORE);
     delay(500);
+    robot->timedMove(-40, 500);
     arm->set_target(REST);
 
     robot->ramsete({{0.00, 61.00}, {0.63, 28.72}, {-32.81, 40.71}, {-47.28, 23.31}}, medium, BACKWARDS);
-    robot->timedMove(-20, 250);
+    robot->timedMove(-20, 500);
     robot->set_mogo(true);
     robot->turnToHeading(0, 500);
     robot->ramsete({
