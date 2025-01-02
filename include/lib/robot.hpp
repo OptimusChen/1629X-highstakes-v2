@@ -73,6 +73,7 @@ namespace lib {
             void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false, int maxSpeed = 127);
             void ramsete(std::vector<bezier::Point>, MPConstraint constraint, Direction direction = Direction::FORWARDS);
             void timedMove(int power, int timeout);
+            void swingToHeading(float heading, int timeout, int side = 1);
 
             void set_mogo(bool value);
             void set_rush_arm(bool value);

@@ -336,3 +336,66 @@ void Robot::timedMove(int power, int time) {
     left->move(0);
     right->move(0);
 } 
+
+void Robot::swingToHeading(float target_angle, int timeout, int side) {
+    angular->reset();
+    
+    // Record the start time using std::chrono
+    auto start_time = std::chrono::high_resolution_clock::now();
+    uint32_t start = 0;
+
+    int counter = 0;
+
+    while (true) {
+        start = pros::millis();
+
+        Pose pose = get_pose();
+
+        // Calculate elapsed time
+        auto current_time = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float> elapsed = current_time - start_time;
+        
+        // Break if the timeout has been reached
+        if (elapsed.count() * 1000.0f >= timeout) {
+            break;
+        }
+
+        // Get the current robot heading (converted from radians to degrees)
+        float current_angle = pose.theta * 180.0f / M_PI;
+        
+        // Calculate the error in heading (shortest angle)
+        float error = util::calculate_shortest_angle(current_angle, target_angle);
+
+        if (fabs(error) < 1) {
+            counter++;
+        } else {
+            counter = 0;
+        }
+
+        if (counter > 5) {
+            break;
+        }
+
+        // Get the output from the angular PID controller
+        float output = angular->calculate(error);
+        
+        // Set the chassis motor speeds based on the PID output
+        float left_speed = util::clamp(output, -127, 127);
+        float right_speed = util::clamp(-output, -127, 127);
+
+        if (side == 0) {
+            left->move(left_speed);
+            right->brake();
+        }
+        if (side == 1) {
+            right->move(right_speed);
+            left->brake();
+        }
+        
+        // Optionally sleep to avoid overwhelming the control loop
+        pros::c::task_delay_until(&start, 10);
+    }
+    
+    left->move(0);
+    right->move(0);
+}

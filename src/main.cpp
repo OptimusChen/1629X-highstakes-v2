@@ -89,7 +89,7 @@ void initialize() {
 	pros::lcd::initialize();
 
 	robot.calibrate();
-    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 2.5);
+    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 3);
 
     Task trackingTask = Task {[&] {
 		while (true) {	

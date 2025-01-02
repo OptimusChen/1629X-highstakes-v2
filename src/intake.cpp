@@ -37,7 +37,7 @@ void Intake::update() {
     if (color == RED && ((opticalMeasure > 200) && (opticalMeasure < 230)) && color_sort) {
         color_sort = false;
         Task t{[&] {
-            float toDelay = 100;
+            float toDelay = 200;
             delay(toDelay);
             hooks.move(0);
             hooks.move(-127);
