@@ -172,7 +172,7 @@ void bestautonfr::skills(Robot* robot) {
         {-46.30, -25.70}, {-48.10, -9.80}, {14.55, -38.70}, {11.60, -51.21}, 
         {11.60, -51.21}, {8.06, -66.20}, {-4.84, -40.11}, {-50.33, -47.50},
         {-50.33, -47.50}, {-71.10, -50.90}, {-58.00, -64.20}, {-30.00, -58.60}
-    }, huh);
+    }, {55, 200, INCH});
 
     robot->moveToPoint(-60, -60, 1000, false, false, 80);
 
@@ -312,6 +312,7 @@ void bestautonfr::skills(Robot* robot) {
     arm->set_target(ALLIANCE_STAKE);
     delay(500);
     intake->set_stop_condition(nullptr);
+    intake->color_sort = true;
     intake->forwards();
     robot->moveToPoint(47, 0, 1000, false, false);
     // arm->set_target(REST);
@@ -320,6 +321,8 @@ void bestautonfr::skills(Robot* robot) {
 
     arm->set_target(REST);
     robot->turnToHeading(125, 500);
+    intake->color_sort = false;
+
     
     // intake->color_sort = true;
     robot->ramsete({
@@ -329,6 +332,7 @@ void bestautonfr::skills(Robot* robot) {
     delay(500);
 
     robot->set_pose(27, 57, 0);
+    intake->color_sort = true;
     robot->moveToPoint(50, 57, 500, true, false);
     robot->turnToHeading(300, 500);
     robot->timedMove(60, 600);
@@ -339,18 +343,19 @@ void bestautonfr::skills(Robot* robot) {
 
     robot->set_mogo(false);
     intake->backwards();
+    intake->color_sort = false;
     
     Task abc5([&] {
         delay(500);
         intake->forwards();
-        delay(1000);
+        delay(1500);
         arm->set_target(LOAD);
     });
     robot->ramsete({
         {52.44, 52.78}, {35.44, 33.65}, {-0.24, 32.51}, {3.00, 59.00}
     }, medium);
     delay(500);
-    for (int i = 0; i < SPAM; i++) {
+    for (int i = 0; i < SPAM + 1; i++) {
         intake->stop();
         delay(100);
         intake->forwards();
@@ -371,7 +376,7 @@ void bestautonfr::skills(Robot* robot) {
         {-47.11, 23.48}, {-31.77, 23.48}, {-13.51, 22.79}, {-18.68, 38.47},
         {-18.68, 38.47}, {-20.38, 43.65}, {-24.36, 45.71}, {-48.83, 45.71},
         {-48.83, 45.71}, {-73.30, 45.71}, {-53.31, 62.94}, {-40.73, 57.60}
-    }, fast);
+    }, {55, 200, INCH});
     
     robot->moveToPoint(-60, 60, 1000, false, false);
 
