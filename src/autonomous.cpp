@@ -176,7 +176,7 @@ void bestautonfr::skills(Robot* robot) {
         {-50.33, -47.50}, {-71.10, -50.90}, {-58.00, -64.20}, {-30.00, -58.60}
     }, huh);
 
-    robot->moveToPoint(-60, -60, 1000, false, false, 60);
+    robot->moveToPoint(-60, -60, 1000, false, false, 80);
 
     robot->set_rush_arm(true);
     delay(500);
@@ -187,7 +187,10 @@ void bestautonfr::skills(Robot* robot) {
     // WALL STAKE
 
     intake->forwards();
-    arm->set_target(LOAD);
+    Task abc6([&] {
+        delay(2000);
+        arm->set_target(LOAD);
+    });
     
     robot->ramsete({{-60.00, -60.00}, {3.64, -58.32}, {13.78, -38.51}, {25.91, -50.07}}, {100, 400, INCH});
     delay(500);
@@ -337,16 +340,42 @@ void bestautonfr::skills(Robot* robot) {
     robot->moveToPoint(60, 60, 1000, false, false, 60);
 
     robot->set_mogo(false);
-
+    
     Task abc5([&] {
-        delay(1000);
+        delay(1500);
         arm->set_target(LOAD);
     });
     robot->ramsete({
-        {53.02, 52.78}, {41.03, 39.64}, {-0.24, 32.51}, {0.00, 61.00}
-    }, fast);
+        {52.44, 52.78}, {35.44, 33.65}, {-0.24, 32.51}, {3.00, 59.00}
+    }, medium);
+    delay(1000);
+    for (int i = 0; i < SPAM; i++) {
+        intake->stop();
+        delay(100);
+        intake->forwards();
+        delay(100);
+    }
+    intake->stop();
     robot->timedMove(40, 500);
     arm->set_target(SCORE);
+    delay(500);
+    arm->set_target(REST);
+
+    robot->ramsete({{0.00, 61.00}, {0.63, 28.72}, {-32.81, 40.71}, {-47.28, 23.31}}, medium, BACKWARDS);
+    robot->timedMove(-20, 250);
+    robot->set_mogo(true);
+    robot->turnToHeading(0, 500);
+    robot->ramsete({
+        {-47.11, 23.48}, {-15.75, 23.31}, {-13.51, 22.79}, {-18.68, 38.47},
+        {-18.68, 38.47}, {-22.16, 49.03}, {-24.36, 45.71}, {-48.83, 45.71},
+        {-48.83, 45.71}, {-73.30, 45.71}, {-53.31, 62.94}, {-40.73, 57.60}
+    }, fast);
+    
+    robot->moveToPoint(-60, 60, 1000, false, false);
+
+    delay(100000000);
+
+    return;
 
     return;
 
