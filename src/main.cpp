@@ -85,6 +85,12 @@ static int color = BLUE;
 rd::Selector selector(&robot, {
     {"Skills", -58, 0, 0, [](Robot* robot) {
         bestautonfr::skills(robot);
+    }},
+    {"Red Rush", -52, 27, 25, [](Robot* robot) {
+        bestautonfr::rush(robot);
+    }},
+    {"Red AWP", -55, -15, 90, [](Robot* robot) {
+        bestautonfr::sawp(robot);
     }}
 });
 
@@ -183,6 +189,14 @@ void opcontrol() {
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_Y, [&]() {
         cornerActive = !cornerActive;
         corner_arm.set_value(cornerActive);
+    });
+
+    toggle_controls.emplace(E_CONTROLLER_DIGITAL_B, [&]() {
+        arm->set_target(MID);
+    });
+
+    toggle_controls.emplace(E_CONTROLLER_DIGITAL_UP, [&]() {
+        intake->color_sort = !intake->color_sort;
     });
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R1, std::make_pair(

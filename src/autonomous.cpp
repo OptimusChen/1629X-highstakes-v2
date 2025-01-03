@@ -43,12 +43,8 @@ void init(Robot* robot) {
     });
 }
 
-void bestautonfr::sawp(Robot* robot) {
-    robot->set_pose(-55, -15, 90);
-    robot->initialize_particle_filter();
-    robot->set_pose_mode(MCL);  
-
-    delay(1000);
+void bestautonfr::rush(Robot* robot) {
+    robot->set_pose_mode(MCL);
 
     for (Subsystem* subsystem : robot->subsystems) {
         subsystem->initialize();
@@ -56,6 +52,44 @@ void bestautonfr::sawp(Robot* robot) {
 
     Intake* intake = robot->get_subsystem<Intake>();
     Arm* arm = robot->get_subsystem<Arm>();
+
+    Task updates([&]() {
+        while (true) {
+            arm->update();
+            intake->update();
+            delay(1);
+        }
+    });
+
+    robot->set_rush_arm(true);
+    robot->moveToPoint(-16.8, 41.5, 1000);
+    robot->moveToPoint(-31.5, 35.5, 1000, false, false, 80);
+    robot->set_rush_arm(false);
+    robot->turnToHeading(115, 500);
+    robot->moveToPoint(-23.5, 23.5, 1000, false, false, 50);
+    robot->timedMove(-20, 500);
+    robot->moveToPoint(-24.5, 47.2, 2000, true, false, 100);
+
+    robot->turnToHeading(270, 1000);
+    robot->moveToPoint(-24, 0, 2000, true, false, 100);
+    robot->timedMove(20, 500);
+}
+
+void bestautonfr::sawp(Robot* robot) {
+    // robot->set_pose(-55, -15, 90);
+    // robot->initialize_particle_filter();
+    robot->set_pose_mode(MCL);  
+
+    // delay(1000);
+
+    for (Subsystem* subsystem : robot->subsystems) {
+        subsystem->initialize();
+    }
+
+    Intake* intake = robot->get_subsystem<Intake>();
+    Arm* arm = robot->get_subsystem<Arm>();
+
+    intake->arm = arm;
 
     arm->set_target(LOAD);
 
@@ -77,8 +111,8 @@ void bestautonfr::sawp(Robot* robot) {
     const int target = 300;
     float error = front.get_distance() - target;
     while (abs(error) > 30) {
-        robot->left->move(30 * util::sign(error));
-        robot->right->move(30 * util::sign(error));
+        robot->left->move(20 * util::sign(error));
+        robot->right->move(20 * util::sign(error));
         error = front.get_distance() - target;
 
         delay(5);
