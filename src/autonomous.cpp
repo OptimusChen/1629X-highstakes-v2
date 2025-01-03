@@ -112,12 +112,7 @@ SKILLS
 */
 
 void bestautonfr::skills(Robot* robot) {
-    robot->set_pose(-58, 0, 0);
-    
-    robot->initialize_particle_filter();
     robot->set_pose_mode(MCL);  
-
-    delay(1000);
 
     for (Subsystem* subsystem : robot->subsystems) {
         subsystem->initialize();

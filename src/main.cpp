@@ -112,17 +112,15 @@ void initialize() {
     robot.set_pf(&particleFilter);
     robot.add_subsystem(new Intake());
     robot.add_subsystem(new Arm());
-
-    selector::init();
-   	
-    // bestautonfr::skills(&robot);
 }
 
 void disabled() {}
 
 void competition_initialize() {}
 
-void autonomous() {}
+void autonomous() {     
+    bestautonfr::skills(&robot);
+}
 
 float get_rotation_degrees(Rotation rot) {
     float measure = rot.get_angle() / 100.0f;
@@ -200,10 +198,10 @@ void opcontrol() {
     ));
 
     while (true) {
-        int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        float rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X)/127.0f;
+        float leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y)/127.0f;
 
-        lib::opcontrol::arcade(robot, leftY, rightX);
+        lib::opcontrol::cheeze(robot, leftY, rightX, 0.0500);
 
         for (Subsystem* subsystem : robot.subsystems) {
             subsystem->update();
