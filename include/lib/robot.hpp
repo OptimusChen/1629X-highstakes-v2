@@ -44,6 +44,7 @@ namespace lib {
             std::vector<Subsystem*> subsystems;
 
             int poseMode = ODOM;
+            bool poseSet = false;
 
             Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular);
 

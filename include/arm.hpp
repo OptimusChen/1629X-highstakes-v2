@@ -4,6 +4,7 @@
 #include "lib/subsystem.hpp"
 #include "pros/motors.hpp"
 #include "pros/rotation.hpp"
+#include "robodash/views/selector.hpp"
 
 using namespace pros;
 using namespace lib;

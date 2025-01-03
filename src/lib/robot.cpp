@@ -45,6 +45,7 @@ Pose Robot::get_pose() {
 }
 
 void Robot::calibrate() {
+    if (!poseSet) return;
     odometry->inertial->reset(true);
 
     odometry->start();
@@ -103,7 +104,7 @@ QLength getDistance(const pros::MotorGroup* motor) {
 }
 
 void Robot::initialize_particle_filter() {
-    Eigen::Vector2f mean(get_pose().y * inch.Convert(metre), -get_pose().x * inch.Convert(metre)); // Example values for mean.
+    Eigen::Vector2f mean(get_pose().y * inch.Convert(metre), -get_pose().x * inch.Convert(metre));
 
     Eigen::Matrix2f covariance;
     covariance << 0.1f, 0.0f,

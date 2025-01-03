@@ -141,7 +141,7 @@ namespace lib::opcontrol {
 
     void cheeze(Robot instance, float throttle, float turn, float threshold) {
         auto [left, right] = cheesyDrive(throttle, turn);
-        std::cout << left << " " << right << std::endl;
+        // std::cout << left << " " << right << std::endl;
         instance.left->move(left*127);
         instance.right->move(right*127);
         return;

@@ -12,9 +12,6 @@
 #include <math.h>
 #include <iostream>
 
-#include "lib/selector.hpp"
-#include "liblvgl/lvgl.h"
-
 #include "lib/odometry/odom.hpp"
 #include "lib/util.hpp"
 #include "lib/robot.hpp"
@@ -63,7 +60,7 @@ static Distance right_dist(R_DISTANCE);
 static Distance back_dist(B_DISTANCE);
 static Distance front_dist(F_DISTANCE);
 
-static Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
+Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
 
 static Angle angle() {
     float angle = fmod(robot.get_pose().theta - (M_PI / 2), (2 * M_PI));
@@ -85,24 +82,33 @@ static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 
 static int color = BLUE;
 
-void initialize() {
-	pros::lcd::initialize();
+rd::Selector selector(&robot, {
+    {"Skills", -58, 0, 0, [](Robot* robot) {
+        bestautonfr::skills(robot);
+    }}
+});
 
-	robot.calibrate();
+void initialize() {
+	// pros::lcd::initialize();
+
+    std::cout << &robot << std::endl;
+
     robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 3);
 
-    // Task trackingTask = Task {[&] {
-	// 	while (true) {	
-    //         auto pose = robot.get_pose();
+    Task trackingTask = Task {[&] {
+		while (true) {	
+            auto pose = robot.get_pose();
 
-	// 		pros::lcd::print(0, "x: %f", pose.x); // print the x position
-	// 		pros::lcd::print(1, "y: %f", pose.y); // print the y position
-	// 		pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
-	// 		pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the headings
+            // std::cout << "x: " << pose.x << ", y: " << pose.y << ", heading: " << util::degrees(pose.theta) << std::endl;
 
-	// 		pros::delay(10);
-	// 	}
-	// }};
+			// pros::lcd::print(0, "x: %f", pose.x); // print the x position
+			// pros::lcd::print(1, "y: %f", pose.y); // print the y position
+			// pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
+			// pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the headings
+
+			pros::delay(10);
+		}
+	}};
 
     particleFilter.addSensor(&leftDistance);
     particleFilter.addSensor(&rightDistance);
@@ -119,7 +125,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {     
-    bestautonfr::skills(&robot);
+    selector.run_auton();
 }
 
 float get_rotation_degrees(Rotation rot) {

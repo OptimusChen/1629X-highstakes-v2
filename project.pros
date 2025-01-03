@@ -646,7 +646,7 @@
     "upload_options": {
       "after": "run",
       "icon": "planet",
-      "slot": 5
+      "slot": 1
     },
     "use_early_access": true
   }
