@@ -71,13 +71,15 @@ namespace lib {
             // movement stuff
             void turnToHeading(float heading, int timeout, bool reversed = false, int minSpeed = 0);
             void turnToPoint(float x, float y, int timeout, int minSpeed = 0);
-            void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false, int maxSpeed = 127);
+            void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false, int maxSpeed = 127, bool noTurn = false);
             void ramsete(std::vector<bezier::Point>, MPConstraint constraint, Direction direction = Direction::FORWARDS);
             void timedMove(int power, int timeout);
             void swingToHeading(float heading, int timeout, int side = 1);
+            void shivaan(float x, float y, int timeout, float pct, int maxSpeed = 127);
 
             void set_mogo(bool value);
-            void set_rush_arm(bool value);
+            void set_rush_arm_left(bool value);
+            void set_rush_arm_right(bool value);
     };
 
     template <typename T>

@@ -6,9 +6,10 @@
 void Intake::initialize() {
     if (initialized) return;
     optical.set_led_pwm(100);
+    // optical.set_integration_rate();
 
-    hooks.set_reversed(true);
     hooks.set_gearing(E_MOTOR_GEAR_BLUE);
+    hooks.set_reversed(true);
 
     antijam = true;
     initialized = true;
@@ -16,38 +17,48 @@ void Intake::initialize() {
 
 void Intake::update() {
     auto opticalMeasure = optical.get_hue();
+    int off = 400;
 
-    if (color == BLUE && ((opticalMeasure > 0) && (opticalMeasure < 30)) && color_sort) {
-        color_sort = false;
-        Task t{[&] {
-            delay(500);
-            hooks.move(-127);
-            delay(100);
-            voltsMutex.take();
-            const auto _volts = volts;
-            voltsMutex.give();
-            hooks.move(_volts);
-            color_sort = true;
-        }};   
-    }
+    // if (color == BLUE && ((opticalMeasure > 0) && (opticalMeasure < 30)) && color_sort) {
+    //     color_sort = false;
+    //     Task t{[&] {
+    //         delay(500);
+    //         hooks.move(-127);
+    //         delay(100);
+    //         voltsMutex.take();
+    //         const auto _volts = volts;
+    //         voltsMutex.give();
+    //         hooks.move(_volts);
+    //         color_sort = true;
+    //     }};   
+    // }
 
     // 600, 175
     // 300, 400
 
     if (color == RED && ((opticalMeasure > 200) && (opticalMeasure < 230)) && color_sort) {
-        color_sort = false;
+          toSort = true;
+          hooks.tare_position();
+          wrongDetected = hooks.get_position();
+          color_sort = false;
+        std::cout << "sort1" << std::endl;
+    }
+
+    std::cout << hooks.get_position() << std::endl;;
+
+    if (toSort && abs(hooks.get_position() - (wrongDetected + off)) < 10) {
+        std::cout << "sort2" << std::endl;
+        toSort = false;
+        color_sort = true;
         Task t{[&] {
-            float toDelay = 200;
-            delay(toDelay);
-            hooks.move(0);
             hooks.move(-127);
             delay(300);
             voltsMutex.take();
             const auto _volts = volts;
             voltsMutex.give();
             hooks.move(_volts);
-            this->color_sort = true;
-        }};   
+            hooks.tare_position();
+        }};  
     }
 
     if (antijam && (arm->armTarget != LOAD) && (arm->armTarget != MID)) {

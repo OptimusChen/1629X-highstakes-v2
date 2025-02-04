@@ -91,23 +91,23 @@ namespace loco {
             float theta = 0;
 
             if (theta = abs(angle - 0); theta < M_PI_2) {
-                predicted = std::min((WALL_0_X - x.x()) / cos(theta), predicted);
+                predicted = std::min((WALL_0_X - x.x()) / abs(cos(theta)), predicted);
             }
 
             if (theta = abs(angle - M_PI_2); theta < M_PI_2) {
-                predicted = std::min((WALL_1_Y - x.y()) / cos(theta), predicted);
+                predicted = std::min((WALL_1_Y - x.y()) / abs(cos(theta)), predicted);
             }
 
             if (theta = abs(angle - M_PI); theta < M_PI_2) {
-                predicted = std::min((x.x() - WALL_2_X) / cos(theta), predicted);
+                predicted = std::min((x.x() - WALL_2_X) / abs(cos(theta)), predicted);
             }
 
             if (theta = abs(angle - (3*M_PI)/2); theta < M_PI_2) {
-                predicted = std::min((x.y() - WALL_3_Y) / cos(theta), predicted);
+                predicted = std::min((x.y() - WALL_3_Y) / abs(cos(theta)), predicted);
             }
 
             if (theta = abs(angle - 2*M_PI); theta < M_PI_2) {
-                predicted = std::min((WALL_0_X - x.x()) / cos(theta), predicted);
+                predicted = std::min((WALL_0_X - x.x()) / abs(cos(theta)), predicted);
             }
             
             return cheap_norm_pdf((predicted - measured.getValue()) / std.getValue()) * LOCO_CONFIG::DISTANCE_WEIGHT;

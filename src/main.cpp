@@ -26,7 +26,7 @@ using namespace pros::c;
 using namespace controls;
 using namespace lib;
 
-#define TRACK_WIDTH 11.5
+#define TRACK_WIDTH 13.5
 
 static Controller master(E_CONTROLLER_MASTER);
 
@@ -82,35 +82,33 @@ static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 
 static int color = BLUE;
 
-rd::Selector selector(&robot, {
-    {"Skills", -58, 0, 0, [](Robot* robot) {
-        bestautonfr::skills(robot);
-    }},
-    {"Red Rush", -52, 27, 25, [](Robot* robot) {
-        bestautonfr::rush(robot);
-    }},
-    {"Red AWP", -55, -15, 90, [](Robot* robot) {
-        bestautonfr::sawp(robot);
-    }}
-});
+// rd::Selector selector(&robot, {
+//     {"Skills", -58, 0, 0, [](Robot* robot) {
+//         bestautonfr::skills(robot);
+//     }},
+//     {"Red Rush", -52, 27, 25, [](Robot* robot) {
+//         bestautonfr::rush(robot);
+//     }},
+//     {"Red AWP", -55, -15, 90, [](Robot* robot) {
+//         bestautonfr::sawp(robot);
+//     }}
+// });
 
 void initialize() {
-	// pros::lcd::initialize();
+	pros::lcd::initialize();
 
     std::cout << &robot << std::endl;
 
     robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 3);
 
     Task trackingTask = Task {[&] {
-		while (true) {	
+		while (true) {
             auto pose = robot.get_pose();
 
-            // std::cout << "x: " << pose.x << ", y: " << pose.y << ", heading: " << util::degrees(pose.theta) << std::endl;
-
-			// pros::lcd::print(0, "x: %f", pose.x); // print the x position
-			// pros::lcd::print(1, "y: %f", pose.y); // print the y position
-			// pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
-			// pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the headings
+			pros::lcd::print(0, "x: %f", pose.x); // print the x position
+			pros::lcd::print(1, "y: %f", pose.y); // print the y position
+			pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
+			pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the headings
 
 			pros::delay(10);
 		}
@@ -124,14 +122,26 @@ void initialize() {
     robot.set_pf(&particleFilter);
     robot.add_subsystem(new Intake());
     robot.add_subsystem(new Arm());
+
+    robot.poseSet = true;
+    robot.calibrate();
+
+    // autonomous();
+
+    // robot.set_pose(-58, 0, 0);
+    // robot.initialize_particle_filter();
+    // robot.poseSet = true;
+    // robot.calibrate();
+    // delay(2000);
+    // bestautonfr::skills(&robot);
 }
 
 void disabled() {}
 
 void competition_initialize() {}
 
-void autonomous() {     
-    selector.run_auton();
+void autonomous() {
+    bestautonfr::rush(&robot);
 }
 
 float get_rotation_degrees(Rotation rot) {
@@ -145,7 +155,7 @@ void opcontrol() {
         subsystem->initialize();
     }
 
-    Intake* intake = robot.get_subsystem<Intake> ();
+    Intake* intake = robot.get_subsystem<Intake>();
     Arm* arm = robot.get_subsystem<Arm>();
     
     intake->arm = arm;
@@ -153,22 +163,42 @@ void opcontrol() {
     intake->antijam = false;
 
 	auto mogo = ADIDigitalOut(MOGO);
-    auto corner_arm = ADIDigitalOut(DOINKER);
+    auto doinker_left = ADIDigitalOut(DOINKER_LEFT);
+    auto doinker_right = ADIDigitalOut(DOINKER_RIGHT);
+    bool dlActive = false;
+    bool drActive = false;
     bool mogoActive = false;
-    bool cornerActive = false;
+
+    bool lbSetting = false;
 
     std::unordered_map<controller_digital_e_t, std::function<void()>> toggle_controls;
     std::unordered_map<controller_digital_e_t, std::pair<std::function<void(bool)>, std::function<void()>>> hold_controls;
     std::unordered_set<controller_digital_e_t> held;
 
+    int numStates = 4;
+    int states[numStates] = {REST, LOAD, SCORE, ALLIANCE_STAKE};
+    int state = 0;
+
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
         [&](bool firstActivation) {
-            arm->move(127);
+            if (!lbSetting) arm->move(127);
         },
         [&]() {
-            arm->set_target(LOAD);
+            if (!lbSetting) {
+                arm->moving = false;
+                arm->set_target(LOAD);
+            }
         }
     ));
+
+    toggle_controls.emplace(E_CONTROLLER_DIGITAL_L1, [&]() {
+        if (lbSetting) {
+            state++;
+            if (state >= numStates) state = 0;
+
+            arm->set_target(states[state]);
+        }
+    });
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L2, std::make_pair(
         [&](bool firstActivation) {
@@ -181,27 +211,48 @@ void opcontrol() {
 
     // arm end
 
-    toggle_controls.emplace(E_CONTROLLER_DIGITAL_RIGHT, [&]() {
-        mogoActive = !mogoActive;
-        mogo.set_value(mogoActive);
-    });
+    hold_controls.emplace(E_CONTROLLER_DIGITAL_RIGHT, std::make_pair(
+        [&](bool firstActivation) {
+            mogo.set_value(false);
+        }, 
+        [&]() {
+            mogo.set_value(true);
+        }
+    ));
 
-    toggle_controls.emplace(E_CONTROLLER_DIGITAL_Y, [&]() {
-        cornerActive = !cornerActive;
-        corner_arm.set_value(cornerActive);
+    // toggle_controls.emplace(E_CONTROLLER_DIGITAL_RIGHT, [&]() {
+    //     mogoActive = !mogoActive;
+    //     mogo.set_value(mogoActive);
+    // });
+
+    toggle_controls.emplace(E_CONTROLLER_DIGITAL_DOWN, [&]() {
+        dlActive = !dlActive;
+        doinker_left.set_value(dlActive);
     });
 
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_B, [&]() {
-        arm->set_target(MID);
+        drActive = !drActive;
+        doinker_right.set_value(drActive);
     });
 
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_UP, [&]() {
         intake->color_sort = !intake->color_sort;
     });
 
+    hold_controls.emplace(E_CONTROLLER_DIGITAL_Y, std::make_pair(
+        [&](bool firstActivation) {
+            lbSetting = true;
+        },
+        [&]() {
+            lbSetting = false;
+            state = 0;
+            arm->set_target(REST);
+        }
+    ));
+
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R1, std::make_pair(
         [&](bool firstActivation) {
-            intake->hooks.move(127);
+            intake->hooks.move_velocity(600);
         },
         [&]() {
             intake->stop();
@@ -210,7 +261,7 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R2, std::make_pair(
         [&](bool firstActivation) {
-            intake->hooks.move(-127);
+            intake->hooks.move_velocity(-600);
         },
         [&]() {
             intake->stop();
@@ -218,14 +269,17 @@ void opcontrol() {
     ));
 
     while (true) {
-        float rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X)/127.0f;
-        float leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y)/127.0f;
+        float rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        float leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 
-        lib::opcontrol::cheeze(robot, leftY, rightX, 0.0500);
+        lib::opcontrol::arcade(robot, rightX, leftY);
+        // lib::opcontrol::tank(robot, master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y), master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
 
         for (Subsystem* subsystem : robot.subsystems) {
             subsystem->update();
         }
+
+        std::cout << intake->optical.get_proximity() << std::endl;
 
         for (auto control : toggle_controls) {
             if (master.get_digital_new_press(control.first) && !held.contains(control.first)) {

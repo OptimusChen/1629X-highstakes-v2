@@ -3,6 +3,7 @@
 #include "lib/subsystem.hpp"
 #include "pros/motors.hpp"
 #include "pros/optical.hpp"
+#include "pros/optical.h"
 #include "arm.hpp"
 #include "controls.hpp"
 
@@ -26,6 +27,9 @@ public:
     Optical optical{OPTICAL};
     Motor hooks{HOOKS};
     Arm* arm;
+
+    bool toSort = false;
+    double wrongDetected = 0;
 
     std::function<bool()> stop_condition;
 

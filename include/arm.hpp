@@ -10,19 +10,19 @@ using namespace pros;
 using namespace lib;
 
 #define REST 0
-#define LOAD 13
+#define LOAD 32
 #define MID 40
-#define SCORE 180
+#define SCORE 160
 #define ALLIANCE_STAKE 180
 
 class Arm : public Subsystem {
 public:
     int armTarget;
 
-    Motor* left;
-    Motor* right;
+    Motor* motor;
     Rotation* rotation;
-    PID liftPID = PID(1.5, 0, 0.1);
+    PID liftPID = PID(1, 0, 0.5);
+    bool moving = false;
 
     void initialize() override;
     void update() override;

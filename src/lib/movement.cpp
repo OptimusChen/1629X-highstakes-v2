@@ -48,6 +48,8 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 
     int start_time = pros::millis();
 
+    std::vector<float> velocities;
+
     while (true) {
         auto loop_start = pros::millis();
 
@@ -211,7 +213,7 @@ void Robot::turnToPoint(float x, float y, int timeout, int minSpeed) {
     turnToHeading(util::get_angle_to_target(pose.x, pose.y, x, y), timeout, minSpeed);
 }
 
-void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnFirst, int maxSpeed) {
+void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnFirst, int maxSpeed, bool noTurn) {
     // Reset the PID controllers for lateral and angular control
     lateral->reset();
     angular->reset();
@@ -281,6 +283,8 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         // Get the output from the angular (heading) PID controller
         float turnOut = angular->calculate(angularError);
 
+        if (noTurn) turnOut = 0;
+
         // If the robot is close to the target, stop turning
         if (dist < 5.0f) {
             turnOut = 0;
@@ -338,64 +342,134 @@ void Robot::timedMove(int power, int time) {
 } 
 
 void Robot::swingToHeading(float target_angle, int timeout, int side) {
+    // ?
+}
+
+void Robot::shivaan(float x, float y, int timeout, float pct, int maxSpeed) {
+    // Reset the PID controllers for lateral and angular control
+    lateral->reset();
     angular->reset();
-    
+
     // Record the start time using std::chrono
     auto start_time = std::chrono::high_resolution_clock::now();
-    uint32_t start = 0;
+    int stability = 0;
 
-    int counter = 0;
+    Pose pose = get_pose();
+    Pose lastPose = pose;
+    float dist = sqrt(std::pow(pose.x - x, 2) + std::pow(pose.y - y, 2));
+    float beginTurn = dist * pct;
+    float driven = 0;
+
+    float multiplier = 1;
+
+    uint32_t start = 0;
 
     while (true) {
         start = pros::millis();
-
-        Pose pose = get_pose();
+        pose = get_pose();
 
         // Calculate elapsed time
         auto current_time = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> elapsed = current_time - start_time;
-        
+
         // Break if the timeout has been reached
         if (elapsed.count() * 1000.0f >= timeout) {
             break;
         }
 
-        // Get the current robot heading (converted from radians to degrees)
-        float current_angle = pose.theta * 180.0f / M_PI;
-        
-        // Calculate the error in heading (shortest angle)
-        float error = util::calculate_shortest_angle(current_angle, target_angle);
+        driven += std::sqrt(std::pow(pose.x - lastPose.x, 2) + std::pow(pose.y - lastPose.y, 2));
+        lastPose = pose;
 
-        if (fabs(error) < 1) {
-            counter++;
+        if (driven > beginTurn) {
+            multiplier = -1;
+        }
+
+        // Calculate the difference between the target and the robot's current position
+        float deltaX = x - pose.x;
+        float deltaY = y - pose.y;
+
+        // Adjust the robot's current heading based on direction
+        float adjustedTheta = pose.theta;
+        if (multiplier == -1) {
+            adjustedTheta = fmod(adjustedTheta + M_PI, 2 * M_PI);  // Adjust by π for reverse
+        }
+
+        // Calculate the Euclidean distance (magnitude) to the target
+        float dist = sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        // Calculate the robot's heading vector
+        float robot_heading_x = cos(adjustedTheta);
+        float robot_heading_y = sin(adjustedTheta);
+
+        // Project the vector to the target onto the robot's heading
+        float signed_dist = dist * ((deltaX * robot_heading_x + deltaY * robot_heading_y) / dist);
+
+        // Get the output from the lateral (distance) PID controller
+        float moveOut = lateral->calculate(signed_dist);
+
+        // Calculate the angular error between the current and target heading
+        float target_angle = fmod(util::get_angle_to_target(pose.x, pose.y, x, y), 360.0f);
+        if (target_angle < 0) {
+            target_angle += 360.0f;
+        }
+
+        float adj = adjustedTheta * 180.0f / M_PI;  // Convert to degrees for the calculation
+
+        float angularError = util::calculate_shortest_angle(adj > 0 ? adj : 360.0f + adj, target_angle);
+
+        // std::cout << pose.x << ", " << pose.y << ": " << target_angle << " - " << adj << " = " << angularError << std::endl;
+
+        // Adjust the movement output if the angular error is significant
+        moveOut *= cos(angularError * M_PI / 180.0f);  // Convert angular error to radians
+
+        std::cout << signed_dist << ": " << moveOut << std::endl;
+
+        // Get the output from the angular (heading) PID controller
+        float turnOut = angular->calculate(angularError);
+
+        // If the robot is close to the target, stop turning
+        if (dist < 5.0f) {
+            turnOut = 0;
+        }
+        moveOut = util::clamp(moveOut, -maxSpeed, maxSpeed);
+
+        moveOut *= multiplier;
+
+        // Calculate motor speeds for tank drive (left and right motor speeds)
+        float left_motor_speed = moveOut + turnOut;
+        float right_motor_speed = moveOut - turnOut;
+        
+        if (multiplier == -1) {
+            if (angularError < 90) {
+                right_motor_speed = 0;
+            } else {
+                left_motor_speed = 0;
+            }
+        }
+
+        // Clamp motor speeds to the maximum allowed speed
+        const float ratio = std::max(std::fabs(left_motor_speed), std::fabs(right_motor_speed)) / maxSpeed;
+        if (ratio > 1) {
+            left_motor_speed /= ratio;
+            right_motor_speed /= ratio;
+        }
+
+        // Set motor speeds to move the robot toward the target
+        left->move(left_motor_speed);
+        right->move(right_motor_speed);
+
+        // Check if the robot is close enough to the target to stop
+        if (abs(dist) < 0.5f) {
+            stability++;
+
+            if (stability > 10) break;
         } else {
-            counter = 0;
+            stability = 0;
         }
-
-        if (counter > 5) {
-            break;
-        }
-
-        // Get the output from the angular PID controller
-        float output = angular->calculate(error);
-        
-        // Set the chassis motor speeds based on the PID output
-        float left_speed = util::clamp(output, -127, 127);
-        float right_speed = util::clamp(-output, -127, 127);
-
-        if (side == 0) {
-            left->move(left_speed);
-            right->brake();
-        }
-        if (side == 1) {
-            right->move(right_speed);
-            left->brake();
-        }
-        
-        // Optionally sleep to avoid overwhelming the control loop
         pros::c::task_delay_until(&start, 10);
     }
-    
+
+    // Stop the motors when the target is reached or timeout occurs
     left->move(0);
     right->move(0);
 }

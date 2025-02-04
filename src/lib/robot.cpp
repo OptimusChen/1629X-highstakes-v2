@@ -12,7 +12,8 @@
 using namespace lib;
 
 ADIDigitalOut mogo(MOGO);
-ADIDigitalOut rush(DOINKER);
+ADIDigitalOut rush_left(DOINKER_LEFT);
+ADIDigitalOut rush_right(DOINKER_RIGHT);
 
 Motor hooks(HOOKS);
 
@@ -80,8 +81,12 @@ void Robot::set_mogo(bool value) {
     mogo.set_value(value);
 }
 
-void Robot::set_rush_arm(bool value) {
-    rush.set_value(value);
+void Robot::set_rush_arm_left(bool value) {
+    rush_left.set_value(value);
+}
+
+void Robot::set_rush_arm_right(bool value) {
+    rush_right.set_value(value);
 }
 
 constexpr float DRIVE_RATIO = 48.0/36.0; // EX: 36 tooth driving gear to 48 tooth driven gear.
@@ -107,8 +112,8 @@ void Robot::initialize_particle_filter() {
     Eigen::Vector2f mean(get_pose().y * inch.Convert(metre), -get_pose().x * inch.Convert(metre));
 
     Eigen::Matrix2f covariance;
-    covariance << 0.1f, 0.0f,
-                0.0f, 0.1f;
+    covariance << 0.2f, 0.0f,
+                0.0f, 0.2f;
 
     particleFilter->initNormal(mean, covariance, false);
 

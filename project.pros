@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "1629X-highstakes",
+    "project_name": "red a",
     "target": "v5",
     "templates": {
       "Eigen": {
@@ -644,9 +644,9 @@
       }
     },
     "upload_options": {
-      "after": "run",
+      "after": "screen",
       "icon": "planet",
-      "slot": 1
+      "slot": 2
     },
     "use_early_access": true
   }
