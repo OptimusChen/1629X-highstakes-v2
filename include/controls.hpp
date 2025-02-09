@@ -18,10 +18,10 @@
 
 #define HOOKS 5
 
-#define R_DISTANCE 15
+#define R_DISTANCE 16
 #define L_DISTANCE 17
-#define B_DISTANCE 16
-#define F_DISTANCE 16
+#define B_DISTANCE 14
+#define F_DISTANCE 15
 
 #define OPTICAL 3
 

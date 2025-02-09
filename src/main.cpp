@@ -26,7 +26,7 @@ using namespace pros::c;
 using namespace controls;
 using namespace lib;
 
-#define TRACK_WIDTH 13.5
+#define TRACK_WIDTH 11.5
 
 static Controller master(E_CONTROLLER_MASTER);
 
@@ -43,8 +43,8 @@ static MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK},
 static Odom odom(450, 2.75, TRACK_WIDTH, &left_motor_group, &right_motor_group, &imu);
 
 static PID linear(	
-        10, // kP
-        0.02, // kI
+        5.5, // kP
+        0, // kI
         0.2 // kD
 );
 
@@ -69,10 +69,10 @@ static Angle angle() {
     return angle * radian;
 }
 
-static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((-3.5_in).getValue(), (-3.5_in).getValue(), (270_deg).getValue()), right_dist);
-static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((-3.5_in).getValue(), (3.5_in).getValue(), (90_deg).getValue()), left_dist);
-static loco::DistanceSensorModel backDistance(Eigen::Vector3f((0_in).getValue(), (-6.25_in).getValue(), (180_deg).getValue()), back_dist);
-static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((4_in).getValue(), (-5.25_in).getValue(), (0_deg).getValue()), front_dist);
+static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((3_in).getValue(), (-5.5_in).getValue(), (270_deg).getValue()), right_dist);
+static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((3_in).getValue(), (5.5_in).getValue(), (90_deg).getValue()), left_dist);
+static loco::DistanceSensorModel backDistance(Eigen::Vector3f((1_in).getValue(), (-6_in).getValue(), (180_deg).getValue()), back_dist);
+static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((2.5_in).getValue(), (-3_in).getValue(), (0_deg).getValue()), front_dist);
 
 static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 
@@ -123,10 +123,10 @@ void initialize() {
     robot.add_subsystem(new Intake());
     robot.add_subsystem(new Arm());
 
-    robot.poseSet = true;
-    robot.calibrate();
+    // left_motor_group.set_brake_mode_all(E_MOTOR_BRAKE_BRAKE);
+    // right_motor_group.set_brake_mode_all(E_MOTOR_BRAKE_BRAKE);
 
-    // autonomous();
+    autonomous();
 
     // robot.set_pose(-58, 0, 0);
     // robot.initialize_particle_filter();
@@ -141,7 +141,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::rush(&robot);
+    bestautonfr::skills(&robot);
 }
 
 float get_rotation_degrees(Rotation rot) {
@@ -179,6 +179,8 @@ void opcontrol() {
     int states[numStates] = {REST, LOAD, SCORE, ALLIANCE_STAKE};
     int state = 0;
 
+    double pct = 1.0;
+
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
         [&](bool firstActivation) {
             if (!lbSetting) arm->move(127);
@@ -190,6 +192,11 @@ void opcontrol() {
             }
         }
     ));
+
+    toggle_controls.emplace(E_CONTROLLER_DIGITAL_X, [&]() {
+        pct += 0.1;
+        if (pct > 1) pct = 0.0;
+    });
 
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_L1, [&]() {
         if (lbSetting) {
@@ -272,8 +279,8 @@ void opcontrol() {
         float rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         float leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 
-        lib::opcontrol::arcade(robot, rightX, leftY);
-        // lib::opcontrol::tank(robot, master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y), master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
+        // lib::opcontrol::arcade(robot, rightX, leftY);
+        lib::opcontrol::tank(robot, pct * master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y), pct * master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
 
         for (Subsystem* subsystem : robot.subsystems) {
             subsystem->update();
@@ -320,7 +327,7 @@ void opcontrol() {
 
         temperatureSum = 0.0;
 
-        master.print(0, 0, "Intake: %.0f°C", motor_get_temperature(HOOKS));
+        master.print(0, 0, "Intake: %.2f°C", pct);
         // delay(1);
         // master.print(0, 0, "Avg: %.0f°C", averageTemperature);
 

@@ -36,7 +36,8 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 
     RamseteController controller(2, 0.7);
 
-    FeedforwardController ff(900, 110, 10);
+    FeedforwardController ff(900, 130, 12);
+    // FeedforwardController ff(900, 110, 10);
     PID pLoop(200, 0, 0);
 
     auto path = profileGenerator.getProfile();

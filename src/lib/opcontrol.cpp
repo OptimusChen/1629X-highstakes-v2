@@ -51,8 +51,8 @@ namespace lib::opcontrol {
     }
 
     void tank(Robot instance, float left, float right) {
-        left = std::round(curve(left, DEADZONE, CURVE, MINIMUM));
-        right = std::round(curve(right, DEADZONE_T, CURVE_T, MINIMUM_T));
+        // left = std::round(curve(left, DEADZONE, CURVE, MINIMUM));
+        // right = std::round(curve(right, DEADZONE_T, CURVE_T, MINIMUM_T));
         
         instance.left->move(left);
         instance.right->move(right);

@@ -5,11 +5,12 @@
 
 void Intake::initialize() {
     if (initialized) return;
+    optical.set_integration_time(5);
     optical.set_led_pwm(100);
-    // optical.set_integration_rate();
 
     hooks.set_gearing(E_MOTOR_GEAR_BLUE);
     hooks.set_reversed(true);
+    hooks.tare_position();
 
     antijam = true;
     initialized = true;
@@ -17,7 +18,7 @@ void Intake::initialize() {
 
 void Intake::update() {
     auto opticalMeasure = optical.get_hue();
-    int off = 400;
+    int off = 300;
 
     // if (color == BLUE && ((opticalMeasure > 0) && (opticalMeasure < 30)) && color_sort) {
     //     color_sort = false;
@@ -36,21 +37,21 @@ void Intake::update() {
     // 600, 175
     // 300, 400
 
-    if (color == RED && ((opticalMeasure > 200) && (opticalMeasure < 230)) && color_sort) {
-          toSort = true;
-          hooks.tare_position();
-          wrongDetected = hooks.get_position();
-          color_sort = false;
+    if (color == RED && ((opticalMeasure > 170) && (opticalMeasure < 220)) && color_sort && !toSort) {
+        toSort = true;
+        hooks.tare_position();
+        wrongDetected = hooks.get_position();
+        color_sort = false;
         std::cout << "sort1" << std::endl;
     }
 
-    std::cout << hooks.get_position() << std::endl;;
+    // std::cout << opticalMeasure << std::endl;;
 
-    if (toSort && abs(hooks.get_position() - (wrongDetected + off)) < 10) {
+    if (toSort && !color_sort && abs(hooks.get_position() - (wrongDetected + off)) < 20) {
         std::cout << "sort2" << std::endl;
-        toSort = false;
         color_sort = true;
-        Task t{[&] {
+
+        Task t([&] {
             hooks.move(-127);
             delay(300);
             voltsMutex.take();
@@ -58,17 +59,24 @@ void Intake::update() {
             voltsMutex.give();
             hooks.move(_volts);
             hooks.tare_position();
-        }};  
+
+            toSort = false;
+        });  
     }
 
-    if (antijam && (arm->armTarget != LOAD) && (arm->armTarget != MID)) {
+    if (toSort && hooks.get_position() > 2*off) {
+        color_sort = true;
+        toSort = false;
+    }
+
+    if (!reversed && antijam && (arm->armTarget != LOAD) && (arm->armTarget != MID)) {
         movingMutex.take();
         bool b = moving;
         movingMutex.give();
         if (b && (abs(hooks.get_actual_velocity()) < 10)) {
             counter++;
 
-            if (counter >= 2) {
+            if (counter >= 4) {
                 antijam = false;
                 counter = 0;
                 Task t{[&] {
