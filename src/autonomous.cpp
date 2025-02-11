@@ -10,17 +10,89 @@ MPConstraint fast{60, 150, INCH};
 MPConstraint medium{50, 150, INCH};
 MPConstraint huh{60, 100, INCH};
 MPConstraint huh2{55, 150, INCH};
-MPConstraint huh3{45, 150, INCH};
+MPConstraint huh3{50, 150, INCH};
 MPConstraint slow{40, 150, INCH};
 MPConstraint kinda_slow{45, 150, INCH};
 
-#define SPAM 0
+#define SPAM 2
 
 /*
 
 SKILLS
 
 */
+
+void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
+    robot->set_pose(-61, 0, 0);
+    robot->poseSet = true;
+    robot->calibrate();
+
+    robot->initialize_particle_filter();
+    robot->set_pose_mode(MCL);
+
+    for (Subsystem* subsystem : robot->subsystems) {
+        subsystem->initialize();
+    }
+
+    Intake* intake = robot->get_subsystem<Intake>();
+    Arm* arm = robot->get_subsystem<Arm>();
+    Distance front(F_DISTANCE);
+
+    intake->arm = arm;
+    intake->color_sort = false;
+    intake->antijam = true;
+
+    Task updates([&]() {
+        while (true) {
+            arm->update();
+            intake->update();
+            delay(1);
+        }
+    });
+
+    auto stage_1_stop = [&] {
+        return intake->detected_ring(STAGE_1);
+    };
+    auto stage_1_stop_color = [&] {
+        auto hue = intake->optical.get_hue();
+        return intake->detected_ring(STAGE_1) && (hue > 0 && hue < 30);
+    };
+    auto stage_2_stop = [&] {
+        return intake->detected_ring(STAGE_2);
+    };
+
+    intake->forwards();
+    pros::delay(200);
+    intake->stop();
+
+    //-----------CLAMP FIRST MOGO------------------//
+
+    chassis->moveToPoint(-48, 0, 850, {.forwards = true, .maxSpeed = 100});
+    chassis->waitUntilDone();
+
+    delay(10000000);
+
+    chassis->turnToPoint(-48, -20, 450);
+    chassis->waitUntilDone();
+
+    chassis->moveToPoint(-48, 24, 1000, {.forwards=false, .maxSpeed = 80});
+    chassis->waitUntilDone();
+
+    robot->set_mogo(true);
+
+    //-----------SCORE ONE RING------------------//
+
+    chassis->turnToPoint(-26, 24, 450);
+    chassis->waitUntilDone();
+
+    intake->forwards();
+
+    chassis->moveToPoint(-26, 24, 750, {.forwards=true, .maxSpeed = 100});
+    chassis->waitUntilDone();
+
+    chassis->turnToPoint(0, 46, 450);
+    chassis->waitUntilDone();
+}
 
 void bestautonfr::skills(Robot* robot) {
     // robot->set_pose(0, 0, 90);
@@ -34,11 +106,7 @@ void bestautonfr::skills(Robot* robot) {
     robot->set_pose(-58, 0, 0);
     robot->poseSet = true;
     robot->calibrate();
-    // robot->set_pose_mode(ODOM);  
 
-    // robot->moveToPoint(20, 0, 1000);
-    // delay(19009012);
-    // return;
     robot->initialize_particle_filter();
     robot->set_pose_mode(MCL);  
 
@@ -73,7 +141,6 @@ void bestautonfr::skills(Robot* robot) {
         return intake->detected_ring(STAGE_2);
     };
 
-    
     intake->forwards();
     delay(500);
 
@@ -101,31 +168,30 @@ void bestautonfr::skills(Robot* robot) {
     robot->ramsete({
         {-47.0, -25.70}, {-48.10, -9.80}, {14.55, -38.70}, {11.60, -51.21}
     }, huh);
+
     robot->ramsete({
         {11.60, -51.21}, {8.06, -66.20}, {-4.84, -40.11}, {-50.33, -47.50}, 
         {-50.33, -47.50}, {-71.10, -50.90}, {-58.00, -64.20}, {-30.00, -58.60}
     }, huh3);
 
+    intake->antijam = false;
     robot->timedMove(-50, 1000);
 
     robot->set_mogo(false);
+    intake->antijam = true;
 
     // WALL STAKE
 
     intake->forwards();
     Task abc6([&] {
-        delay(1000);
+        delay(2000);
         arm->set_target(LOAD);
     });
     
-    // robot->ramsete({{-60.00, -60.00}, {3.64, -58.32}, {13.78, -38.51}, {25.91, -50.07}}, fast);
-    robot->moveToPoint(23.438, -47.498, 2000, true);
+    robot->ramsete({{-60.00, -60.00}, {3.64, -58.30}, {19.95, -40.11}, {29.21, -51.40}}, fast);
     robot->timedMove(20, 500);
-    delay(500);
-    robot->moveToPoint(25.91, -50.07, 1000, false);
+    robot->moveToPoint(25.91, -49.88, 500, false);
     robot->turnToHeading(315, 500);
-    robot->moveToPoint(25.91, -50.07, 500, false);
-    // robot->moveToPoint(42.555, -60, 1000, true, false, 80);
 
     for (int i = 0; i < SPAM; i++) {
         intake->stop();
@@ -145,10 +211,12 @@ void bestautonfr::skills(Robot* robot) {
         intake->forwards(80);
     });
     
-    robot->ramsete({{25.91, -50.07}, {32.92, -57.18}, {39.345, -59.425}, {42.555, -60}}, slow);
-    robot->timedMove(20, 400);
-    intake->set_stop_condition(stage_1_stop);
+    intake->set_stop_condition(stage_1_stop_color);
+    robot->ramsete({{25.91, -49.88}, {32.92, -57.18}, {37.43, -60.72}, {40.61, -60.72}}, slow);
+    robot->timedMove(20, 800);
+    robot->moveToPoint(40, -60, 1000, false, false, 40);
 
+    intake->backwards(20);
     robot->ramsete({{40.00, -59.72}, {17.32, -59.90}, {-0.03, -61.40}, {0.00, -52.75}}, fast , BACKWARDS);
 
     robot->moveToPoint(1, -61, 750, true, false, 60);
@@ -164,16 +232,16 @@ void bestautonfr::skills(Robot* robot) {
     intake->set_stop_condition(nullptr);
     intake->forwards();
     delay(500);
-    // for (int i = 0; i < 1; i++) {
-    //     intake->stop();
-    //     delay(100);
-    //     intake->forwards();
-    //     delay(100);
-    // }
+    for (int i = 0; i < 1; i++) {
+        intake->stop();
+        delay(100);
+        intake->forwards();
+        delay(100);
+    }
     intake->stop();
     robot->timedMove(20, 400);
     arm->set_target(SCORE + 50);
-    delay(750);
+    robot->timedMove(20, 500);
     arm->set_target(LOAD);
     robot->moveToPoint(0, -48, 500, false, false, 60);
     // end logic ws
@@ -188,8 +256,8 @@ void bestautonfr::skills(Robot* robot) {
     arm->set_target(LOAD);
     robot->turnToHeading(235, 500);
     robot->moveToPoint(47.5, -42, 1000, true, true, 70);
-    robot->timedMove(20, 500);
-    delay(500);
+    // robot->timedMove(20, 500);
+    delay(1000);
 
     Task abc2([&] {
         for (int i = 0; i < SPAM; i++) {
@@ -199,22 +267,18 @@ void bestautonfr::skills(Robot* robot) {
             delay(100);
         }
         intake->stop();
-        arm->set_target(MID + 20);
+        arm->set_target(MID);
     });
     robot->moveToPoint(53, -30, 500, false, false, 80);
 
-    intake->forwards(80);
+    intake->forwards();
     intake->set_stop_condition(stage_1_stop_color);
-    robot->moveToPoint(55, -42, 1000, true, false, 60);
-    // robot->moveToPoint(45, -48, 1000, true, true, 40);
-    // delay(1000);
-    // intake->set_stop_condition(stage_1_stop_color);
-    // intake->forwards();
-    // robot->moveToPoint(53, -48, 2000, truae, false, 40);
+    robot->moveToPoint(58, -45, 1000, true, false, 60);
 
-    robot->turnToHeading(90, 750);
+    robot->turnToHeading(120, 750);
     robot->set_mogo(false);
-    robot->moveToPoint(58, -59, 1000, false, false, 60);
+    robot->timedMove(-60, 500);
+    // robot->moveToPoint(58, -59, 1000, false, false, 60);
 
     arm->set_target(LOAD);
 
@@ -227,7 +291,14 @@ void bestautonfr::skills(Robot* robot) {
     });
     robot->moveToPoint(47, 10, 2000, false, false, 50);
 
+    robot->moveToPoint(47, 0, 1000, true, false, 80);
+    robot->turnToHeading(0, 500);
+    // robot.move
+
+    // robot->moveToPoint(62, robot->get_pose().y, 1000, true, false, 50, true);
+
     robot->ramsete({{47.00, 12.00}, {47.00, 3.78}, {52.81, 0.00}, {61.81, 0.00}}, medium);
+    robot->timedMove(20, 500);
 
     // const int target = 310;
     // float error = front.get_distance() - target;
@@ -240,11 +311,12 @@ void bestautonfr::skills(Robot* robot) {
     // }
     // robot->left->move(0);
     // robot->right->move(0);
-    robot->moveToPoint(52, robot->get_pose().y, 1000, false, false, 50);
+    // robot->moveToPoint(62, robot->get_pose().y, 1000, true, false, 80);
+    robot->moveToPoint(52, robot->get_pose().y, 1000, false, false, 50, true);
 
     arm->set_target(ALLIANCE_STAKE + 20);
     delay(500);
-    return;
+
     intake->set_stop_condition(nullptr);
     intake->color_sort = true;
     intake->forwards();
@@ -256,7 +328,6 @@ void bestautonfr::skills(Robot* robot) {
     arm->set_target(REST);
     robot->turnToHeading(125, 500);
     intake->color_sort = false;
-
     
     // intake->color_sort = true;
     robot->ramsete({
@@ -265,7 +336,8 @@ void bestautonfr::skills(Robot* robot) {
     }, huh);
     delay(500);
 
-    // robot->set_pose(31.532, 60.369, 0);
+    robot->set_pose(31.532, 60.369, 0);
+    robot->set_pose_mode(ODOM);
     intake->color_sort = true;
     robot->moveToPoint(50, 57, 500, true, false);
     robot->turnToHeading(310, 500);
@@ -279,6 +351,9 @@ void bestautonfr::skills(Robot* robot) {
     robot->turnToHeading(225, 500);
     robot->set_mogo(false);
     robot->timedMove(-90, 500);
+    robot->timedMove(-60, 500);
+
+    robot->set_pose_mode(MCL);
 
     intake->backwards();
     intake->color_sort = false;
@@ -301,12 +376,12 @@ void bestautonfr::skills(Robot* robot) {
     }
     intake->stop();
     robot->timedMove(40, 500);
-    arm->set_target(SCORE);
+    arm->set_target(SCORE + 50);
     delay(500);
-    robot->timedMove(-40, 500);
+    robot->moveToPoint(0, 54, 1000, false, false, 60);
     arm->set_target(REST);
 
-    robot->ramsete({{0.00, 61.00}, {0.63, 28.72}, {-32.81, 40.71}, {-47.28, 23.31}}, medium, BACKWARDS);
+    robot->ramsete({{0.00, 54.00}, {-0.00, 31.26}, {-32.81, 40.70}, {-47.28, 23.31}}, medium, BACKWARDS);
     robot->timedMove(-20, 500);
     robot->set_mogo(true);
     robot->turnToHeading(0, 500);
@@ -319,6 +394,7 @@ void bestautonfr::skills(Robot* robot) {
     }, huh3);
     
     robot->moveToPoint(-60, 60, 1000, false, false);
+    robot->set_mogo(false);
 
     delay(100000000);
 
@@ -433,11 +509,17 @@ void bestautonfr::skills(Robot* robot) {
     robot->turnToHeading(270, 500);
     intake->set_stop_condition(stage_1_stop);
     intake->forwards(80);
-    robot->ramsete({{0.00, 54.00}, {-0.00, 35.52}, {-15.14, 30.38}, {-28.09, 24.09}}, medium);
-    robot->turnToHeading(0, 500);
-    robot->moveToPoint(-50, 24, 3000, false, false, 50);
+    robot->ramsete({
+        {0.00, 54.00}, {0.00, 35.50}, {-17.41, 38.32}, {-30.41, 32.02}, 
+        {-30.41, 32.02}, {-43.41, 25.72}, {-33.39, 30.85}, {-40.84, 27.12}
+    }, medium);
+    // robot->turnToHeading(0, 500);
+    // robot->moveToPoint(-50, 24, 3000, false, false, 50);
     robot->timedMove(-20, 250);
     robot->set_mogo(true);
+
+    robot->moveToPoint(-50, 24, 3000, false, false, 50);
+    robot->turnToHeading(0, 500);
 
     intake->set_stop_condition(nullptr);
     intake->forwards();
@@ -561,6 +643,8 @@ void bestautonfr::rush(Robot* robot) {
 }
 
 void bestautonfr::sawp(Robot* robot) {
+    robot->poseSet = true;
+    robot->calibrate();
     robot->set_pose_mode(ODOM);
 
     for (Subsystem* subsystem : robot->subsystems) {
@@ -583,43 +667,44 @@ void bestautonfr::sawp(Robot* robot) {
     auto stage_1_stop = [&] {
         return intake->detected_ring(STAGE_2);
     };
+
+    // robot->left->set_brake_mode_all(E_MOTOR_BRAKE_BRAKE);
+    // robot->right->set_brake_mode_all(E_MOTOR_BRAKE_BRAKE);
     
-    robot->set_pose(51.001, 29.141, 180-22);
+    robot->set_pose(-23.5, 23.5, 0);
 
-    robot->set_rush_arm_right(true);
-    intake->forwards(100);
-    intake->set_stop_condition(stage_1_stop);
-    robot->moveToPoint(10, 42, 1000, true, false, 127, true);
+    // robot->turnToHeading(180, 1000);
 
-    robot->moveToPoint(35.4, 34.1, 1200, false, false, 60);
-    robot->set_rush_arm_right(false);
-    robot->turnToHeading(180, 500);
-    robot->set_pose(35, 35, 0);
-    robot->timedMove(-20, 500);
-    // return;
+    // robot->left->set_brake_mode_all(E_MOTOR_BRAKE_COAST);
+    // robot->right->set_brake_mode_all(E_MOTOR_BRAKE_COAST);
 
-    robot->turnToHeading(180-120, 500);
-    robot->moveToPoint(23.5, 23.5, 1000, false, false, 60);
-    robot->timedMove(-40, 500);
-    robot->set_mogo(true);
+    // robot->turnToHeading(0, 1000);
+    delay(10000000);
+    return;
+    robot->set_pose(-58.8, 11.3, 270);
 
-    intake->set_stop_condition(nullptr);
-    intake->forwards();
-
-    robot->turnToHeading(180-90, 500);
-    robot->moveToPoint(25.5, 55, 1000, true, false, 80);
-
-    robot->timedMove(40, 500);
+    robot->turnToHeading(225, 500);
+    arm->set_target(ALLIANCE_STAKE);
     delay(500);
 
-    robot->moveToPoint(37, 13, 1500, false, false, 80);
-    robot->moveToPoint(50, 13, 1000, true, false, 60);
-    // delay(500);
-    robot->timedMove(60, 500);
-    robot->moveToPoint(30, 10, 1000, true);
-    robot->turnToHeading(195, 500);
-    arm->set_target(ALLIANCE_STAKE);
-    intake->stop();
-    robot->timedMove(20, 2000);
+    robot->moveToPoint(-23.5, 23.5, 1500, false, false, 80);
+    arm->set_target(LOAD);
+    robot->moveToPoint(-20, 23.5, 1000, false, false, 40);
+    // robot->timedMove(-20, 500);
+    robot->set_mogo(true);
+
+    robot->turnToHeading(0, 1000);
+    robot->set_pose(-23.5, 23.5, robot->get_pose().get_degrees());
+    delay(100000000);
+    return;
+    // intake->forwards();
+
+    robot->moveToPoint(-6, 42, 1000, true, false, 60);
+    delay(1000);
+
+    return;
+    robot->turnToHeading(160, 500);
+    robot->moveToPoint(-23.5, 47, 1000, true, false, 80);
+
 }
 

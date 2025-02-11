@@ -21,6 +21,8 @@
 #include "intake.hpp"
 #include "arm.hpp"
 
+#include "lemlib/api.hpp"
+
 using namespace pros;
 using namespace pros::c;
 using namespace controls;
@@ -51,7 +53,7 @@ static PID linear(
 // turning PID
 static PID angular(
 	1, // proportional gain (kP)
-	0.001, // integral gain (kI)
+	0, // integral gain (kI)
 	1 // derivative gain (kD)
 );
 
@@ -69,12 +71,62 @@ static Angle angle() {
     return angle * radian;
 }
 
-static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((3_in).getValue(), (-5.5_in).getValue(), (270_deg).getValue()), right_dist);
-static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((3_in).getValue(), (5.5_in).getValue(), (90_deg).getValue()), left_dist);
-static loco::DistanceSensorModel backDistance(Eigen::Vector3f((1_in).getValue(), (-6_in).getValue(), (180_deg).getValue()), back_dist);
-static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((2.5_in).getValue(), (-3_in).getValue(), (0_deg).getValue()), front_dist);
+static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((3.25_in).getValue(), (-6_in).getValue(), (270_deg).getValue()), right_dist);
+static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((3.25_in).getValue(), (6_in).getValue(), (90_deg).getValue()), left_dist);
+static loco::DistanceSensorModel backDistance(Eigen::Vector3f((1_in).getValue(), (-6.25_in).getValue(), (180_deg).getValue()), back_dist);
+static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((3.25_in).getValue(), (-4.5_in).getValue(), (0_deg).getValue()), front_dist);
 
 static loco::ParticleFilter<PARTICLES> particleFilter(angle);
+
+/* Lemlib */
+
+lemlib::Drivetrain drivetrain(
+    &left_motor_group, // left motor group
+    &right_motor_group,// right motor group
+    TRACK_WIDTH, // 10 inch track width
+    lemlib::Omniwheel::NEW_275, // using new 4" omnis
+    450, // drivetrain rpm is 360
+    2 // horizontal drift is 2 (for now)
+);
+
+lemlib::ControllerSettings lateral_controller(
+    5, // proportional gain (kP)
+    0, // integral gain (kI)
+    3, // derivative gain (kD)
+    3, // anti windup
+    1, // small error range, in inches
+    100, // small error range timeout, in milliseconds
+    3, // large error range, in inches
+    500, // large error range timeout, in milliseconds
+    20 // maximum acceleration (slew)
+);
+
+// angular PID controller
+lemlib::ControllerSettings angular_controller(
+    1, // proportional gain (kP)
+    0, // integral gain (kI)
+    1, // derivative gain (kD)
+    3, // anti windup
+    1, // small error range, in degrees
+    100, // small error range timeout, in milliseconds
+    3, // large error range, in degrees
+    500, // large error range timeout, in milliseconds
+    0 // maximum acceleration (slew)
+);
+
+lemlib::OdomSensors sensors(
+    nullptr, // vertical tracking wheel 1, set to null
+    nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
+    nullptr, // horizontal tracking wheel 1
+    nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
+    &imu // inertial sensor
+);
+
+lemlib::Chassis chassis(drivetrain, // drivetrain settings
+    lateral_controller, // lateral PID settings
+    angular_controller, // angular PID settings
+    sensors // odometry sensors
+);
 
 #define BLUE 0
 #define RED 1
@@ -104,6 +156,8 @@ void initialize() {
     Task trackingTask = Task {[&] {
 		while (true) {
             auto pose = robot.get_pose();
+
+            chassis.setPose(pose.x, pose.y, pose.get_degrees());
 
 			pros::lcd::print(0, "x: %f", pose.x); // print the x position
 			pros::lcd::print(1, "y: %f", pose.y); // print the y position
@@ -141,7 +195,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::skills(&robot);
+    bestautonfr::casey(&robot, &chassis);
 }
 
 float get_rotation_degrees(Rotation rot) {
