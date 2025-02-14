@@ -157,7 +157,7 @@ void initialize() {
 		while (true) {
             auto pose = robot.get_pose();
 
-            chassis.setPose(pose.x, pose.y, pose.get_degrees());
+            // chassis.setPose(pose.x, pose.y, fmod(pose.get_degrees() + 90, 360));
 
 			pros::lcd::print(0, "x: %f", pose.x); // print the x position
 			pros::lcd::print(1, "y: %f", pose.y); // print the y position
@@ -180,7 +180,7 @@ void initialize() {
     // left_motor_group.set_brake_mode_all(E_MOTOR_BRAKE_BRAKE);
     // right_motor_group.set_brake_mode_all(E_MOTOR_BRAKE_BRAKE);
 
-    autonomous();
+    // autonomous();
 
     // robot.set_pose(-58, 0, 0);
     // robot.initialize_particle_filter();

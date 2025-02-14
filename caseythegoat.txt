@@ -1,0 +1,399 @@
+inline void stateSkills(){
+ ///////////////////////////////////////////////
+  //--------------FIRST SECTION----------------//
+  ///////////////////////////////////////////////
+
+  chassis.setPose(-61, 0, 90);
+
+  //-----------ALLIANCE STAKE------------------//
+
+  intake.setState(lib::IntakeState::In);
+  pros::delay(200);
+  intake.setState(lib::IntakeState::Idle);
+
+  //-----------CLAMP FIRST MOGO------------------//
+
+  chassis.moveToPoint(-48, 0, 850, {.forwards = true, .maxSpeed = 100});
+  chassis.waitUntilDone();
+
+  chassis.turnToPoint(-48, -20, 450);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(-48, 24, 1000, {.forwards=false, .maxSpeed = 80});
+  chassis.waitUntilDone();
+
+  clamp.set_value(true);
+
+//-----------SCORE ONE RING------------------//
+
+  chassis.turnToPoint(-26, 24, 450);
+  chassis.waitUntilDone();
+
+  intake.setState(lib::IntakeState::In);
+
+  chassis.moveToPoint(-26, 24, 750, {.forwards=true, .maxSpeed = 100});
+  chassis.waitUntilDone();
+
+  chassis.turnToPoint(0, 46, 450);
+  chassis.waitUntilDone();
+
+  //-----------OBTAIN 2nd RING------------------//
+
+  chassis.moveToPoint(0, 46, 1150, {.forwards=true, .maxSpeed = 100});
+  chassis.waitUntilDone();
+
+  chassis.turnToPoint(24, 48, 500);
+  chassis.waitUntilDone();
+  lift.setState(lib::LiftState::Recieve);
+
+
+  chassis.moveToPoint(24, 48, 850, {.forwards=true, .maxSpeed = 100});
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(0, 42, 1000, {.forwards=false, .maxSpeed = 80});
+  chassis.waitUntilDone();
+  lift.setState(lib::LiftState::Mid);
+  intake.setState(lib::IntakeState::Idle);
+  pros::delay(100);
+  intake.setState(lib::IntakeState::In);
+
+  //-----------LADY BROWN 1------------------//
+
+  chassis.turnToPoint(0, 68, 500);
+  chassis.waitUntilDone();
+ 
+  chassis.moveToPoint(0, 68, 850, {.forwards=true, .maxSpeed =80});
+  chassis.waitUntilDone();
+
+  chassis.setPose(0,62, chassis.getPose().theta);
+  pros::delay(50);
+  lift.setState(lib::LiftState::Score);
+  pros::delay(450);
+
+  //-----------SCORE THREE RINGS------------------//
+
+  chassis.moveToPoint(0, 46, 750, {.forwards=false, .maxSpeed = 100});
+  chassis.waitUntilDone();
+  lift.setState(lib::LiftState::Stored);
+
+
+  chassis.turnToPoint(-33, 46, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(-33, 46, 1000, {.forwards=true, .maxSpeed = 90});
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(-60, 46, 2000, {.forwards=true, .maxSpeed = 60});
+  chassis.waitUntilDone();
+
+  pros::delay(250);
+
+  chassis.turnToPoint(-49, 57, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(-49, 57, 1000, {.forwards=true, .maxSpeed =80});
+  chassis.waitUntilDone();
+
+  //-----------Place in corner------------------//
+
+  chassis.turnToPoint(-60, 60, 500, {.forwards = false});
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(-60, 60, 500, {.forwards=false, .maxSpeed =100});
+  chassis.waitUntilDone();
+
+  clamp.set_value(false);
+  intake.setState(lib::IntakeState::Idle);
+
+
+  chassis.moveToPoint(-48, 48, 750, {.forwards=true, .maxSpeed =100});
+  chassis.waitUntilDone();
+  
+  //RESET//
+  chassis.turnToHeading(90, 500);
+  chassis.waitUntilDone();
+
+  resetRobotPos(leftSensor, "positive_y");
+  resetRobotPos(backSensor, "negative_x");
+
+
+
+  ///////////////////////////////////////////////
+  //--------------2ND SECTION----------------//
+  ///////////////////////////////////////////////
+
+
+  //Get ring for alliance stake
+
+  chassis.moveToPoint(36, 48, 1500, {.forwards=true, .maxSpeed =100});
+  intake.setState(lib::IntakeState::In);
+  lift.setState(lib::LiftState::Recieve);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(45, 48, 1000, {.forwards=true, .maxSpeed =60});
+  chassis.waitUntilDone();
+
+  chassis.turnToHeading(90, 350);
+  chassis.waitUntilDone();
+
+  resetRobotPos(leftSensor, "positive_y");
+  resetRobotPos(frontSensor, "positive_x");
+
+  //Clamp second goal
+
+  chassis.turnToPoint(62, 22, 500, {.forwards = false});
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(62, 22, 1000, {.forwards=false, .maxSpeed =90});
+  chassis.waitUntilDone();
+  clamp.set_value(true);
+
+  //put in corner
+  chassis.turnToPoint(64, 62, 500);
+  rightArm.set_value(true);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(64, 62, 1000, {.forwards=true, .maxSpeed =100});
+  chassis.waitUntilDone();
+
+  chassis.turnToHeading(270, 750);
+  chassis.waitUntilDone();
+  rightArm.set_value(false);
+  pros::delay(100);
+
+
+  chassis.turnToPoint(64, 64, 500, {.forwards=false});
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(64, 64, 350, {.forwards=false, .maxSpeed =80});
+  chassis.waitUntilDone();
+  clamp.set_value(false);
+  lift.setState(lib::LiftState::Mid);
+  pros::delay(150);
+  intake.setState(lib::IntakeState::In);
+
+
+  //get third goal
+  chassis.turnToPoint(48, 30, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(48, 30, 1250, {.forwards=true, .maxSpeed =100});
+  chassis.waitUntilDone();
+
+  chassis.turnToHeading(0, 650);
+  chassis.waitUntilDone();
+  resetRobotPos(rightSensor, "positive_x");
+  resetRobotPos(frontSensor, "positive_y");;
+
+  chassis.moveToPoint(48, 0, 1250, {.forwards=false, .maxSpeed =80});
+  intake.setState(lib::IntakeState::Idle);
+  chassis.waitUntilDone();
+  clamp.set_value(true);
+
+  //score alliance stake
+
+  chassis.turnToPoint(64, 0, 500, {.forwards=true});
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(64, 0, 1000, {.forwards=true, .maxSpeed =60});
+  chassis.waitUntilDone();
+  chassis.setPose(62, 0, chassis.getPose().theta);
+
+  chassis.moveToPoint(57, 0, 750, {.forwards=false, .maxSpeed =80});
+  chassis.waitUntilDone();
+  lift.setState(lib::LiftState::Alliance);
+
+  chassis.moveToPoint(54, 0, 500, {.forwards=false, .maxSpeed =60});
+  chassis.waitUntilDone();
+
+  lift.setState(lib::LiftState::AllianceScore);
+  pros::delay(250); 
+
+
+  ///////////////////////////////////////////////
+  //--------------3RD SECTION----------------//
+  ///////////////////////////////////////////////
+
+  //score one ring
+  chassis.moveToPoint(48, 0, 1000, {.forwards=false, .maxSpeed =80});
+  pros::delay(250);
+  intake.setState(lib::IntakeState::In);
+  lift.setState(lib::LiftState::Stored);
+  chassis.waitUntilDone();
+
+  chassis.turnToPoint(24, 24, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(24, 24, 1000, {.forwards=true, .maxSpeed =100});
+  chassis.waitUntilDone();
+
+
+//cross under ladder score 3
+  chassis.turnToPoint(-47, -47, 500);
+  chassis.waitUntilDone();
+  intake.setState(lib::IntakeState::Idle);
+
+  chassis.moveToPoint(-47, -47, 3500, {.forwards=true, .maxSpeed =80});
+  pros::delay(1450);
+  intake.setState(lib::IntakeState::In);
+  chassis.waitUntilDone();
+
+  //score two and corner
+  chassis.turnToPoint(-62, -48, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(-62, -48, 1500, {.forwards=true, .maxSpeed =60});
+  chassis.waitUntilDone();
+
+  pros::delay(250);
+
+  chassis.turnToPoint(-44, -62, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(-44, -62, 1500, {.forwards=true, .maxSpeed =80});
+  chassis.waitUntilDone();
+
+  //-----------Place in corner------------------//
+
+  chassis.turnToPoint(-64, -64, 500, {.forwards = false});
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(-64, -64, 750, {.forwards=false, .maxSpeed =100});
+  chassis.waitUntilDone();
+
+  intake.setState(lib::IntakeState::Idle);
+
+  linearController.kD = 3;
+  angularController.kD = 19;
+  
+  chassis.turnToPoint(-48, -48, 500);
+  chassis.waitUntilDone();
+  clamp.set_value(false);
+
+
+  chassis.moveToPoint(-48, -48, 750, {.forwards=true, .maxSpeed =100});
+  chassis.waitUntilDone();
+  
+  //RESET//
+  chassis.turnToHeading(180, 650);
+  chassis.waitUntilDone();
+
+
+  ///////////////////////////////////////////////
+  //--------------4th SECTION----------------//
+  ///////////////////////////////////////////////
+
+  //clamp and one ring
+  resetRobotPos(frontSensor, "negative_y");
+  resetRobotPos(rightSensor, "negative_x");
+  
+  chassis.turnToPoint(-48, -24, 500, {.forwards = false});
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(-48, -24, 1250, {.forwards=false, .maxSpeed =80});
+  chassis.waitUntilDone();
+  clamp.set_value(true);
+
+  chassis.turnToPoint(-24, -48, 500);
+  chassis.waitUntilDone();
+  intake.setState(lib::IntakeState::In);
+  lift.setState(lib::LiftState::Recieve);
+
+  chassis.moveToPoint(-24, -48, 1000, {.forwards=true, .maxSpeed =80});
+  chassis.waitUntilDone();
+
+//lady brown stuff
+
+  chassis.turnToPoint(0, -45, 500, {.forwards = true});
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(0, -45, 1000, {.forwards=true, .maxSpeed = 80});
+  chassis.waitUntilDone();
+  lift.setState(lib::LiftState::Mid);
+  intake.setState(lib::IntakeState::Idle);
+  pros::delay(100);
+  intake.setState(lib::IntakeState::In);
+
+  //-----------LADY BROWN 1------------------//
+
+  chassis.turnToPoint(0, -68, 500);
+  chassis.waitUntilDone();
+ 
+  chassis.moveToPoint(0, -68, 1000, {.forwards=true, .maxSpeed =80});
+  chassis.waitUntilDone();
+
+  chassis.setPose(0,-62, chassis.getPose().theta);
+  pros::delay(50);
+  lift.setState(lib::LiftState::Score);
+  pros::delay(450);
+
+  //now score rings
+
+  chassis.moveToPoint(0, -42, 750, {.forwards=false, .maxSpeed = 100});
+  chassis.waitUntilDone();
+  lift.setState(lib::LiftState::Stored);
+
+  intake.setState(lib::IntakeState::In);
+
+  chassis.turnToPoint(24, -48, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(24, -48, 850, {.forwards=true, .maxSpeed =100});
+  chassis.waitUntilDone();
+
+  chassis.turnToPoint(24, -24, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(24, -24, 850, {.forwards=true, .maxSpeed =100});
+  chassis.waitUntilDone();
+
+  pros::delay(350);
+
+  chassis.turnToPoint(44, -44, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(44, -44, 1000, {.forwards=true, .maxSpeed =90});
+  intake.setState(lib::IntakeState::In);
+  chassis.waitUntilDone();
+
+  //score two and corner
+  chassis.turnToPoint(48, -60, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(48, -60, 500, {.forwards=true, .maxSpeed =80});
+  chassis.waitUntilDone();
+
+  pros::delay(250);
+
+  chassis.turnToPoint(60, -44, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(60, -44, 500, {.forwards=true, .maxSpeed =80});
+
+  chassis.waitUntilDone();
+
+//put in corner
+
+  chassis.turnToPoint(62, -62, 500, {.forwards = false});
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(62, -62, 1000, {.forwards=false, .maxSpeed =127});
+  pros::delay(850);
+  clamp.set_value(false);
+  chassis.waitUntilDone();
+
+
+  intake.setState(lib::IntakeState::Idle);
+
+  //HANGGG
+  chassis.moveToPoint(24, -24, 500, {.forwards=true, .maxSpeed =127});
+  lift.setState(lib::LiftState::Mid);
+  chassis.waitUntilDone();
+
+  chassis.turnToPoint(64, -64, 500);
+  chassis.waitUntilDone();
+
+  chassis.moveToPoint(8, -8, 1000, {.forwards=false, .maxSpeed =127});
+  chassis.waitUntilDone();
+}
+

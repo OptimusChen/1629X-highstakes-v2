@@ -149,7 +149,7 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
     right->move(0);
 }
 
-void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int minSpeed) {
+void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int minSpeed, int maxSpeed) {
     angular->reset();
     
     // Record the start time using std::chrono
@@ -193,8 +193,8 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
         float output = angular->calculate(error);
         
         // Set the chassis motor speeds based on the PID output
-        float left_speed = util::clamp(output, -127, 127);
-        float right_speed = util::clamp(-output, -127, 127);
+        float left_speed = util::clamp(output, -maxSpeed, maxSpeed);
+        float right_speed = util::clamp(-output, -maxSpeed, maxSpeed);
 
         std::cout << left_speed << std::endl;
 
@@ -474,3 +474,19 @@ void Robot::shivaan(float x, float y, int timeout, float pct, int maxSpeed) {
     left->move(0);
     right->move(0);
 }
+
+void Robot::relative(float distance, float maxSpeed, int timeout) {
+    double headingRadians = get_pose().theta;
+    double startingX = get_pose().x;
+    double startingY = get_pose().y;
+    double deltaX = distance * sin(headingRadians);
+    double deltaY = distance * cos(headingRadians);
+    double newX = startingX + deltaX;
+    double newY = startingY + deltaY;
+    if (distance > 0) {
+        moveToPoint(newX, newY, timeout, true, false, maxSpeed, true);
+    }
+    else if (distance < 0) {
+        moveToPoint(newX, newY, timeout, false, false, maxSpeed, true);
+    }
+};
