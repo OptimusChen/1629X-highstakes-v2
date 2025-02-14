@@ -71,10 +71,10 @@ static Angle angle() {
     return angle * radian;
 }
 
-static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((3.25_in).getValue(), (-6_in).getValue(), (270_deg).getValue()), right_dist);
-static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((3.25_in).getValue(), (6_in).getValue(), (90_deg).getValue()), left_dist);
-static loco::DistanceSensorModel backDistance(Eigen::Vector3f((1_in).getValue(), (-6.25_in).getValue(), (180_deg).getValue()), back_dist);
-static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((3.25_in).getValue(), (-4.5_in).getValue(), (0_deg).getValue()), front_dist);
+static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((3.5_in).getValue(), (-6_in).getValue(), (270_deg).getValue()), right_dist);
+static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((3.5_in).getValue(), (6_in).getValue(), (90_deg).getValue()), left_dist);
+static loco::DistanceSensorModel backDistance(Eigen::Vector3f((1.1_in).getValue(), (-5.75_in).getValue(), (180_deg).getValue()), back_dist);
+static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((2.25_in).getValue(), (-4.75_in).getValue(), (0_deg).getValue()), front_dist);
 
 static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 
@@ -180,7 +180,7 @@ void initialize() {
     // left_motor_group.set_brake_mode_all(E_MOTOR_BRAKE_BRAKE);
     // right_motor_group.set_brake_mode_all(E_MOTOR_BRAKE_BRAKE);
 
-    // autonomous();
+    autonomous();
 
     // robot.set_pose(-58, 0, 0);
     // robot.initialize_particle_filter();
@@ -195,7 +195,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::casey(&robot, &chassis);
+    bestautonfr::rush(&robot);
 }
 
 float get_rotation_degrees(Rotation rot) {

@@ -115,23 +115,26 @@ void Odom::update() {
     prevParallel = parallelTravel;
     prevPerpendicular = perpendicularTravel;
 
-    // calculate local x and y
-    float localX = 0;
-    float localY = 0;
-    if (deltaHeading == 0) { // prevent divide by 0
-        localX = deltaX;
-        localY = deltaY;
-    } else {
-        localX = 2 * sin(deltaHeading / 2) * (deltaX / deltaHeading + (encoders ? 0 : perpendicular->offset));
-        localY = 2 * sin(deltaHeading / 2) * (deltaY / deltaHeading + (encoders ? (-trackWidth/2) : parallel->offset));
-    }
+    if (!mcl) {
+        // calculate local x and y
+        float localX = 0;
+        float localY = 0;
+        if (deltaHeading == 0) { // prevent divide by 0
+            localX = deltaX;
+            localY = deltaY;
+        } else {
+            localX = 2 * sin(deltaHeading / 2) * (deltaX / deltaHeading + (encoders ? 0 : perpendicular->offset));
+            localY = 2 * sin(deltaHeading / 2) * (deltaY / deltaHeading + (encoders ? (-trackWidth/2) : parallel->offset));
+        }
+        
 
-    // calculate global x and y
-    // std::cout << localX << ", " << localY << ", " << avgHeading << std::endl;
-    x += localY * sin(avgHeading);
-    y += localY * cos(avgHeading);
-    x += localX * -cos(avgHeading);
-    y += localX * sin(avgHeading);
+        // calculate global x and y
+        // std::cout << localX << ", " << localY << ", " << avgHeading << std::endl;
+        x += localY * sin(avgHeading);
+        y += localY * cos(avgHeading);
+        x += localX * -cos(avgHeading);
+        y += localX * sin(avgHeading);
+    }
     theta = heading;
 
     theta = fmod(theta, 2*M_PI);

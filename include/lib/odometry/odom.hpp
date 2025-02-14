@@ -18,6 +18,7 @@ namespace lib {
             int rpm;
             float wheelDiameter;
             float trackWidth;
+            bool mcl = false;
             MotorGroup* left;
             MotorGroup* right;
 

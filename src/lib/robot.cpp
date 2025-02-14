@@ -33,6 +33,8 @@ void Robot::set_pose(float x, float y, float theta, bool radians) {
 
 void Robot::set_pose_mode(int mode) {
     this->poseMode = mode;
+
+    odometry->mcl = mode == MCL;
 }
 
 Pose Robot::get_pose() {

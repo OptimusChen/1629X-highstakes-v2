@@ -10,10 +10,10 @@ using namespace pros;
 using namespace lib;
 
 #define REST 0
-#define LOAD 37
-#define MID 60
-#define SCORE 160
-#define ALLIANCE_STAKE 180
+#define LOAD 24
+#define MID 40
+#define SCORE 130
+#define ALLIANCE_STAKE 150
 
 class Arm : public Subsystem {
 public:
@@ -21,7 +21,7 @@ public:
 
     Motor* motor;
     Rotation* rotation;
-    PID liftPID = PID(2, 0, 0.5);
+    PID liftPID = PID(1.5, 0, 0);
     bool moving = false;
 
     void initialize() override;
