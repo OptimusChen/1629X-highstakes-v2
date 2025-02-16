@@ -160,7 +160,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->set_mogo(false);
     intake->stop();
 
-    intake->backwards();
+    intake->forwards();
 
     // robot->moveToPoint(-48, 48, 750, true, false, fast_speed);
     // arm->set_target(LOAD);
@@ -286,18 +286,18 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //put in corner
 
-    robot->moveToPoint(38, -43, 500, true);
+    robot->moveToPoint(38, -43, 1000, true, false, 60);
     intake->stop();
 
-    robot->turnToHeading(170, 1000);
+    robot->turnToHeading(170, 1300, false, 0, 60);
 
     robot->set_mogo(false);
     delay(300);
-    robot->moveToPoint(60, -65, 1000, false, false, fast_speed);
+    robot->moveToPoint(60, -60, 1000, false, false, fast_speed);
 
     Task intakedelay1([&] {
         pros::delay(500);
-        intake->forwards();
+        intake->forwards(100);
         pros::delay(750);
         intake->set_stop_condition(stage_1_stop_color);        
     });  
@@ -326,7 +326,6 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->moveToPoint(0, -44, 1000, true, true, mid_speed);
 
     //-----------LADY BROWN 1------------------//
-    
     robot->turnToHeading(270, 500);
     intake->forwards();
     robot->moveToPoint(0, -68, 1000, true, false, mid_speed);
@@ -358,7 +357,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     // robot->turnToPoint(-60, 60, 500, {.forwards = false});
     // chassis.waitUntilDone();
 
-    robot->turnToHeading(45, 500);
+    robot->turnToHeading(45, 1000);
     // robot->moveToPoint(-60, 60, 500+500, false, true, fast_speed);
     robot->moveToPoint(-62, -62, 1000, false, false, 90, true);
     robot->timedMove(-40, 500);
@@ -367,6 +366,11 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     robot->set_mogo(false);
     intake->stop();    
+
+    arm->set_target(SCORE);
+    robot->moveToPoint(-23.5, -23.5, 1500, true, true, fast_speed);
+    robot->turnToHeading(225, 500);
+    robot->timedMove(-85, 2000);
 
     logging::dump();
     runningAuton = false;
