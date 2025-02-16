@@ -181,12 +181,10 @@ void initialize() {
     robot.add_subsystem(new Intake());
     robot.add_subsystem(new Arm());
 
-    robot.set_pose(-61, 0, 0);
+    // robot.set_pose(-61, 0, 0);
     robot.poseSet = true;
     robot.calibrate();
-    robot.initialize_particle_filter();
-
-    autonomous();
+    // robot.initialize_particle_filter();
 }
 
 void disabled() {}
@@ -194,7 +192,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::casey(&robot, &chassis);
+    bestautonfr::red_sawp(&robot);
     return;
     switch (sec::auton)
     {
@@ -202,7 +200,7 @@ void autonomous() {
             bestautonfr::blue_sawp(&robot);
             break;
         case 1:
-            // auton::blue_plus_side_sweep();
+            bestautonfr::blue_rush( &robot, &chassis);
             break;
         case 2:
             bestautonfr::blue_positive(&robot);
@@ -211,7 +209,7 @@ void autonomous() {
             bestautonfr::red_sawp(&robot);
             break;
         case 4:
-            // auton::red_plus_side_sweep();
+            bestautonfr::red_rush( &robot, &chassis);
             break;
         case 5:
             bestautonfr::red_positive(&robot);
@@ -231,9 +229,9 @@ float get_rotation_degrees(Rotation rot) {
 }
 
 void opcontrol() {
-    for (Subsystem* subsystem : robot.subsystems) {
-        subsystem->initialize();
-    }
+    // for (Subsystem* subsystem : robot.subsystems) {
+    //     subsystem->initialize();
+    // }
 
     Intake* intake = robot.get_subsystem<Intake>();
     Arm* arm = robot.get_subsystem<Arm>();

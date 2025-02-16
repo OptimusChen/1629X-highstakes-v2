@@ -9,7 +9,7 @@ Controller cm(E_CONTROLLER_MASTER);
 
 namespace sec {
     int auton;
-    const char *btnmMap[] = {"Blue WP (+)","Blue Elims (+)","BpRn2R","\n","Red WP (+)","Red Elims (+)","RpBn2R","\n","None","Skills",""}; // up to 10 autons
+    const char *btnmMap[] = {"Blue WP (+)","Blue RUSH (-)","BpRn2R","\n","Red WP (+)","Red RUSH (-)","RpBn2R","\n","None","Skills",""}; // up to 10 autons
     std::vector<std::string> textMap; // up to 10 autons
     lv_obj_t * label;
 
