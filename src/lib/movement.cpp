@@ -306,6 +306,8 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         float left_motor_speed = moveOut + turnOut;
         float right_motor_speed = moveOut - turnOut;
 
+        std::cout << left_motor_speed << ", " << right_motor_speed << std::endl;
+
         // Clamp motor speeds to the maximum allowed speed
         const float ratio = std::max(std::fabs(left_motor_speed), std::fabs(right_motor_speed)) / maxSpeed;
         if (ratio > 1) {

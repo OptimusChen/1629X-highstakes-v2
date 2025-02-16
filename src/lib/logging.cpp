@@ -16,10 +16,10 @@ namespace logging {
             switch (log.type)
             {
             case LogType::POSITION_EXPECTED:
-                std::cout << "Expected: " << log.x << ", " << log.y << ", " << log.heading << std::endl;
+                std::cout << "Expected, " << log.x << ", " << log.y << ", " << log.heading << std::endl;
                 break;
             case LogType::POSITION_REAL:
-                std::cout << "Real: " << log.x << ", " << log.y << ", " << log.heading << std::endl;
+                std::cout << "Real, " << log.x << ", " << log.y << ", " << log.heading << std::endl;
                 break;
             default:
                 break;

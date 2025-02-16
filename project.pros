@@ -298,7 +298,7 @@
       }
     },
     "upload_options": {
-      "after": "run",
+      "after": "screen",
       "icon": "planet",
       "slot": 6
     },
