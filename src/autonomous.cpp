@@ -60,7 +60,12 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
         return intake->detected_ring(STAGE_2);
     };
 
+    intake->color_sort = true;
     intake->forwards();
+
+    delay(2000000);
+    return;
+
     pros::delay(200);
     intake->stop();
 
@@ -143,7 +148,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     // robot->turnToPoint(-49, 57, 500);
 
     robot->moveToPoint(-50, 62, 1000, true, true, fast_speed);
-    // robot->timedMove(70, 200);
+    robot->timedMove(40, 500);
 
     //-----------Place in corner------------------//
 
@@ -160,7 +165,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->set_mogo(false);
     intake->stop();
 
-    intake->forwards();
+    intake->forwards(100);
 
     // robot->moveToPoint(-48, 48, 750, true, false, fast_speed);
     // arm->set_target(LOAD);

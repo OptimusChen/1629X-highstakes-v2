@@ -18,7 +18,7 @@ void Intake::initialize() {
 
 void Intake::update() {
     auto opticalMeasure = optical.get_hue();
-    int off = 600;
+    int off = 550;
     bool loading = arm->armTarget == LOAD;
     if (loading) {
         off = 400;
