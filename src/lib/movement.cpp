@@ -4,6 +4,8 @@
 #include "lib/controller/ramsete.hpp"
 #include "lib/controller/feedForward.hpp"
 
+#include "lib/logging.hpp"
+
 using namespace lib;
 
 #define METERS 0.0254
@@ -196,7 +198,7 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
         float left_speed = util::clamp(output, -maxSpeed, maxSpeed);
         float right_speed = util::clamp(-output, -maxSpeed, maxSpeed);
 
-        std::cout << left_speed << std::endl;
+        // std::cout << left_speed << std::endl;
 
         left->move(left_speed);
         right->move(right_speed);
@@ -207,6 +209,9 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
     
     left->move(0);
     right->move(0);
+
+    logging::push_log(LogType::POSITION_EXPECTED, -1, -1, target_angle, -1);
+    logging::push_log(LogType::POSITION_REAL, get_pose().x, get_pose().y, get_pose().get_degrees(), -1);
 }
 
 void Robot::turnToPoint(float x, float y, int timeout, int minSpeed) {
@@ -252,8 +257,6 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         // Calculate the Euclidean distance (magnitude) to the target
         float dist = sqrt(deltaX * deltaX + deltaY * deltaY);
 
-        std::cout << dist << std::endl;
-
         // Calculate the robot's heading vector
         float robot_heading_x = cos(adjustedTheta);
         float robot_heading_y = sin(adjustedTheta);
@@ -278,8 +281,6 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
         // Adjust the movement output if the angular error is significant
         moveOut *= cos(angularError * M_PI / 180.0f);  // Convert angular error to radians
-
-        std::cout << signed_dist << ": " << moveOut << std::endl;
 
         // Get the output from the angular (heading) PID controller
         float turnOut = angular->calculate(angularError);
@@ -324,12 +325,16 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         } else {
             stability = 0;
         }
+        
         pros::c::task_delay_until(&start, 10);
     }
 
     // Stop the motors when the target is reached or timeout occurs
     left->move(0);
     right->move(0);
+
+    logging::push_log(LogType::POSITION_EXPECTED, x, y, -1, -1);
+    logging::push_log(LogType::POSITION_REAL, get_pose().x, get_pose().y, get_pose().get_degrees(), -1);
 }
 
 void Robot::timedMove(int power, int time) {
@@ -423,7 +428,7 @@ void Robot::shivaan(float x, float y, int timeout, float pct, int maxSpeed) {
         // Adjust the movement output if the angular error is significant
         moveOut *= cos(angularError * M_PI / 180.0f);  // Convert angular error to radians
 
-        std::cout << signed_dist << ": " << moveOut << std::endl;
+        // std::cout << signed_dist << ": " << moveOut << std::endl;
 
         // Get the output from the angular (heading) PID controller
         float turnOut = angular->calculate(angularError);

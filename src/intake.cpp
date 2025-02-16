@@ -18,7 +18,11 @@ void Intake::initialize() {
 
 void Intake::update() {
     auto opticalMeasure = optical.get_hue();
-    int off = 300;
+    int off = 600;
+    bool loading = arm->armTarget == LOAD;
+    if (loading) {
+        off = 400;
+    }
 
     // if (color == BLUE && ((opticalMeasure > 0) && (opticalMeasure < 30)) && color_sort) {
     //     color_sort = false;
@@ -36,6 +40,14 @@ void Intake::update() {
 
     // 600, 175
     // 300, 400
+    
+    if (color == BLUE && ((opticalMeasure > 0) && (opticalMeasure < 30)) && color_sort && !toSort) {
+        toSort = true;
+        hooks.tare_position();
+        wrongDetected = hooks.get_position();
+        color_sort = false;
+        std::cout << "sort1" << std::endl;
+    }
 
     if (color == RED && ((opticalMeasure > 170) && (opticalMeasure < 220)) && color_sort && !toSort) {
         toSort = true;
@@ -46,20 +58,22 @@ void Intake::update() {
     }
 
     // std::cout << opticalMeasure << std::endl;;
-
+    
     if (toSort && !color_sort && abs(hooks.get_position() - (wrongDetected + off)) < 20) {
         std::cout << "sort2" << std::endl;
         color_sort = true;
 
         Task t([&] {
             hooks.move(-127);
-            delay(300);
+            reversed = true;
+            delay(loading ? 600 : 300);
             voltsMutex.take();
             const auto _volts = volts;
             voltsMutex.give();
             hooks.move(_volts);
             hooks.tare_position();
 
+            reversed = false;
             toSort = false;
         });  
     }
@@ -104,6 +118,7 @@ void Intake::set_color(int color) {
 }
 
 void Intake::forwards(int power) {
+    if (reversed) power = -power;
     hooks.move(power);
     voltsMutex.take();
     volts = power;

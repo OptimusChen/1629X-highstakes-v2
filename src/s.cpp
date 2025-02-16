@@ -1,5 +1,5 @@
 #include "main.h"
-#include "lib/selector.hpp"
+#include "s.hpp"
 #include "pros/misc.hpp"
 #include "liblvgl/lvgl.h"
 
@@ -7,9 +7,9 @@ using namespace pros;
 
 Controller cm(E_CONTROLLER_MASTER);
 
-namespace selector {
+namespace sec {
     int auton;
-    const char *btnmMap[] = {"Blue WP (+)","Blue Elims (+)","Blue (-)","\n","Red WP (+)","Red Elims (+)","Red (-)","\n","None","Skills",""}; // up to 10 autons
+    const char *btnmMap[] = {"Blue WP (+)","Blue Elims (+)","BpRn2R","\n","Red WP (+)","Red Elims (+)","RpBn2R","\n","None","Skills",""}; // up to 10 autons
     std::vector<std::string> textMap; // up to 10 autons
     lv_obj_t * label;
 

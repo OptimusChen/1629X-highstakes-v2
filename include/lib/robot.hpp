@@ -81,6 +81,7 @@ namespace lib {
             void set_mogo(bool value);
             void set_rush_arm_left(bool value);
             void set_rush_arm_right(bool value);
+            void set_lift_intake(bool value);
     };
 
     template <typename T>

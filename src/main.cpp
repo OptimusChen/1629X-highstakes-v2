@@ -22,13 +22,14 @@
 #include "arm.hpp"
 
 #include "lemlib/api.hpp"
+#include "s.hpp"
 
 using namespace pros;
 using namespace pros::c;
 using namespace controls;
 using namespace lib;
 
-#define TRACK_WIDTH 11.5
+#define TRACK_WIDTH 11.25
 
 static Controller master(E_CONTROLLER_MASTER);
 
@@ -64,6 +65,7 @@ static Distance front_dist(F_DISTANCE);
 
 Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
 
+// convert the angle from the odometry
 static Angle angle() {
     float angle = fmod(robot.get_pose().theta - (M_PI / 2), (2 * M_PI));
     if (angle < 0) angle = 2 * M_PI + angle;
@@ -71,6 +73,7 @@ static Angle angle() {
     return angle * radian;
 }
 
+// initialize the distance sensors
 static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((3.5_in).getValue(), (-6_in).getValue(), (270_deg).getValue()), right_dist);
 static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((3.5_in).getValue(), (6_in).getValue(), (90_deg).getValue()), left_dist);
 static loco::DistanceSensorModel backDistance(Eigen::Vector3f((1.1_in).getValue(), (-5.75_in).getValue(), (180_deg).getValue()), back_dist);
@@ -90,9 +93,9 @@ lemlib::Drivetrain drivetrain(
 );
 
 lemlib::ControllerSettings lateral_controller(
-    5, // proportional gain (kP)
+    5.5, // proportional gain (kP)
     0, // integral gain (kI)
-    3, // derivative gain (kD)
+    2, // derivative gain (kD)
     3, // anti windup
     1, // small error range, in inches
     100, // small error range timeout, in milliseconds
@@ -147,7 +150,8 @@ static int color = BLUE;
 // });
 
 void initialize() {
-	pros::lcd::initialize();
+    lcd::initialize();
+    sec::init();
 
     std::cout << &robot << std::endl;
 
@@ -177,17 +181,12 @@ void initialize() {
     robot.add_subsystem(new Intake());
     robot.add_subsystem(new Arm());
 
-    // left_motor_group.set_brake_mode_all(E_MOTOR_BRAKE_BRAKE);
-    // right_motor_group.set_brake_mode_all(E_MOTOR_BRAKE_BRAKE);
+    robot.set_pose(-61, 0, 0);
+    robot.poseSet = true;
+    robot.calibrate();
+    robot.initialize_particle_filter();
 
     autonomous();
-
-    // robot.set_pose(-58, 0, 0);
-    // robot.initialize_particle_filter();
-    // robot.poseSet = true;
-    // robot.calibrate();
-    // delay(2000);
-    // bestautonfr::skills(&robot);
 }
 
 void disabled() {}
@@ -195,7 +194,34 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::rush(&robot);
+    bestautonfr::casey(&robot, &chassis);
+    return;
+    switch (sec::auton)
+    {
+        case 0:
+            bestautonfr::blue_sawp(&robot);
+            break;
+        case 1:
+            // auton::blue_plus_side_sweep();
+            break;
+        case 2:
+            bestautonfr::blue_positive(&robot);
+            break;
+        case 3:
+            bestautonfr::red_sawp(&robot);
+            break;
+        case 4:
+            // auton::red_plus_side_sweep();
+            break;
+        case 5:
+            bestautonfr::red_positive(&robot);
+            break;
+        case 6:
+            break;
+        case 7:
+            bestautonfr::casey(&robot, &chassis);
+            break;
+    }
 }
 
 float get_rotation_degrees(Rotation rot) {
@@ -213,7 +239,7 @@ void opcontrol() {
     Arm* arm = robot.get_subsystem<Arm>();
     
     intake->arm = arm;
-    intake->color_sort = false;
+    intake->color_sort = true;
     intake->antijam = false;
 
 	auto mogo = ADIDigitalOut(MOGO);
@@ -225,6 +251,8 @@ void opcontrol() {
 
     bool lbSetting = false;
 
+    arm->set_target(REST);
+
     std::unordered_map<controller_digital_e_t, std::function<void()>> toggle_controls;
     std::unordered_map<controller_digital_e_t, std::pair<std::function<void(bool)>, std::function<void()>>> hold_controls;
     std::unordered_set<controller_digital_e_t> held;
@@ -234,22 +262,43 @@ void opcontrol() {
     int state = 0;
 
     double pct = 1.0;
+    int counter = 0;
+
+    intake->color_sort = false;
+    intake->set_color(BLUE);
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
         [&](bool firstActivation) {
-            if (!lbSetting) arm->move(127);
+            if (!lbSetting) {
+                if ((arm->rotation->get_angle() / 100.0f) < LOAD / 3) {
+                    arm->move(60);
+                } else {
+                    arm->move(127);
+                }
+            }
         },
         [&]() {
             if (!lbSetting) {
                 arm->moving = false;
-                arm->set_target(LOAD);
+                if (counter < 250) {
+                    if (arm->armTarget == LOAD) {
+                        arm->set_target(MID + 20);
+                    } else if (arm->armTarget == (MID + 20)) {
+                        arm->set_target(ALLIANCE_STAKE);
+                    } else {
+                        arm->set_target(LOAD);
+                    }
+                } else {
+                    arm->set_target(LOAD);
+                }
             }
         }
     ));
 
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_X, [&]() {
-        pct += 0.1;
-        if (pct > 1) pct = 0.0;
+        intake->color_sort = !intake->color_sort;
+        // pct += 0.1;
+        // if (pct > 1) pct = 0.0;
     });
 
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_L1, [&]() {
@@ -313,7 +362,7 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_R1, std::make_pair(
         [&](bool firstActivation) {
-            intake->hooks.move_velocity(600);
+            intake->forwards();
         },
         [&]() {
             intake->stop();
@@ -340,7 +389,7 @@ void opcontrol() {
             subsystem->update();
         }
 
-        std::cout << intake->optical.get_proximity() << std::endl;
+        // std::cout << intake->optical.get_proximity() << std::endl;
 
         for (auto control : toggle_controls) {
             if (master.get_digital_new_press(control.first) && !held.contains(control.first)) {
@@ -356,6 +405,12 @@ void opcontrol() {
                 control.second.second();
                 held.erase(control.first);
             }
+        }
+
+        if (master.get_digital(E_CONTROLLER_DIGITAL_L1)) {
+            counter++;
+        } else {
+            counter = 0;
         }
 
         double battery = battery_get_capacity();

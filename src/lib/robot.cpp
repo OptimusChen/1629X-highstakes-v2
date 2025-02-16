@@ -14,6 +14,7 @@ using namespace lib;
 ADIDigitalOut mogo(MOGO);
 ADIDigitalOut rush_left(DOINKER_LEFT);
 ADIDigitalOut rush_right(DOINKER_RIGHT);
+ADIDigitalOut lift_intake(INTAKE_LIFT);
 
 Motor hooks(HOOKS);
 
@@ -89,6 +90,10 @@ void Robot::set_rush_arm_left(bool value) {
 
 void Robot::set_rush_arm_right(bool value) {
     rush_right.set_value(value);
+}
+
+void Robot::set_lift_intake(bool value) {
+    lift_intake.set_value(value);
 }
 
 constexpr float DRIVE_RATIO = 48.0/36.0; // EX: 36 tooth driving gear to 48 tooth driven gear.

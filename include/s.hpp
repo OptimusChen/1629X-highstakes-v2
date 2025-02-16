@@ -9,7 +9,7 @@
 #define DEFAULT 1
 #define AUTONS (const char*[]){"POS", "NEG", "nothing"}
 
-namespace selector {
+namespace sec{
 
 extern int auton;
 // const char *bee[] = {AUTONS, ""};

@@ -123,17 +123,14 @@ void Odom::update() {
             localX = deltaX;
             localY = deltaY;
         } else {
-            localX = 2 * sin(deltaHeading / 2) * (deltaX / deltaHeading + (encoders ? 0 : perpendicular->offset));
-            localY = 2 * sin(deltaHeading / 2) * (deltaY / deltaHeading + (encoders ? (-trackWidth/2) : parallel->offset));
+            localX = 2 * sin(deltaHeading / 2) * (deltaX / deltaHeading + (encoders ? (trackWidth / 2) : perpendicular->offset));
+            localY = 2 * sin(deltaHeading / 2) * (deltaY / deltaHeading + (encoders ? 0 : parallel->offset));
         }
-        
 
         // calculate global x and y
         // std::cout << localX << ", " << localY << ", " << avgHeading << std::endl;
-        x += localY * sin(avgHeading);
-        y += localY * cos(avgHeading);
-        x += localX * -cos(avgHeading);
-        y += localX * sin(avgHeading);
+        x += localX * cos(avgHeading) - localY * sin(avgHeading);
+        y += localX * sin(avgHeading) + localY * cos(avgHeading);
     }
     theta = heading;
 

@@ -6,6 +6,7 @@ void Arm::initialize() {
     // left = new Motor(ARM_LEFT, MotorGears::green);
     // right = new Motor(-ARM_RIGHT, MotorGears::green);
     motor = new Motor(LADYBROWN, MotorGears::red);
+    motor->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     motor->set_reversed(true);
     // motor->set_encoder_units(MotorEncoderUnits::degrees);
     rotation = new Rotation(LB_ROTATION);
@@ -20,6 +21,8 @@ void Arm::initialize() {
 
 void Arm::update() {
     if (moving) return;
+    if (!rotation) return;
+    if (!motor) return;
     float measure = rotation->get_angle() / 100.0f;
     if (measure > 350) measure = 0;
     // float measure = motor->get_position();
