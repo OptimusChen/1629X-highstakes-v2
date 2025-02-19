@@ -151,7 +151,7 @@ static int color = BLUE;
 
 void initialize() {
     lcd::initialize();
-    sec::init();
+    // sec::init();
 
     std::cout << &robot << std::endl;
 
@@ -181,10 +181,12 @@ void initialize() {
     robot.add_subsystem(new Intake());
     robot.add_subsystem(new Arm());
 
-    // robot.set_pose(-61, 0, 0);
+    robot.set_pose(-61, 0, 0);
     robot.poseSet = true;
     robot.calibrate();
-    // robot.initialize_particle_filter();
+    robot.initialize_particle_filter();
+
+    autonomous();
 }
 
 void disabled() {}
@@ -192,7 +194,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::red_sawp(&robot);
+    bestautonfr::casey(&robot, &chassis);
     return;
     switch (sec::auton)
     {

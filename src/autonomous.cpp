@@ -71,14 +71,15 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //-----------CLAMP FIRST MOGO------------------//
 
-    robot->moveToPoint(-45, 0, 900-250, true, false, fast_speed);
+    robot->moveToPoint(-47, 0, 1200, true, false, fast_speed);
 
-    robot->turnToHeading(270, 500-250);
+    robot->turnToHeading(270, 500);
 
-    robot->moveToPoint(-45, 24, 1000-250, false, false, 80);
+    robot->moveToPoint(-45, 24, 1500, false, false, 80);
 
     robot->set_mogo(true);
     delay(200);
+    return;
 
     //-----------SCORE ONE RING------------------//
 
@@ -554,6 +555,8 @@ void bestautonfr::red_sawp(Robot* robot) {
 
     robot->moveToPoint(-8, 38, 1500, true, true, 60);
     robot->timedMove(20, 300);
+    robot->turnToHeading(90, 500);
+    robot->timedMove(40, 1000);
     // delay(300);
 
     robot->moveToPoint(-19, 28, 750, false, false, 80);
