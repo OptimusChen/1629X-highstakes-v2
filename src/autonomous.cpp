@@ -60,7 +60,9 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
         return intake->detected_ring(STAGE_2);
     };
 
-    intake->color_sort = true;
+    robot->set_use_slow_angular(true);
+
+    intake->color_sort = false;
     intake->forwards();
 
     pros::delay(200);
@@ -71,38 +73,33 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //-----------CLAMP FIRST MOGO------------------//
 
-    robot->moveToPoint(-47, 0, 1200, true, false, fast_speed);
+    robot->moveToPoint(-46.5, 0, 900, true, false, fast_speed);
 
     robot->turnToHeading(270, 500);
 
-    robot->moveToPoint(-45, 24, 1500, false, false, 80);
+    robot->moveToPoint(-46.5, 20, 800, false, false, 80);
 
     robot->set_mogo(true);
     delay(200);
-    return;
-
     //-----------SCORE ONE RING------------------//
 
     robot->turnToHeading(0, 500);
 
     intake->forwards();
 
-    robot->moveToPoint(-24, 20, 750, true, false, fast_speed);
-
-    robot->turnToHeading(41, 500);
+    robot->moveToPoint(-18, 28, 1000, true, false, fast_speed);
 
     //-----------OBTAIN 2nd RING------------------//
 
     robot->moveToPoint(0, 43, 800, true, false, fast_speed);
 
-    robot->turnToHeading(8, 500);
+    // robot->turnToHeading(8, 500);
 
     arm->set_target(LOAD);
 
     robot->moveToPoint(26, 46.5, 1450, true, false, fast_speed);
-    // robot->timedMove(40, 400);
 
-    robot->moveToPoint(0, 42, 800, false, false, mid_speed);
+    robot->moveToPoint(2, 42, 800, false, false, mid_speed);
 
     for (int i = 0; i < 0; i++) {
         intake->stop();
@@ -121,11 +118,10 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     // robot->turnToPoint(0, 68, 500);
     
-    robot->turnToHeading(90, 500);
-    robot->moveToPoint(0, 68, 850, true, true, mid_speed);
+    robot->moveToPoint(2, 68, 1500, true, true, fast_speed);
 
-    arm->liftPID.kP = 3;
-    arm->set_target(SCORE + 20);
+    arm->liftPID.kP = 100;
+    arm->set_target(SCORE + 50);
     arm->liftPID.kP = 1.5;
     robot->timedMove(20, 200);
     pros::delay(450);
@@ -135,38 +131,24 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->moveToPoint(0, 46, 750, false, false, fast_speed);
     arm->set_target(REST);
 
-    // robot->turnToPoint(-33, 46, 500);
-
-    // robot->moveToPoint(-33, 46, 500+1000, true, true, mid_speed);
-
     robot->moveToPoint(-60, 46, 2200, true, false, mid_speed);
 
     pros::delay(250);
-
-    // robot->turnToPoint(-49, 57, 500);
 
     robot->moveToPoint(-50, 62, 1000, true, true, fast_speed);
     robot->timedMove(40, 500);
 
     //-----------Place in corner------------------//
 
-    // robot->turnToPoint(-60, 60, 500, {.forwards = false});
-    // chassis.waitUntilDone();
-
     robot->turnToHeading(315, 500);
-    // robot->moveToPoint(-60, 60, 500+500, false, true, fast_speed);
-    robot->moveToPoint(-62, 62, 1000, false, false, 90, true);
+    robot->moveToPoint(-62, 60, 1000, false, false, 90, true);
     intake->backwards();
-    // robot->timedMove(-90, 500);
-    // chassis.waitUntilDone();
 
     robot->set_mogo(false);
     intake->stop();
 
-    intake->forwards(100);
+    intake->forwards(80);
 
-    // robot->moveToPoint(-48, 48, 750, true, false, fast_speed);
-    // arm->set_target(LOAD);
     intake->set_stop_condition(stage_1_stop_color);
     delay(500);
 
@@ -177,7 +159,14 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //Get ring for alliance stake
 
-    robot->moveToPoint(23, 46, 1500, true, false, fast_speed - 15);
+    robot->set_use_slow_angular(false);
+    robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
+    robot->moveToPoint(30, 48, 1500, true, true, 100);
+    robot->moveToPoint(40, 48, 1000, true, true, 40);
+    delay(100000000);
+    return;
+    robot->set_rush_arm_right(true);
+    delay(500);
 
     // robot->moveToPoint(47, 48, 1000, true, false, 60);
     
@@ -187,6 +176,8 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->moveToPoint(54, 25, 1500, false, true, fast_speed);
     robot->timedMove(-40, 500);
     robot->set_mogo(true);
+
+
     intake->forwards();
     delay(200);
 

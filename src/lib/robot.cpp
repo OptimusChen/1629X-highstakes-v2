@@ -18,7 +18,7 @@ ADIDigitalOut lift_intake(INTAKE_LIFT);
 
 Motor hooks(HOOKS);
 
-Robot::Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular) {
+Robot::Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular, PID* angular_slow) {
     this->odometry = odom;
 
     this->left = left;
@@ -26,6 +26,7 @@ Robot::Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID*
 
     this->lateral = lateral;
     this->angular = angular;
+    this->angular_slow = angular_slow;
 }
 
 void Robot::set_pose(float x, float y, float theta, bool radians) {
@@ -167,4 +168,13 @@ void Robot::initialize_particle_filter() {
             pros::c::task_delay_until(&start_time, 10);
         }
     });
+}
+
+void Robot::set_brake_mode(motor_brake_mode_e_t mode) {
+    left->set_brake_mode(mode);
+    right->set_brake_mode(mode);
+}
+
+void Robot::set_use_slow_angular(bool value) {
+    useSlowAngular = value;
 }

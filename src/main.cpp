@@ -53,6 +53,12 @@ static PID linear(
 
 // turning PID
 static PID angular(
+	2, // proportional gain (kP)
+	0, // integral gain (kI)
+	10 // derivative gain (kD)
+);
+
+static PID angular_slow(
 	1, // proportional gain (kP)
 	0, // integral gain (kI)
 	1 // derivative gain (kD)
@@ -63,7 +69,7 @@ static Distance right_dist(R_DISTANCE);
 static Distance back_dist(B_DISTANCE);
 static Distance front_dist(F_DISTANCE);
 
-Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular);
+Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular, &angular_slow);
 
 // convert the angle from the odometry
 static Angle angle() {

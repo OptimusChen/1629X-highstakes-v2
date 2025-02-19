@@ -152,7 +152,11 @@ void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constrain
 }
 
 void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int minSpeed, int maxSpeed) {
-    angular->reset();
+    auto usedAngular = angular;
+    if (useSlowAngular) {
+        usedAngular = angular_slow;
+    }
+    usedAngular->reset();
     
     // Record the start time using std::chrono
     auto start_time = std::chrono::high_resolution_clock::now();
@@ -192,7 +196,7 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
         }
 
         // Get the output from the angular PID controller
-        float output = angular->calculate(error);
+        float output = usedAngular->calculate(error);
         
         // Set the chassis motor speeds based on the PID output
         float left_speed = util::clamp(output, -maxSpeed, maxSpeed);
@@ -220,9 +224,13 @@ void Robot::turnToPoint(float x, float y, int timeout, int minSpeed) {
 }
 
 void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnFirst, int maxSpeed, bool noTurn) {
+    auto usedAngular = angular;
+    if (useSlowAngular) {
+        usedAngular = angular_slow;
+    }
     // Reset the PID controllers for lateral and angular control
     lateral->reset();
-    angular->reset();
+    usedAngular->reset();
 
     // Record the start time using std::chrono
     auto start_time = std::chrono::high_resolution_clock::now();
@@ -283,7 +291,7 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         moveOut *= cos(angularError * M_PI / 180.0f);  // Convert angular error to radians
 
         // Get the output from the angular (heading) PID controller
-        float turnOut = angular->calculate(angularError);
+        float turnOut = usedAngular->calculate(angularError);
 
         if (noTurn) turnOut = 0;
 
@@ -354,9 +362,14 @@ void Robot::swingToHeading(float target_angle, int timeout, int side) {
 }
 
 void Robot::shivaan(float x, float y, int timeout, float pct, int maxSpeed) {
+    auto usedAngular = angular;
+    if (useSlowAngular) {
+        usedAngular = angular_slow;
+    }
+
     // Reset the PID controllers for lateral and angular control
     lateral->reset();
-    angular->reset();
+    usedAngular->reset();
 
     // Record the start time using std::chrono
     auto start_time = std::chrono::high_resolution_clock::now();
@@ -433,7 +446,7 @@ void Robot::shivaan(float x, float y, int timeout, float pct, int maxSpeed) {
         // std::cout << signed_dist << ": " << moveOut << std::endl;
 
         // Get the output from the angular (heading) PID controller
-        float turnOut = angular->calculate(angularError);
+        float turnOut = usedAngular->calculate(angularError);
 
         // If the robot is close to the target, stop turning
         if (dist < 5.0f) {

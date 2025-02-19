@@ -39,20 +39,24 @@ namespace lib {
 
             PID* lateral;
             PID* angular;
+            PID* angular_slow;
 
             loco::ParticleFilter<PARTICLES>* particleFilter;
             std::vector<Subsystem*> subsystems;
 
             int poseMode = ODOM;
             bool poseSet = false;
+            bool useSlowAngular = false;
 
-            Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular);
+            Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular, PID* angular_slow);
 
             void set_pose(float x, float y, float theta, bool radians=false);
             Pose get_pose();
             void calibrate();
             void set_pf(loco::ParticleFilter<PARTICLES>* particleFilter);
             void set_pose_mode(int mde);
+            void set_use_slow_angular(bool value);
+            void set_brake_mode(motor_brake_mode_e_t mode);
             void initialize_particle_filter();
 
             void add_subsystem(Subsystem* subsystem);
