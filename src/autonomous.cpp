@@ -77,7 +77,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     robot->turnToHeading(270, 500);
 
-    robot->moveToPoint(-46.5, 20, 800, false, false, 80);
+    robot->moveToPoint(-46.5, 22, 800, false, false, 80);
 
     robot->set_mogo(true);
     delay(200);
@@ -116,9 +116,8 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //-----------LADY BROWN 1------------------//
 
-    // robot->turnToPoint(0, 68, 500);
-    
-    robot->moveToPoint(2, 68, 1500, true, true, fast_speed);
+    robot->turnToHeading(90, 500);
+    robot->moveToPoint(2, 68, 1000, true, true, fast_speed, true);
 
     arm->liftPID.kP = 100;
     arm->set_target(SCORE + 50);
@@ -140,8 +139,11 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //-----------Place in corner------------------//
 
+    intake->antijam = false;
     robot->turnToHeading(315, 500);
-    robot->moveToPoint(-62, 60, 1000, false, false, 90, true);
+    // robot->moveToPoint(-64, 58, 1000, false, false, 90, true);
+    robot->turnToHeading(0, 500);
+    robot->timedMove(-40, 500);
     intake->backwards();
 
     robot->set_mogo(false);
@@ -152,7 +154,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     intake->set_stop_condition(stage_1_stop_color);
     delay(500);
 
-    ///////////////////////////////////////////////
+    ///////////////////////////////     ////////////////
     //--------------2ND SECTION----------------//
     ///////////////////////////////////////////////
 
@@ -160,74 +162,100 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //Get ring for alliance stake
 
     robot->set_use_slow_angular(false);
+    intake->antijam = true;
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->moveToPoint(30, 48, 1500, true, true, 100);
-    robot->moveToPoint(40, 48, 1000, true, true, 40);
-    delay(100000000);
-    return;
+    robot->moveToPoint(30, 50, 1500, true, true, 100);
+    robot->moveToPoint(45, 50, 1500, true, true, 40);
     robot->set_rush_arm_right(true);
     delay(500);
+
+    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
     // robot->moveToPoint(47, 48, 1000, true, false, 60);
     
     //Clamp second goal
 
     // robot->turnToHeading(130, 500);
-    robot->moveToPoint(54, 25, 1500, false, true, fast_speed);
+    robot->moveToPoint(58, 23, 1500, false, true, fast_speed);
+    robot->set_rush_arm_right(false);
+    arm->set_target(LOAD);
     robot->timedMove(-40, 500);
+    // robot->moveToPoint(62, 22, 500, false, true, mid_speed);
     robot->set_mogo(true);
 
-
+    intake->set_stop_condition(nullptr);
     intake->forwards();
     delay(200);
 
     //put in corner
-    robot->turnToHeading(90, 500);
+    robot->turnToHeading(70, 500);
+    intake->stop();
     robot->set_rush_arm_right(true);
 
-    robot->moveToPoint(62, 56, 2000, true, true, fast_speed);
+    robot->moveToPoint(62, 54, 2000, true, true, fast_speed, true);
 
-    robot->turnToHeading(240, 1000);
+    robot->turnToHeading(210, 1000);
 
-    intake->stop();
     robot->set_rush_arm_right(false);
     pros::delay(100);
 
-    robot->moveToPoint(60, 60, 350+500, false, true, 80);
+    robot->moveToPoint(62, 58, 350+500, false, true, 80);
     robot->set_mogo(false);
-    // arm->set_target(MID);
     pros::delay(500);
-    // intake->forwards();
 
     //get third goal
     robot->moveToPoint(48, 30, 500, true, true, fast_speed);
     
-    robot->turnToHeading(90, 500);
+    arm->set_target(MID);
+    robot->turnToHeading(90, 1000, false, 0, 70);
 
     // intake->stop();
     
-    Task mogodelay1([&] {
-        pros::delay(1600);
-    });  
+    intake->backwards();
     robot->moveToPoint(47, 0, 1600, false, false, mid_speed);
+    intake->stop();
     robot->timedMove(-20, 500);
     robot->set_mogo(true);
 
     //score alliance stake
 
-    // int target = 1750;
-    // float error = front.get_distance() - target;
-    // while (abs(error) > 30) {
-    //     robot->left->move(15 * util::sign(error));
-    //     robot->right->move(15 * util::sign(error));
-    //     error = front.get_distance() - target;
+    int target = 1775;
+    float error = front.get_distance() - target;
+    while (abs(error) > 10) {
+        robot->left->move(15 * util::sign(error));
+        robot->right->move(15 * util::sign(error));
+        error = front.get_distance() - target;
 
-    //     delay(5);
-    // }
-    // robot->left->move(0);
-    // robot->right->move(0);
+        delay(5);
+    }
+    robot->left->move(0);
+    robot->right->move(0);
 
-    // robot->turnToHeading(0, 750);
+    robot->turnToHeading(0, 750);
+
+    target = 400;
+    error = front.get_distance() - target;
+    while (abs(error) > 10) {
+        robot->left->move(15 * util::sign(error));
+        robot->right->move(15 * util::sign(error));
+        error = front.get_distance() - target;
+
+        delay(5);
+    }
+    robot->left->move(0);
+    robot->right->move(0);
+
+    arm->liftPID.kP = 1;
+    arm->set_target(ALLIANCE_STAKE + 30);
+    arm->liftPID.kP = 1.5;
+    delay(500);
+
+    intake->forwards();
+    intake->color_sort = true;
+    robot->moveToPoint(40, robot->get_pose().y, 2000, false, false, 80);
+
+    delay(1000000);
+    return;
     // robot->moveToPoint(68, 0, 1000, true, false, 127, true);
     // // robot->timedMove(80, 300);
     

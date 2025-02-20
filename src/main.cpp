@@ -173,6 +173,7 @@ void initialize() {
 			pros::lcd::print(1, "y: %f", pose.y); // print the y position
 			pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
 			pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the headings
+			pros::lcd::print(4, "rand: %d", std::rand()); // print the headings
 
 			pros::delay(10);
 		}
