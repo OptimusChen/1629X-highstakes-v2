@@ -218,9 +218,9 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
     logging::push_log(LogType::POSITION_REAL, get_pose().x, get_pose().y, get_pose().get_degrees(), -1);
 }
 
-void Robot::turnToPoint(float x, float y, int timeout, int minSpeed) {
+void Robot::turnToPoint(float x, float y, int timeout, bool reversed, int minSpeed, int maxSpeed) {
     Pose pose = get_pose();
-    turnToHeading(util::get_angle_to_target(pose.x, pose.y, x, y), timeout, minSpeed);
+    turnToHeading(util::get_angle_to_target(pose.x, pose.y, x, y), timeout, reversed, minSpeed, maxSpeed);
 }
 
 void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnFirst, int maxSpeed, bool noTurn) {
@@ -304,7 +304,7 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         moveOut *= multiplier;
 
         // If turnFirst is true and angular error is large, stop forward movement
-        if (turnFirst && fabs(angularError) > 25.0f) {
+        if (turnFirst && fabs(angularError) > 10.0f) {
             moveOut = 0;
         }
 
@@ -314,7 +314,7 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         float left_motor_speed = moveOut + turnOut;
         float right_motor_speed = moveOut - turnOut;
 
-        std::cout << left_motor_speed << ", " << right_motor_speed << std::endl;
+        // std::cout << left_motor_speed << ", " << right_motor_speed << std::endl;
 
         // Clamp motor speeds to the maximum allowed speed
         const float ratio = std::max(std::fabs(left_motor_speed), std::fabs(right_motor_speed)) / maxSpeed;

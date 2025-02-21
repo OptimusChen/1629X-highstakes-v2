@@ -15,6 +15,7 @@ ADIDigitalOut mogo(MOGO);
 ADIDigitalOut rush_left(DOINKER_LEFT);
 ADIDigitalOut rush_right(DOINKER_RIGHT);
 ADIDigitalOut lift_intake(INTAKE_LIFT);
+ADIDigitalOut csortpiston(SORTING_PISTON);
 
 Motor hooks(HOOKS);
 
@@ -177,4 +178,8 @@ void Robot::set_brake_mode(motor_brake_mode_e_t mode) {
 
 void Robot::set_use_slow_angular(bool value) {
     useSlowAngular = value;
+}
+
+void Robot::set_color_sort_piston(bool value) {
+    csortpiston.set_value(value);
 }

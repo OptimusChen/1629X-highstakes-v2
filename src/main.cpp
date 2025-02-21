@@ -46,9 +46,9 @@ static MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK},
 static Odom odom(450, 2.75, TRACK_WIDTH, &left_motor_group, &right_motor_group, &imu);
 
 static PID linear(	
-        5.5, // kP
+        8, // kP
         0, // kI
-        0.2 // kD
+        1 // kD
 );
 
 // turning PID
@@ -80,10 +80,15 @@ static Angle angle() {
 }
 
 // initialize the distance sensors
-static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((3.5_in).getValue(), (-6_in).getValue(), (270_deg).getValue()), right_dist);
-static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((3.5_in).getValue(), (6_in).getValue(), (90_deg).getValue()), left_dist);
-static loco::DistanceSensorModel backDistance(Eigen::Vector3f((1.1_in).getValue(), (-5.75_in).getValue(), (180_deg).getValue()), back_dist);
-static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((2.25_in).getValue(), (-4.75_in).getValue(), (0_deg).getValue()), front_dist);
+// static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((3.5_in).getValue(), (-6.25_in).getValue(), (270_deg).getValue()), right_dist);
+// static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((3.5_in).getValue(), (6.25_in).getValue(), (90_deg).getValue()), left_dist);
+// static loco::DistanceSensorModel backDistance(Eigen::Vector3f((1.1_in).getValue(), (-6.5_in).getValue(), (180_deg).getValue()), back_dist);
+// static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((2.25_in).getValue(), (-4.75_in).getValue(), (0_deg).getValue()), front_dist);
+
+static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((5_in).getValue(), (-6.25_in).getValue(), (270_deg).getValue()), right_dist);
+static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((5_in).getValue(), (6.25_in).getValue(), (90_deg).getValue()), left_dist);
+static loco::DistanceSensorModel backDistance(Eigen::Vector3f((2.75_in).getValue(), (-6.5_in).getValue(), (180_deg).getValue()), back_dist);
+static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((4.25_in).getValue(), (-4.75_in).getValue(), (0_deg).getValue()), front_dist);
 
 static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 
@@ -192,6 +197,7 @@ void initialize() {
     robot.poseSet = true;
     robot.calibrate();
     robot.initialize_particle_filter();
+    delay(2000);
 
     autonomous();
 }

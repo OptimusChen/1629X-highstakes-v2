@@ -28,6 +28,7 @@
 #define ARM_PISTON_LEFT 5
 #define ARM_PISTON_RIGHT 1
 
+#define SORTING_PISTON 5
 #define INTAKE_LIFT 4
 
 #define DOINKER_LEFT 2

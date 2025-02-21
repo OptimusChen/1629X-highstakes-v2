@@ -3,14 +3,18 @@
 #include "controls.hpp"
 #include <iostream>
 
+ADIDigitalOut sortingPiston(SORTING_PISTON);
+
 void Intake::initialize() {
     if (initialized) return;
-    optical.set_integration_time(5);
+    optical.set_integration_time(3);
     optical.set_led_pwm(100);
 
     hooks.set_gearing(E_MOTOR_GEAR_BLUE);
     hooks.set_reversed(true);
     hooks.tare_position();
+
+    hooks.set_encoder_units(E_MOTOR_ENCODER_DEGREES);
 
     antijam = true;
     initialized = true;
@@ -18,10 +22,10 @@ void Intake::initialize() {
 
 void Intake::update() {
     auto opticalMeasure = optical.get_hue();
-    int off = 550;
+    int off = 100;
     bool loading = arm->armTarget == LOAD;
     if (loading) {
-        off = 400;
+        off = 100;
     }
 
     // if (color == BLUE && ((opticalMeasure > 0) && (opticalMeasure < 30)) && color_sort) {
@@ -49,39 +53,32 @@ void Intake::update() {
         std::cout << "sort1" << std::endl;
     }
 
-    if (color == RED && ((opticalMeasure > 170) && (opticalMeasure < 220)) && color_sort && !toSort) {
+    if (color == RED && ((opticalMeasure > 185) && (opticalMeasure < 210)) && color_sort && !toSort && optical.get_proximity() > 200) {
         toSort = true;
         hooks.tare_position();
         wrongDetected = hooks.get_position();
         color_sort = false;
+
+        sortingPiston.set_value(true);
         std::cout << "sort1" << std::endl;
     }
 
     // std::cout << opticalMeasure << std::endl;;
     
-    if (toSort && !color_sort && abs(hooks.get_position() - (wrongDetected + off)) < 20) {
+    if (toSort && !color_sort && abs(hooks.get_position() - (wrongDetected + off)) < 30) {
         std::cout << "sort2" << std::endl;
         color_sort = true;
+        sortingPiston.set_value(false);
 
-        Task t([&] {
-            hooks.move(-127);
-            reversed = true;
-            delay(loading ? 600 : 300);
-            voltsMutex.take();
-            const auto _volts = volts;
-            voltsMutex.give();
-            hooks.move(_volts);
-            hooks.tare_position();
-
-            reversed = false;
-            toSort = false;
-        });  
-    }
-
-    if (toSort && hooks.get_position() > 2*off) {
-        color_sort = true;
+        hooks.tare_position();
         toSort = false;
     }
+
+    // if (toSort && hooks.get_position() > 2*off) {
+    //     color_sort = true;
+    //     toSort = false;
+    //     sortingPiston.set_value(false);
+    // }
 
     if (!reversed && antijam && (arm->armTarget != LOAD) && (arm->armTarget != MID)) {
         movingMutex.take();
@@ -94,7 +91,7 @@ void Intake::update() {
                 antijam = false;
                 counter = 0;
                 Task t{[&] {
-                    hooks.move(-127);
+                    hooks.move(-40);
                     delay(150);
                     voltsMutex.take();
                     const auto _volts = volts;
