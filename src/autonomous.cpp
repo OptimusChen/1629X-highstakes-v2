@@ -274,118 +274,144 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     arm->set_target(REST);
 
     ///////////////////////////////////////////////
-    //--------------3RD SECTION----------------//
+    //--------------3rd SECTION----------------//
     ///////////////////////////////////////////////
 
-    //score one ring
-    robot->moveToPoint(48, robot->get_pose().y, 500, true, false, fast_speed);
-    robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->turnToPoint(21, 25, 500);
-    robot->moveToPoint(21, 25, 1500, true, true, fast_speed);
+    // // now go score rings
+    // robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
+    // robot->moveToPoint(24, -24, 1500, true, true, fast_speed);
+    // robot->moveToPoint(24, -48, 1500, true, true, fast_speed);
 
-    //cross under ladder score 3
-    // robot->turnToPoint(-47, -47, 500);
-    robot->turnToHeading(225, 1000, false, 0, 60);
-    intake->stop();
-    
-    robot->moveToPoint(-19, -15, 1000, true, true, fast_speed);
-    intake->forwards(30);
-    intake->set_stop_condition(stage_1_stop);
-    Task intakedelay1([&] {
-        delay(500);
-        intake->set_stop_condition(nullptr);
-        intake->forwards();
-    });
+    // // score 3 rings
+    // robot->moveToPoint(46, -48, 1750, true, true, fast_speed);
+    // robot->moveToPoint(60, -48, 1000, true, true, fast_speed);
+    // robot->moveToPoint(35, -45, 1000, false, false);
+    // robot->moveToPoint(46, -57, 1000, true, true, fast_speed);
+    // robot->set_rush_arm_right(true);
 
-    // SCORE 3 RINGS
-    robot->moveToPoint(-49, -45, 2000, true, true, mid_speed-50);
-    robot->turnToHeading(180, 500);
-    robot->moveToPoint(-62, robot->get_pose().y, 1000, true, false, 60);
-    robot->moveToPoint(-40, -60, 1500, true, true, 60);
+    // robot->moveToPoint(60, -60, 1000, true, false, fast_speed);
 
-    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
-    // delay(500);
+    // // put in da corner
+    // robot->turnToHeading(135, 500);
+    // intake->stop();
+    // robot->set_rush_arm_right(false);
+    // robot->moveToPoint(64, -74, 1000, false, true, fast_speed);
+    // robot->set_mogo(false);
+    // delay(200);
 
-    //-----------Place in corner------------------//
-    robot->moveToPoint(-60, -63, 1250, false, true, fast_speed);
-    robot->set_mogo(false);
-    delay(500);
-
-    ///////////////////////////////////////////////
-    //--------------4th SECTION----------------//
-    ///////////////////////////////////////////////
-    // robot->moveToPoint(-47, -47, 1000, true, true, mid_speed);
-    intake->stop();
-    robot->moveToPoint(-48, -24, 1500, false, true, mid_speed);
-    robot->set_mogo(true);
-    delay(300);
-
-    arm->set_target(LOAD);
+    delay(200);
     intake->forwards();
-    robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->moveToPoint(-26, -50, 1200, true, true, fast_speed);
+    intake->set_stop_condition(nullptr);
+
+    robot->moveToPoint(20, -20, 850+500, true, true, fast_speed);
+    robot->timedMove(30, 500);
+    robot->moveToPoint(24, -48, 850+500, true, true, fast_speed);
+
+    pros::delay(350);
+
+    robot->moveToPoint(44, -44, 1000+500, true, true, mid_speed);
+    intake->forwards();
+
+    intake->color_sort = true;
+
+    //score two and corner
+    robot->moveToPoint(48, -60, 500+500, true, true, mid_speed);
+
+    pros::delay(250);
+
+    //put in corner
+
+    robot->moveToPoint(38, -43, 1000, true, false, 60);
+    intake->stop();
+
+    robot->turnToHeading(170, 1300, false, 0, 60);
+
+    robot->set_mogo(false);
+    delay(300);
+    robot->moveToPoint(60, -60, 1000, false, false, fast_speed);
+    robot->timedMove(-40, 500);
+
+    // last section :)
+
+    Task intakedelay1([&] {
+        pros::delay(500);
+        intake->forwards(100);
+        pros::delay(750);
+        intake->set_stop_condition(stage_1_stop_color);        
+    });  
+    robot->moveToPoint(0, -40, 1000, true, true, fast_speed);
+    robot->moveToPoint(-24, -52, 1000, true, true, fast_speed);
     robot->timedMove(40, 500);
 
-    //lady brown stuff
-    robot->moveToPoint(-10, -40, 1500, false, true, fast_speed);
-    intake->stop();
+    robot->moveToPoint(-47.5, -24, 1000, false, true, mid_speed);
+    arm->set_target(LOAD);
+    robot->timedMove(-20, 1000);
+    robot->set_mogo(true);
+
+    intake->set_stop_condition(nullptr);
+    intake->forwards();
+    delay(500);
+
     arm->set_target(MID + 20);
+    intake->stop();
+    delay(500);
+
+    intake->forwards();
+
+    robot->moveToPoint(-24, -24, 1000, true, true, fast_speed);    
+    robot->moveToPoint(0, -44, 1000, true, true, mid_speed);
 
     //-----------LADY BROWN 1------------------//
-    Task intakedelay2([&] {
-        delay(500);
-        intake->forwards();
-    });
-    robot->turnToHeading(270, 450);
-    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
+    robot->turnToHeading(270, 500);
+    intake->forwards();
+    robot->moveToPoint(0, -68, 1000, true, false, mid_speed);
 
-    robot->moveToPoint(-10, -60, 1000, true, true, fast_speed);
-
-    arm->liftPID.kP = 100;
-    arm->set_target(SCORE + 50);
+    arm->liftPID.kP = 3;
+    arm->set_target(SCORE + 20);
     arm->liftPID.kP = 1.5;
-    robot->timedMove(40, 400);
+    pros::delay(500);
 
-    robot->moveToPoint(robot->get_pose().x, -44, 1000, false, false, fast_speed);
+    //-----------SCORE THREE RINGS------------------//
+    robot->moveToPoint(0, -46, 750, false, false, fast_speed);
     arm->set_target(REST);
 
-    // now go score rings
-    robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->moveToPoint(22, -48, 1500, true, true, fast_speed);
-    robot->moveToPoint(18, -20, 1500, true, true, fast_speed);
+    // robot->turnToPoint(-33, 46, 500);
 
-    // score 3 rings
-    robot->moveToPoint(46, -52, 1750, true, true, fast_speed);
-    robot->moveToPoint(60, -50, 1000, true, true, fast_speed);
-    robot->moveToPoint(35, -45, 1000, false, false);
-    robot->moveToPoint(46, -57, 1000, true, true, fast_speed);
-    robot->set_rush_arm_right(true);
+    // robot->moveToPoint(-33, 46, 500+1000, true, true, mid_speed);
 
-    robot->moveToPoint(60, -60, 1000, true, false, fast_speed);
+    robot->moveToPoint(-60, -46, 2200, true, false, mid_speed);
 
-    // put in da corner
-    robot->turnToHeading(135, 500);
+    pros::delay(250);
+
+    // robot->turnToPoint(-49, 57, 500);
+
+    robot->moveToPoint(-50, -62, 1000, true, true, fast_speed);
+    // robot->timedMove(70, 200);
+
+    //-----------Place in corner------------------//
+
+    // robot->turnToPoint(-60, 60, 500, {.forwards = false});
+    // chassis.waitUntilDone();
+
+    robot->turnToHeading(45, 1000);
+    // robot->moveToPoint(-60, 60, 500+500, false, true, fast_speed);
+    robot->moveToPoint(-62, -62, 1000, false, false, 90, true);
+    robot->timedMove(-40, 500);
     intake->stop();
-    robot->set_rush_arm_right(false);
-    robot->moveToPoint(64, -74, 1000, false, true, fast_speed);
+
     robot->set_mogo(false);
-    delay(200);
+    intake->stop();    
 
-    intake->stop();
-
-    // HANG!!!
     arm->set_target(SCORE);
-    robot->set_color_sort_piston(false);
-    robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->moveToPoint(31, -27, 1000, true);
-    robot->turnToHeading(315, 750, false, 0, mid_speed);
-    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
-    robot->timedMove(-85, 2000);
+    delay(500);
+    robot->moveToPoint(-23.5, -23.5, 1500, true, true, fast_speed);
+    robot->turnToHeading(225, 500);
+    robot->timedMove(-70, 2000);
 
-    intake->stop();
-    logging::dump();
-    delay(1000000);
+    runningAuton = false;
+
     return;
+
 }
 
 void bestautonfr::blue_rush(Robot* robot, lemlib::Chassis* chassis) {
