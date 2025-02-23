@@ -12,11 +12,18 @@ using namespace lib;
 
 const float LOOP_PERIOD_MS = 10;
 
+/**
+ * Ramsete controller for autonomous motion profiling
+ * @param waypoints The waypoints to follow
+ * @param constraint The motion profile constraints
+ * @param direction The direction to move in
+ */
 void Robot::ramsete(std::vector<bezier::Point> waypoints, MPConstraint constraint, Direction direction) {
 	const double delta_d = 0.01;
     float trackWidthMeters = this->trackWidth * METERS;
     bool backwards = direction == Direction::BACKWARDS;
 
+    // Convert to meters if the constraint is in inches
     if (constraint.unit == INCH) {
         constraint.speed = constraint.speed * METERS;
         constraint.accel = constraint.accel * METERS;

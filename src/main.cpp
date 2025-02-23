@@ -5,6 +5,7 @@
 #include "pros/misc.h"
 #include "pros/motors.h"
 #include "pros/optical.h"
+#include "filesystem"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -20,6 +21,7 @@
 #include "autonomous.hpp"
 #include "intake.hpp"
 #include "arm.hpp"
+#include "lib/logging.hpp"
 
 #include "lemlib/api.hpp"
 #include "s.hpp"
