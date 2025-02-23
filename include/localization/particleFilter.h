@@ -64,9 +64,9 @@ namespace loco {
         }
 
         Eigen::Vector3f getPrediction() {
-            predmutex.take();
+            // predmutex.take();
             auto a = prediction;
-            predmutex.give();
+            // predmutex.give();
             return a;
         }
 

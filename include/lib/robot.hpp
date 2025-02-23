@@ -9,6 +9,7 @@
 #include "pros/adi.hpp"
 #include <vector>
 #include "localization/particleFilter.h"
+#include "pros/distance.hpp"
 
 using namespace pros;
 
@@ -81,6 +82,7 @@ namespace lib {
             void swingToHeading(float heading, int timeout, int side = 1);
             void shivaan(float x, float y, int timeout, float pct, int maxSpeed = 127);
             void relative(float distance, float maxSpeed, int timeout);
+            void moveToDistance(float target, Distance& dist, int timeout, float p);
 
             void set_mogo(bool value);
             void set_rush_arm_left(bool value);

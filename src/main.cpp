@@ -29,7 +29,7 @@ using namespace pros::c;
 using namespace controls;
 using namespace lib;
 
-#define TRACK_WIDTH 11.25
+#define TRACK_WIDTH 11.5
 
 static Controller master(E_CONTROLLER_MASTER);
 
@@ -85,8 +85,8 @@ static Angle angle() {
 // static loco::DistanceSensorModel backDistance(Eigen::Vector3f((1.1_in).getValue(), (-6.5_in).getValue(), (180_deg).getValue()), back_dist);
 // static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((2.25_in).getValue(), (-4.75_in).getValue(), (0_deg).getValue()), front_dist);
 
-static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((5_in).getValue(), (-6.25_in).getValue(), (270_deg).getValue()), right_dist);
-static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((5_in).getValue(), (6.25_in).getValue(), (90_deg).getValue()), left_dist);
+static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((4.25_in).getValue(), (-6.25_in).getValue(), (270_deg).getValue()), right_dist);
+static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((4.25_in).getValue(), (6.25_in).getValue(), (90_deg).getValue()), left_dist);
 static loco::DistanceSensorModel backDistance(Eigen::Vector3f((2.75_in).getValue(), (-6.5_in).getValue(), (180_deg).getValue()), back_dist);
 static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((4.25_in).getValue(), (-4.75_in).getValue(), (0_deg).getValue()), front_dist);
 
@@ -168,22 +168,6 @@ void initialize() {
 
     robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 3);
 
-    Task trackingTask = Task {[&] {
-		while (true) {
-            auto pose = robot.get_pose();
-
-            // chassis.setPose(pose.x, pose.y, fmod(pose.get_degrees() + 90, 360));
-
-			pros::lcd::print(0, "x: %f", pose.x); // print the x position
-			pros::lcd::print(1, "y: %f", pose.y); // print the y position
-			pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
-			pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the headings
-			pros::lcd::print(4, "rand: %d", std::rand()); // print the headings
-
-			pros::delay(10);
-		}
-	}};
-
     particleFilter.addSensor(&leftDistance);
     particleFilter.addSensor(&rightDistance);
     particleFilter.addSensor(&backDistance);
@@ -198,6 +182,23 @@ void initialize() {
     robot.calibrate();
     robot.initialize_particle_filter();
     delay(2000);
+    robot.set_pose_mode(MCL);
+
+    Task trackingTask = Task {[&] {
+		while (true) {
+            auto pose = robot.get_pose();
+
+            std::cout << "x: " << pose.x << " y: " << pose.y << " theta: " << pose.theta << std::endl;
+
+			pros::lcd::print(0, "x: %f", pose.x); // print the x position
+			pros::lcd::print(1, "y: %f", pose.y); // print the y position
+			pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
+			pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the headings
+			pros::lcd::print(4, "rand: %d", std::rand()); // print the headings
+
+			pros::delay(10);
+		}
+	}};
 
     autonomous();
 }

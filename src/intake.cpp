@@ -53,7 +53,7 @@ void Intake::update() {
         std::cout << "sort1" << std::endl;
     }
 
-    if (color == RED && ((opticalMeasure > 185) && (opticalMeasure < 210)) && color_sort && !toSort && optical.get_proximity() > 200) {
+    if (color == RED && ((opticalMeasure > 170) && (opticalMeasure < 220)) && color_sort && !toSort && optical.get_proximity() > 150) {
         toSort = true;
         hooks.tare_position();
         wrongDetected = hooks.get_position();
