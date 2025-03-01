@@ -8,6 +8,7 @@
 #include "controls.hpp"
 #include <math.h>
 #include <iomanip>
+#include "lib/logging.hpp"
 
 using namespace lib;
 
@@ -18,6 +19,7 @@ ADIDigitalOut lift_intake(INTAKE_LIFT);
 ADIDigitalOut csortpiston(SORTING_PISTON);
 
 Motor hooks(HOOKS);
+static Logger robotlogger("robot");
 
 Robot::Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular, PID* angular_slow) {
     this->odometry = odom;
@@ -162,8 +164,12 @@ void Robot::initialize_particle_filter() {
                 const auto noisy = avgDistribution(de);
                 const auto angle = angleDistribution(de);
 
+                auto change = Eigen::Rotation2Df(angle) * Eigen::Vector2f({noisy, 0.0});
+
+                robotlogger.push_log(LogType::DELTA_MOVEMENT, {change.x(), change.y(), -1, -1});
+
                 // Calculate the translation with the sensor readings
-                return Eigen::Rotation2Df(angle) * Eigen::Vector2f({noisy, 0.0});
+                return change;
             }, pros::millis() * millisecond);
 
             pros::c::task_delay_until(&start_time, 10);

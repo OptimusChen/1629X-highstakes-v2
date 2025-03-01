@@ -221,8 +221,8 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
     left->move(0);
     right->move(0);
 
-    logging::push_log(LogType::POSITION_EXPECTED, -1, -1, target_angle, -1);
-    logging::push_log(LogType::POSITION_REAL, get_pose().x, get_pose().y, get_pose().get_degrees(), -1);
+    // logging::push_log(LogType::POSITION_EXPECTED, -1, -1, target_angle, -1);
+    // logging::push_log(LogType::POSITION_REAL, get_pose().x, get_pose().y, get_pose().get_degrees(), -1);
 }
 
 void Robot::turnToPoint(float x, float y, int timeout, bool reversed, int minSpeed, int maxSpeed) {
@@ -350,8 +350,8 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
     left->move(0);
     right->move(0);
 
-    logging::push_log(LogType::POSITION_EXPECTED, x, y, -1, -1);
-    logging::push_log(LogType::POSITION_REAL, get_pose().x, get_pose().y, get_pose().get_degrees(), -1);
+//     logging::push_log(LogType::POSITION_EXPECTED, x, y, -1, -1);
+//     logging::push_log(LogType::POSITION_REAL, get_pose().x, get_pose().y, get_pose().get_degrees(), -1);
 }
 
 void Robot::timedMove(int power, int time) {

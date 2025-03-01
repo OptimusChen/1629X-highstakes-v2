@@ -162,6 +162,9 @@ static int color = BLUE;
 //     }}
 // });
 
+Logger masterlog("master");
+Logger distance("distance_sensors");
+
 void initialize() {
     lcd::initialize();
     // sec::init();
@@ -186,11 +189,15 @@ void initialize() {
     delay(2000);
     robot.set_pose_mode(MCL);
 
+    masterlog.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
+
     Task trackingTask = Task {[&] {
 		while (true) {
             auto pose = robot.get_pose();
 
             std::cout << "x: " << pose.x << " y: " << pose.y << " theta: " << pose.theta << std::endl;
+            
+            distance.push_log(LogType::DISTANCE_SENSOR, {float(left_dist.get_distance()), float(right_dist.get_distance()), float(back_dist.get_distance()), float(front_dist.get_distance())});
 
 			pros::lcd::print(0, "x: %f", pose.x); // print the x position
 			pros::lcd::print(1, "y: %f", pose.y); // print the y position
