@@ -67,6 +67,7 @@ void dump_all() {
 
     distanceLogger.dump_file(log_file);
     robotLogger.dump_file(log_file);
+    autonLogger.dump_file(log_file);
 
     fclose(log_file);
     std::cout << "Dumped logs to file " << filename << std::endl;

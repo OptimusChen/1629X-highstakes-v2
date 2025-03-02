@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "config.h"
+#include "lib/logging.hpp"
 
 namespace loco {
     /**
@@ -109,6 +110,8 @@ namespace loco {
                 sensor->update();
             }
 
+            // distanceLogger.push_log(LogType::DISTANCE_SENSOR, {float(sensors[0]->get_measurement()), float(sensors[1]->get_measurement()), float(sensors[3]->get_measurement()), float(sensors[4]->get_measurement())});
+
             double totalWeight = 0.0;
 
             for (size_t i = 0; i < L; i++) {
@@ -172,6 +175,9 @@ namespace loco {
 
             predmutex.take();
             prediction = Eigen::Vector3f(xSum / static_cast<float>(L), ySum / static_cast<float>(L), angle.getValue());
+            
+            // distanceLogger.push_log(LogType::POSITION_REAL, {-prediction.y() * metre.Convert(inch), prediction.x() * metre.Convert(inch), angleFunction().getValue(), -1});
+
             predmutex.give();
 
             lastUpdateTime = now;

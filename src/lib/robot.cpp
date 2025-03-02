@@ -19,7 +19,6 @@ ADIDigitalOut lift_intake(INTAKE_LIFT);
 ADIDigitalOut csortpiston(SORTING_PISTON);
 
 Motor hooks(HOOKS);
-static Logger robotlogger("robot");
 
 Robot::Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular, PID* angular_slow) {
     this->odometry = odom;
@@ -119,14 +118,18 @@ QLength getDistance(const pros::MotorGroup* motor) {
     return totalPosition/motor->size();
 }
 
-void Robot::initialize_particle_filter() {
-    Eigen::Vector2f mean(get_pose().y * inch.Convert(metre), -get_pose().x * inch.Convert(metre));
+void Robot::reset_particle_filter(float x, float y) {
+    Eigen::Vector2f mean(y * inch.Convert(metre), -x * inch.Convert(metre));
 
     Eigen::Matrix2f covariance;
     covariance << 0.2f, 0.0f,
                 0.0f, 0.2f;
 
     particleFilter->initNormal(mean, covariance, false);
+}
+
+void Robot::initialize_particle_filter() {
+    reset_particle_filter(get_pose().x, get_pose().y);
 
     pros::Task locoTask = pros::Task([&]() {
         uint32_t start_time = 0;
@@ -159,15 +162,14 @@ void Robot::initialize_particle_filter() {
                 particleFilter->getAngle().getValue() - ANGLE_NOISE.getValue(),
                 particleFilter->getAngle().getValue() + ANGLE_NOISE.getValue());
 
+            // Calculate noisy sensor readings
+            const auto noisy = avgDistribution(de);
+            const auto angle = angleDistribution(de);
+
+            auto change = Eigen::Rotation2Df(angle) * Eigen::Vector2f({noisy, 0.0});
+            robotLogger.push_log(LogType::DELTA_MOVEMENT, {change.x(), change.y(), -1, -1});
+
             particleFilter->update([&]() mutable {
-                // Calculate noisy sensor readings
-                const auto noisy = avgDistribution(de);
-                const auto angle = angleDistribution(de);
-
-                auto change = Eigen::Rotation2Df(angle) * Eigen::Vector2f({noisy, 0.0});
-
-                robotlogger.push_log(LogType::DELTA_MOVEMENT, {change.x(), change.y(), -1, -1});
-
                 // Calculate the translation with the sensor readings
                 return change;
             }, pros::millis() * millisecond);
@@ -175,6 +177,43 @@ void Robot::initialize_particle_filter() {
             pros::c::task_delay_until(&start_time, 10);
         }
     });
+}
+
+void Robot::reset_position(SensorOrientation fwdbck, SensorOrientation leftright, int quadrant) {
+    // auto sensors = particleFilter->getSensors();
+    
+    // // Retrieve the selected sensors
+    // float primary_sensor = sensors[fwdbck.sensorIndex]->get_measurement();
+    // float secondary_sensor = sensors[leftright.sensorIndex]->get_measurement();
+
+    // float estimated_x = 0.0, estimated_y = 0.0;
+
+    // constexpr int wall = 1.78308 * metre.Convert(inch); // The length of the wall in meters
+
+    // // Determine estimated position based on quadrant
+    // switch (quadrant) {
+    //     case 1: // (+x, +y)
+    //         //whatevs
+    //     case 2: // (-x, +y)
+    //     //whatevs
+    //         break;
+    //     case 3: // (-x, -y)
+    //         float newX = 
+    //         break;
+    //     case 4: // (+x, -y)
+    //     //whatevs
+    //         break;
+    //     default:
+    //         return; // Invalid quadrant
+    // }
+
+    // // Convert inches to meters
+    // float x_meters = estimated_x * inch.Convert(metre);
+    // float y_meters = estimated_y * inch.Convert(metre);
+
+    // // Reset the particle filter with the new estimated position
+    // reset_particle_filter(x_meters, y_meters);
+
 }
 
 void Robot::set_brake_mode(motor_brake_mode_e_t mode) {

@@ -25,6 +25,15 @@ struct MPConstraint {
     int unit;
 };
 
+struct SensorOrientation {
+    int sensorIndex;
+};
+
+// SensorOrientation LEFT_O = {0};
+// SensorOrientation RIGHT_O = {1};
+// SensorOrientation BACK_O = {2};
+// SensorOrientation FRONT_O = {3};
+
 namespace lib {
     enum Direction {
         FORWARDS,
@@ -58,7 +67,10 @@ namespace lib {
             void set_pose_mode(int mde);
             void set_use_slow_angular(bool value);
             void set_brake_mode(motor_brake_mode_e_t mode);
+            void reset_particle_filter(float x, float y);
             void initialize_particle_filter();
+
+            void reset_position(SensorOrientation fwdbck, SensorOrientation leftright, int quadrant);
 
             void add_subsystem(Subsystem* subsystem);
             Subsystem* get_subsystem(const std::string& name);

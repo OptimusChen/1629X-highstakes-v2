@@ -66,6 +66,10 @@ namespace loco {
             std = 0.20 * measured / (confidence / 64.0);
         }
 
+        float get_measurement() override {
+            return measured.getValue();
+        }
+
         /**
          * @brief Determine p(z, x) where z is the current distance sensor position, and x is the predicted position of the
          * robot.

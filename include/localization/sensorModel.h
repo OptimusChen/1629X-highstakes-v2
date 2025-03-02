@@ -22,6 +22,11 @@ namespace loco {
          */
         virtual void update() = 0;
 
+        virtual float get_measurement() 
+        {
+            return 0.0;
+        }
+
         virtual ~SensorModel() = default;
     };
 }
