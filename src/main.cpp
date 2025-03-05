@@ -183,15 +183,15 @@ void initialize() {
     // robot.set_pose(-61, 0, 0);
 
     // 6+1 red
-    // robot.set_pose(-51, 20, 28);
+    robot.set_pose(-51, 20, 28);
 
     // 6+1 blue
-    robot.set_pose(51, 20, 152);
+    // robot.set_pose(51, 20, 152);
 
     robot.poseSet = true;
     robot.calibrate();
     robot.initialize_particle_filter();
-    // delay(2000);
+    delay(2000);
     robot.set_pose_mode(MCL);
 
     // masterlog.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
@@ -203,7 +203,7 @@ void initialize() {
             // std::cout << "x: " << pose.x << " y: " << pose.y << " theta: " << pose.theta << std::endl;
             
             distanceLogger.push_log(LogType::DISTANCE_SENSOR, {float(left_dist.get_distance()), float(right_dist.get_distance()), float(back_dist.get_distance()), float(front_dist.get_distance())});
-            distanceLogger.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
+            // distanceLogger.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
 
 			pros::lcd::print(0, "x: %f", pose.x); // print the x position
 			pros::lcd::print(1, "y: %f", pose.y); // print the y position
@@ -215,7 +215,7 @@ void initialize() {
 		}
 	}};
 
-    // autonomous();
+    autonomous();
 }
 
 void disabled() {}
@@ -223,8 +223,8 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    // bestautonfr::blue_rush(&robot, &chassis);
-    // return;
+    bestautonfr::red_rush(&robot, &chassis);
+    return;
     switch (sec::auton)
     {
         case 0:

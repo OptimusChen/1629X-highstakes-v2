@@ -19,6 +19,7 @@ enum class LogType {
     LOOP_TIME,  // Log type for loop execution time'
     DISTANCE_SENSOR,  // Log type for distance sensor readings
     DELTA_MOVEMENT,  // Log type for delta movement
+    PARTICLE_POSITION // Log type for particle filter position
 };
 
 /**
@@ -97,6 +98,9 @@ public:
                 case LogType::DELTA_MOVEMENT:
                     sprintf(log_string, "%s, DeltaMovement, %d, %f, %f\n", logger_name.c_str(), log.time, log.a, log.b);
                     break;
+                case LogType::PARTICLE_POSITION:
+                    sprintf(log_string, "%s, ParticlePosition, %d, %f, %f\n", logger_name.c_str(), log.time, log.a, log.b);
+                    break;
                 default:
                     break;
             }
@@ -110,8 +114,8 @@ public:
 
 extern void dump_all();
 
-constexpr size_t distanceLogSize = 140000;
-constexpr size_t robotLogSize = 70000;
+constexpr size_t distanceLogSize = 70000;
+constexpr size_t robotLogSize = 210000;
 constexpr size_t autonLogSize = 1000;
 
 extern Logger<distanceLogSize> distanceLogger;

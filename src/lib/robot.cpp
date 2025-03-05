@@ -126,6 +126,10 @@ void Robot::reset_particle_filter(float x, float y) {
                 0.0f, 0.2f;
 
     particleFilter->initNormal(mean, covariance, false);
+
+    for (auto particle : particleFilter->getParticles()) {
+        robotLogger.push_log(LogType::PARTICLE_POSITION, {particle.x(), particle.y(), particle.z(), -1});
+    }
 }
 
 void Robot::initialize_particle_filter() {
@@ -173,6 +177,9 @@ void Robot::initialize_particle_filter() {
                 // Calculate the translation with the sensor readings
                 return change;
             }, pros::millis() * millisecond);
+      
+            robotLogger.push_log(LogType::LOOP_TIME, {float(pros::millis() - start_time), -1, -1, -1});
+            robotLogger.push_log(LogType::POSITION_REAL, {particleFilter->getPrediction().x(), particleFilter->getPrediction().y(), particleFilter->getPrediction().z(), -1});
 
             pros::c::task_delay_until(&start_time, 10);
         }

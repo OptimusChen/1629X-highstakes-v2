@@ -16,7 +16,7 @@ using namespace pros;
 #define ODOM 0
 #define MCL 1
 
-#define PARTICLES 300
+#define PARTICLES 200
 #define MINIMUM 10
 
 struct MPConstraint {

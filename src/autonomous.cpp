@@ -168,7 +168,6 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //Get ring for alliance stake
 
-    robot->set_use_slow_angular(false);
     intake->antijam = true;
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     robot->moveToPoint(38, 46, 1700, true, true, 100);
@@ -313,7 +312,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     });
 
     // SCORE 3 RINGS
-    robot->moveToPoint(-47, -47, 2000, true, true, mid_speed);
+    robot->moveToPoint(-42, -42, 2000, true, true, mid_speed);
     robot->turnToHeading(180, 500);
     robot->moveToPoint(-62, -47, 1000, true, false, mid_speed);
     robot->moveToPoint(-40, -60, 1500, true, true, mid_speed);
@@ -644,22 +643,22 @@ void bestautonfr::red_rush(Robot* robot, lemlib::Chassis* chassis) {
     intake->antijam = false;
     intake->forwards(100);
     intake->set_stop_condition(stage_1_stop);
-    robot->moveToPoint(-3, 40, 1000, true, false, 127, true);
+    robot->moveToPoint(-5, 42, 1300, true, false, 127, true);
 
-    robot->moveToPoint(-44, 34.1, 2000, false, false, 70, true);
+    robot->timedMove(-20, 500);
+    robot->moveToPoint(-25, 20, 1000, false, true, 80);
+    robot->set_mogo(true);
+
+    // robot->moveToPoint(-44, 34.1, 2000, false, false, 70, true);
     robot->set_rush_arm_left(false);
     delay(500);
 
     intake->antijam = true;
 
-    robot->moveToPoint(-20, 20, 1300, false, true, 80);
-    robot->set_mogo(true);
-    delay(200);
-
     intake->set_stop_condition(nullptr);
     intake->forwards();
 
-    robot->moveToPoint(-23.5, 55, 1500, true, false, 90);
+    robot->moveToPoint(-23.5, 48, 1500, true, false, 90);
     delay(500);
     robot->timedMove(-40, 500);
 
@@ -667,12 +666,19 @@ void bestautonfr::red_rush(Robot* robot, lemlib::Chassis* chassis) {
     robot->moveToPoint(-60, 55, 1000, true, false);
     robot->turnToHeading(135, 500);
 
-    robot->timedMove(80, 1000);
+    robot->timedMove(80, 400);
+    delay(600);
 
     robot->moveToPoint(-40, 40, 1000, false, false, 90);
     robot->moveToPoint(-50, 13, 1500, true, true);
 
-    robot->moveToPoint(-30, 10, 1000, true);
+    delay(500);
+    robot->set_lift_intake(true);
+    robot->moveToPoint(-47, 4, 1000, true, true, 80);
+    robot->set_lift_intake(false);
+    robot->timedMove(-20, 500);
+
+    robot->moveToPoint(-30, 10, 1000, false);
     robot->turnToHeading(345, 500);
     arm->set_target(ALLIANCE_STAKE);
     intake->stop();
