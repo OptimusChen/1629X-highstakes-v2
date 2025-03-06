@@ -19,7 +19,11 @@ enum class LogType {
     LOOP_TIME,  // Log type for loop execution time'
     DISTANCE_SENSOR,  // Log type for distance sensor readings
     DELTA_MOVEMENT,  // Log type for delta movement
-    PARTICLE_POSITION // Log type for particle filter position
+    PARTICLE_POSITION, // Log type for particle filter position
+    UNIQUE_PARTICLES, // Log type for unique particles  
+    STANDARD_DEVIATION, // Log type for standard deviation
+    DEVIATION_AND_UNIQUE, // Log type for deviation and unique particles
+    DELTA_MOVEMENT_AND_LOOP_TIME,  // Log type for delta movement and loop time
 };
 
 /**
@@ -101,6 +105,18 @@ public:
                 case LogType::PARTICLE_POSITION:
                     sprintf(log_string, "%s, ParticlePosition, %d, %f, %f\n", logger_name.c_str(), log.time, log.a, log.b);
                     break;
+                case LogType::UNIQUE_PARTICLES:
+                    sprintf(log_string, "%s, UniqueParticles, %d, %f\n", logger_name.c_str(), log.time, log.a);
+                    break;
+                case LogType::STANDARD_DEVIATION:
+                    sprintf(log_string, "%s, StandardDeviation, %d, %f\n", logger_name.c_str(), log.time, log.a);
+                    break;
+                case LogType::DEVIATION_AND_UNIQUE:
+                    sprintf(log_string, "%s, DeviationAndUnique, %d, %f, %f\n", logger_name.c_str(), log.time, log.a, log.b);
+                    break;
+                case LogType::DELTA_MOVEMENT_AND_LOOP_TIME:
+                    sprintf(log_string, "%s, DeltaMovementAndLoopTime, %d, %f, %f, %f\n", logger_name.c_str(), log.time, log.a, log.b, log.c);
+                    break;
                 default:
                     break;
             }
@@ -115,10 +131,12 @@ public:
 extern void dump_all();
 
 constexpr size_t distanceLogSize = 70000;
-constexpr size_t robotLogSize = 210000;
+constexpr size_t robotLogSize = 140000;
 constexpr size_t autonLogSize = 1000;
+constexpr size_t pfLogSize = 70000;
 
 extern Logger<distanceLogSize> distanceLogger;
 extern Logger<robotLogSize> robotLogger;
 extern Logger<autonLogSize> autonLogger;
+extern Logger<pfLogSize> pfLogger;
 

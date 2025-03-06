@@ -180,10 +180,10 @@ void initialize() {
     robot.add_subsystem(new Arm());
 
     // SKILLS
-    // robot.set_pose(-61, 0, 0);
+    robot.set_pose(-61, 0, 0);
 
     // 6+1 red
-    robot.set_pose(-51, 20, 28);
+    // robot.set_pose(-51, 20, 28);
 
     // 6+1 blue
     // robot.set_pose(51, 20, 152);
@@ -223,7 +223,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::red_rush(&robot, &chassis);
+    bestautonfr::casey(&robot, &chassis);
     return;
     switch (sec::auton)
     {

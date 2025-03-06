@@ -9,6 +9,7 @@
 Logger<distanceLogSize> distanceLogger("distance_sensors");
 Logger<robotLogSize> robotLogger("robot");
 Logger<autonLogSize> autonLogger("auton");
+Logger<pfLogSize> pfLogger("pf");
 bool writingToFile = false;
 
 /**
@@ -68,6 +69,7 @@ void dump_all() {
     distanceLogger.dump_file(log_file);
     robotLogger.dump_file(log_file);
     autonLogger.dump_file(log_file);
+    pfLogger.dump_file(log_file);
 
     fclose(log_file);
     std::cout << "Dumped logs to file " << filename << std::endl;

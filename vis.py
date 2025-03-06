@@ -9,7 +9,7 @@ file_path = "your_file.csv"  # Change this to your actual file
 filtered_data = []
 with open(file_path, "r") as file:
     for line in file:
-        if line.startswith("distance_sensors, Real"):
+        if line.startswith("robot, Real"):
             filtered_data.append(line.strip().split(","))
 
 # Convert to DataFrame
