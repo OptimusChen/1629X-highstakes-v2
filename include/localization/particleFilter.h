@@ -49,6 +49,8 @@ namespace loco
 
         std::uniform_real_distribution<> fieldDist{-1.78308, 1.78308};
 
+        bool noiseNextUpdate = false;
+
         /**
          * @brief Returns the number of unique particles in the particle filter.
          * @return The number of unique particles in the particle filter.
@@ -249,21 +251,27 @@ namespace loco
             if (standardDeviation > 0.15)
             {
                 resample(avgWeight);
+            }
 
+            if (uniqueParticles < 40) {
                 /*
                  * If the number of unique particles is less than 5, add noise to the particles to prevent the filter from
                  * converging to a single point.
                  */
-                if (uniqueParticles < 20)
-                {
-                    std::uniform_real_distribution noise(-0.127, 0.127);
+                std::uniform_real_distribution noise(-0.127, 0.127);
 
-                    for (size_t i = 0; i < L; i++)
-                    {
-                        particles[i][0] += noise(de);
-                        particles[i][1] += noise(de);
-                    }
+                for (size_t i = 0; i < L; i++)
+                {
+                    particles[i][0] += noise(de);
+                    particles[i][1] += noise(de);
                 }
+            }
+
+            if (noiseNextUpdate)
+            {
+                initNormal({prediction.x(), prediction.y()}, Eigen::Matrix2f::Identity() * 0.1, false);
+
+                noiseNextUpdate = false;
             }
 
             // Calculate the average x and y position of the particles
@@ -359,6 +367,15 @@ namespace loco
             {
                 std::cout << sensor << std::endl;
             }
+        }
+
+        /**
+         * @brief Sets the noise for the next update.
+         * @param noise Whether to add noise to the next update.
+         */
+        void setNoiseNextUpdate(bool noise)
+        {
+            noiseNextUpdate = noise;
         }
 
         /**

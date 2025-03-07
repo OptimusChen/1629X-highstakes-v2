@@ -238,13 +238,15 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //score alliance stake
 
-    int p = 0.75;
-
-    int target = 1720;
+    int target = 1725;
     float error = front.get_distance() - target;
-    while (abs(error) > 10) {
-        robot->left->move(util::sign(error) * 20);
-        robot->right->move(util::sign(error) * 20);
+    while (abs(error) > 5) {
+        float power = error * 0.2;
+        if (abs(power) < 15) {
+            power = util::sign(power) * 15;
+        }
+        robot->left->move(power);
+        robot->right->move(power);
         error = front.get_distance() - target;
 
         delay(5);
@@ -260,13 +262,12 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     arm->set_target(MID + 20);
     arm->liftPID.kP = 1.5;
 
-    p = 0.5;
-
     target = 380;
     error = front.get_distance() - target;
-    while (abs(error) > 10) {
-        robot->left->move(util::sign(error) * 20);
-        robot->right->move(util::sign(error) * 20);
+    while (abs(error) > 20) {
+        float power = util::sign(error) * 20;
+        robot->left->move(power);
+        robot->right->move(power);
         error = front.get_distance() - target;
 
         delay(5);
@@ -291,12 +292,12 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //score one ring
     robot->moveToPoint(48, robot->get_pose().y, 500, true, false, fast_speed);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->turnToPoint(24, 24, 500);
-    robot->moveToPoint(24, 24, 1500, true, true, fast_speed);
+    robot->turnToPoint(22, 22, 500);
+    robot->moveToPoint(22, 22, 1500, true, true, fast_speed);
 
     //cross under ladder score 3
     // robot->turnToPoint(-47, -47, 500);
-    robot->turnToHeading(225, 1000, false, 0, 60);
+    robot->turnToHeading(225, 500);
     intake->stop();
     
     bool under = true;
@@ -304,7 +305,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
         while (under) {
             Pose pose = robot->get_pose();
             int distanceFrom00 = sqrt(pow(pose.x, 2) + pow(pose.y, 2));
-            if (distanceFrom00 < 3) {
+            if (distanceFrom00 < 5) {
                 intake->forwards();
             } else {
                 intake->stop();
@@ -312,6 +313,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
             delay(10);
         }
     });
+    robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     robot->moveToPoint(-20, -20, 1000, true, true, fast_speed);
     under = false;
     Task intakedelay1([&] {
@@ -319,8 +321,9 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
         intake->forwards();
     });
     // SCORE 3 RINGS
-    robot->moveToPoint(-42, -42, 1500, true, true, mid_speed - 20);
+    robot->moveToPoint(-39, -39, 1500, true, true, mid_speed - 15);
     robot->turnToHeading(180, 500);
+    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
     robot->moveToPoint(-60, -47, 1000, true, false, mid_speed);
     delay(250);
     robot->moveToPoint(-40, -60, 1500, true, true, mid_speed);
@@ -330,15 +333,16 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //-----------Place in corner------------------//
     robot->moveToPoint(-60, -63, 1250, false, true, fast_speed);
+    robot->particleFilter->setNoiseNextUpdate(true);
     robot->set_mogo(false);
     delay(500);
 
     ///////////////////////////////////////////////
     //--------------4th SECTION------------------//
     ///////////////////////////////////////////////
-    robot->moveToPoint(-46, -40, 1000, true, true, fast_speed);
+    robot->moveToPoint(-46, -45, 500, true, true, fast_speed);
     intake->stop();
-    robot->moveToPoint(-48, -21, 1500, false, true, mid_speed);
+    robot->moveToPoint(-47, -21, 2000, false, true, mid_speed);
     robot->set_mogo(true);
     delay(300);
 
@@ -346,6 +350,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     intake->forwards();
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     robot->moveToPoint(-23, -50, 1200, true, true, fast_speed);
+    // robot->particleFilter->setNoiseNextUpdate(true);
 
     //lady brown stuff
     robot->moveToPoint(-1, -40, 1300, false, true, fast_speed);
@@ -360,7 +365,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->turnToHeading(270, 450);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
-    robot->moveToPoint(0, -63, 1000, true, true, fast_speed);
+    robot->moveToPoint(0, -61, 1000, true, true, mid_speed);
 
     arm->liftPID.kP = 100;
     arm->set_target(SCORE + 50);
@@ -374,20 +379,22 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     robot->moveToPoint(24, -48, 850+500, true, true, fast_speed);
     delay(250);
-    robot->moveToPoint(23.5, -20, 1200, true, true, fast_speed);
+    robot->moveToPoint(25.5, -16, 1200, true, true, fast_speed);
     delay(250);
 
-    robot->moveToPoint(30, -58, 1200, false, true);
+    robot->moveToPoint(28, -58, 1200, false, true);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
     // score 3 rings
-    robot->moveToPoint(45, -47, 1000, true, true, fast_speed);
-    robot->moveToPoint(63, -47, 500, true, true, fast_speed);
-    robot->moveToPoint(44, -44, 500, false, true, fast_speed);
+    robot->moveToPoint(45, -47, 1000, true, false, mid_speed);
+    delay(500);
+    robot->moveToPoint(58, -47, 500, true, false, fast_speed);
+    robot->moveToPoint(44, -44, 500, false, false, mid_speed);
     intake->color_sort = true;
 
     //score two and corner
-    robot->moveToPoint(48, -58, 500+750, true, true, mid_speed);
+    robot->turnToHeading(270, 500);
+    robot->moveToPoint(44, -58, 750, true, true, mid_speed);
 
     pros::delay(250);
 
@@ -395,11 +402,11 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     // robot->moveToPoint(38, -43, 1000, true, false, 60);
     robot->turnToHeading(170, 500);
-    intake->stop();
 
     robot->set_mogo(false);
     delay(300);
     robot->moveToPoint(64, -64, 1000, false, false, 127);
+    intake->stop();
 
     intake->stop();
 
@@ -407,7 +414,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     arm->set_target(SCORE);
     robot->set_color_sort_piston(false);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->moveToPoint(27, -27, 500, true);
+    robot->moveToPoint(27, -27, 1000, true);
     robot->turnToHeading(315, 750, false, 0, mid_speed);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
     robot->timedMove(-100, 2000);
