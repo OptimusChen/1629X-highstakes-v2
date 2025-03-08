@@ -123,6 +123,9 @@ void Intake::set_color(int color) {
 }
 
 void Intake::forwards(int power) {
+    if (toSort) {
+        return;
+    }
     if (reversed) power = -power;
     hooks.move(power);
     voltsMutex.take();

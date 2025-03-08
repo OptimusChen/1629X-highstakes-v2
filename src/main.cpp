@@ -180,18 +180,18 @@ void initialize() {
     robot.add_subsystem(new Arm());
 
     // SKILLS
-    robot.set_pose(-61, 0, 0);
+    // robot.set_pose(-61, 0, 0);
 
     // 6+1 red
-    // robot.set_pose(-51, 20, 28);
+    robot.set_pose(-51, 20, 28);
 
     // 6+1 blue
     // robot.set_pose(51, 20, 152);
 
     robot.poseSet = true;
-    robot.calibrate();
-    robot.initialize_particle_filter();
-    delay(2000);
+    // robot.calibrate();
+    // robot.initialize_particle_filter();
+    // delay(2000);
     robot.set_pose_mode(MCL);
 
     // masterlog.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
@@ -215,7 +215,7 @@ void initialize() {
 		}
 	}};
 
-    autonomous();
+    // autonomous();
 }
 
 void disabled() {}
@@ -223,7 +223,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::casey(&robot, &chassis);
+    bestautonfr::red_rush(&robot, &chassis);
     return;
     switch (sec::auton)
     {
@@ -293,8 +293,9 @@ void opcontrol() {
     double pct = 1.0;
     int counter = 0;
 
-    intake->color_sort = false;
-    intake->set_color(BLUE);
+    intake->set_color(RED);
+
+    robot.set_brake_mode(MOTOR_BRAKE_HOLD);
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
         [&](bool firstActivation) {
@@ -313,7 +314,7 @@ void opcontrol() {
                     if (arm->armTarget == LOAD) {
                         arm->set_target(MID + 20);
                     } else if (arm->armTarget == (MID + 20)) {
-                        arm->set_target(ALLIANCE_STAKE);
+                        arm->set_target(ALLIANCE_STAKE - 5);
                     } else {
                         arm->set_target(LOAD);
                     }
