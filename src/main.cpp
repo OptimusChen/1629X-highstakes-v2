@@ -164,7 +164,7 @@ static int color = BLUE;
 
 void initialize() {
     lcd::initialize();
-    sec::init();
+    // sec::init();
 
     std::cout << &robot << std::endl;
 

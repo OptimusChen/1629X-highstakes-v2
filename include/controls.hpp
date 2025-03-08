@@ -24,6 +24,7 @@
 #define F_DISTANCE 15
 
 #define OPTICAL 3
+#define COLOR_SORT_OPTICAL 20
 
 #define ARM_PISTON_LEFT 5
 #define ARM_PISTON_RIGHT 1

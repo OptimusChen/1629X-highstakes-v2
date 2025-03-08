@@ -7,6 +7,8 @@ ADIDigitalOut sortingPiston(SORTING_PISTON);
 
 void Intake::initialize() {
     if (initialized) return;
+    colorSortOptical.set_integration_time(10);
+    colorSortOptical.set_led_pwm(100);
     optical.set_integration_time(3);
     optical.set_led_pwm(100);
 
@@ -21,7 +23,7 @@ void Intake::initialize() {
 }
 
 void Intake::update() {
-    auto opticalMeasure = optical.get_hue();
+    auto opticalMeasure = colorSortOptical.get_hue();
     int off = 100;
     bool loading = arm->armTarget == LOAD;
     if (loading) {
@@ -53,26 +55,32 @@ void Intake::update() {
         std::cout << "sort1" << std::endl;
     }
 
-    if (color == RED && ((opticalMeasure > 170) && (opticalMeasure < 220)) && color_sort && !toSort && optical.get_proximity() > 150) {
-        toSort = true;
-        hooks.tare_position();
-        wrongDetected = hooks.get_position();
-        color_sort = false;
+    if (color == RED && ((opticalMeasure > 170) && (opticalMeasure < 245)) && color_sort && !toSort && colorSortOptical.get_proximity() > 150) {
+        this->toSort = true;
 
-        sortingPiston.set_value(true);
-        std::cout << "sort1" << std::endl;
+        pros::Task ejectRingTask([&] {
+          hooks.move(127);
+          pros::delay(50);
+          hooks.move(-127); // we suddenly stop the intake right before the ring reaches the top, so
+                                              // it's inertia flings it off the hook before it can score onto the mogo
+
+          pros::delay(300);
+          hooks.move(127);
+          this->toSort = false;
+        });
+
     }
 
     // std::cout << opticalMeasure << std::endl;;
     
-    if (toSort && !color_sort && abs(hooks.get_position() - (wrongDetected + off)) < 30) {
-        std::cout << "sort2" << std::endl;
-        color_sort = true;
-        sortingPiston.set_value(false);
+    // if (toSort && !color_sort && abs(hooks.get_position() - (wrongDetected + off)) < 30) {
+    //     std::cout << "sort2" << std::endl;
+    //     color_sort = true;
+    //     sortingPiston.set_value(false);
 
-        hooks.tare_position();
-        toSort = false;
-    }
+    //     hooks.tare_position();
+    //     toSort = false;
+    // }
 
     // if (toSort && hooks.get_position() > 2*off) {
     //     color_sort = true;

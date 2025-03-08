@@ -25,6 +25,7 @@ public:
     bool moving = false;
     int color = RED;
     Optical optical{OPTICAL};
+    Optical colorSortOptical{COLOR_SORT_OPTICAL};
     Motor hooks{HOOKS};
     Arm* arm;
 
