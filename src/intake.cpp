@@ -7,7 +7,7 @@ ADIDigitalOut sortingPiston(SORTING_PISTON);
 
 void Intake::initialize() {
     if (initialized) return;
-    colorSortOptical.set_integration_time(10);
+    colorSortOptical.set_integration_time(3);
     colorSortOptical.set_led_pwm(100);
     optical.set_integration_time(3);
     optical.set_led_pwm(100);

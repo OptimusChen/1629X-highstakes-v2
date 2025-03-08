@@ -50,6 +50,7 @@ namespace loco
         std::uniform_real_distribution<> fieldDist{-1.78308, 1.78308};
 
         bool noiseNextUpdate = false;
+        bool addNoise = true;
 
         /**
          * @brief Returns the number of unique particles in the particle filter.
@@ -253,7 +254,7 @@ namespace loco
                 resample(avgWeight);
             }
 
-            if (uniqueParticles < 40) {
+            if (uniqueParticles < 40 && addNoise) {
                 /*
                  * If the number of unique particles is less than 5, add noise to the particles to prevent the filter from
                  * converging to a single point.
@@ -376,6 +377,15 @@ namespace loco
         void setNoiseNextUpdate(bool noise)
         {
             noiseNextUpdate = noise;
+        }
+
+        /**
+         * @brief Sets whether to add noise to the particle filter.
+         * @param noise Whether to add noise to the particle filter.
+         */
+        void setAddNoise(bool noise)
+        {
+            addNoise = noise;
         }
 
         /**

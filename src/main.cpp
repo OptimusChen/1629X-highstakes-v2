@@ -189,9 +189,9 @@ void initialize() {
     // robot.set_pose(51, 20, 152);
 
     robot.poseSet = true;
-    // robot.calibrate();
-    // robot.initialize_particle_filter();
-    // delay(2000);
+    robot.calibrate();
+    robot.initialize_particle_filter();
+    delay(2000);
     robot.set_pose_mode(MCL);
 
     // masterlog.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
@@ -215,7 +215,7 @@ void initialize() {
 		}
 	}};
 
-    // autonomous();
+    autonomous();
 }
 
 void disabled() {}
@@ -339,6 +339,15 @@ void opcontrol() {
             arm->set_target(states[state]);
         }
     });
+
+    hold_controls.emplace(E_CONTROLLER_DIGITAL_LEFT, std::make_pair(
+        [&](bool firstActivation) {
+            robot.set_lift_intake(true);
+        }, 
+        [&]() {
+            robot.set_lift_intake(false);
+        }
+    ));
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L2, std::make_pair(
         [&](bool firstActivation) {
