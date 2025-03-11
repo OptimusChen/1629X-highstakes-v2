@@ -180,7 +180,7 @@ void initialize() {
     robot.add_subsystem(new Arm());
 
     // SKILLS
-    robot.set_pose(-61, 0, 0);
+    // robot.set_pose(-61, 0, 0);
 
     // 6+1 red
     // robot.set_pose(-51, 20, 20);
@@ -189,7 +189,7 @@ void initialize() {
     // robot.set_pose(51, 20, 152);
 
     // sawp red
-    // robot.set_pose(-58, 14, 235);
+    robot.set_pose(-58, 14, 235);
 
     robot.poseSet = true;
     robot.calibrate();
@@ -226,7 +226,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::casey(&robot, &chassis);
+    bestautonfr::red_sawp(&robot);
     return;
     switch (sec::auton)
     {

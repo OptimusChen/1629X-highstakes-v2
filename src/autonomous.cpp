@@ -608,16 +608,11 @@ void bestautonfr::red_sawp(Robot* robot) {
         return intake->detected_ring(STAGE_2);
     };
 
-    intake->forwards();
-
-    delay(1000000);
-
     arm->set_target(ALLIANCE_STAKE + 50);
     delay(500);
 
     robot->moveToPoint(-48, 23, 500, false, false);
     arm->set_target(REST);
-
     robot->moveToPoint(-20, 23, 1250, false, true, 60);
     
     robot->set_mogo(true);
@@ -626,28 +621,37 @@ void bestautonfr::red_sawp(Robot* robot) {
     robot->turnToHeading(50, 500);
     intake->forwards();
     robot->moveToPoint(-5, 40, 850, true, false);
-    // robot->turnToHeading(90, 500);
-    // robot->moveToPoint(-5, 52, 1000, true, false);
+    robot->moveToPoint(-5, 52, 700, true, false);
 
-    robot->moveToPoint(-24, 24, 1000, false, false);
+    robot->moveToPoint(-24, 24, 700, false, false);
+    intake->set_stop_condition(stage_1_stop);
     robot->moveToPoint(-24, 50, 1000, true);
 
     robot->turnToHeading(225, 750, false, 0, 60);
-    robot->set_lift_intake(true);
-    robot->moveToPoint(-42.5, 6, 1500, true, false, 100);
-    intake->set_stop_condition(stage_1_stop);
-    robot->set_mogo(false);
-    robot->moveToPoint(-55, -23, 1000, true, false);
-    robot->turnToHeading(180, 500);
-    robot->moveToPoint(-20, -23, 1000, false, true, 60);
-    robot->set_lift_intake(false);
-    robot->set_mogo(true);
-    delay(200);
     intake->set_stop_condition(nullptr);
     intake->forwards();
-    robot->turnToHeading(270, 750, false, 0, 60);
+    robot->set_lift_intake(true);
+    Task intakedelay0([&] {
+        delay(1000);
+        robot->set_lift_intake(false);
+    });
+    robot->moveToPoint(-50, -4.5, 1500, true, false);
+    intake->set_stop_condition(stage_1_stop);
+    robot->set_mogo(false);
+
+    arm->set_target(MID + 80);
+    
+    robot->turnToHeading(135, 1000, false, 0, 40);
+    robot->moveToPoint(-20, -23, 1000, false, true, 80);
+    robot->set_mogo(true);
+    delay(200);
+    robot->turnToHeading(270, 500);
+    intake->set_stop_condition(nullptr);
+    intake->forwards();
     robot->moveToPoint(-23, -50, 1000, true, false);
-    robot->moveToPoint(-15, -12, 2000, true, true);
+    robot->particleFilter->setAddNoise(false);
+    robot->moveToPoint(-15, -15, 2000, true, true);
+    intake->stop();
 
     delay(100000);
     runningAuton = false;
