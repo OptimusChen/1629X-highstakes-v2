@@ -254,7 +254,7 @@ namespace loco
                 resample(avgWeight);
             }
 
-            if (uniqueParticles < 40 && addNoise) {
+            if (uniqueParticles < 80 && addNoise) {
                 /*
                  * If the number of unique particles is less than 5, add noise to the particles to prevent the filter from
                  * converging to a single point.

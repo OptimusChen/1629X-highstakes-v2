@@ -57,7 +57,7 @@ static PID linear(
 static PID angular(
 	2, // proportional gain (kP)
 	0, // integral gain (kI)
-	10 // derivative gain (kD)
+	20 // derivative gain (kD)
 );
 
 static PID angular_slow(
@@ -180,13 +180,16 @@ void initialize() {
     robot.add_subsystem(new Arm());
 
     // SKILLS
-    // robot.set_pose(-61, 0, 0);
+    robot.set_pose(-61, 0, 0);
 
     // 6+1 red
-    robot.set_pose(-51, 20, 28);
+    // robot.set_pose(-51, 20, 20);
 
     // 6+1 blue
     // robot.set_pose(51, 20, 152);
+
+    // sawp red
+    // robot.set_pose(-58, 14, 235);
 
     robot.poseSet = true;
     robot.calibrate();
@@ -223,7 +226,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::red_rush(&robot, &chassis);
+    bestautonfr::casey(&robot, &chassis);
     return;
     switch (sec::auton)
     {
@@ -292,7 +295,10 @@ void opcontrol() {
 
     double pct = 1.0;
     int counter = 0;
+    
+    const float armP = 1.0f;
 
+    intake->color_sort = true;
     intake->set_color(RED);
 
     robot.set_brake_mode(MOTOR_BRAKE_HOLD);
@@ -308,13 +314,15 @@ void opcontrol() {
             }
         },
         [&]() {
+            arm->liftPID.kP = armP;
             if (!lbSetting) {
                 arm->moving = false;
                 if (counter < 250) {
                     if (arm->armTarget == LOAD) {
                         arm->set_target(MID + 20);
                     } else if (arm->armTarget == (MID + 20)) {
-                        arm->set_target(ALLIANCE_STAKE - 5);
+                        arm->liftPID.kP = 0.5;
+                        arm->set_target(ALLIANCE_STAKE - 10);
                     } else {
                         arm->set_target(LOAD);
                     }
@@ -332,6 +340,7 @@ void opcontrol() {
     });
 
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_L1, [&]() {
+        arm->liftPID.kP = armP;
         if (lbSetting) {
             state++;
             if (state >= numStates) state = 0;
@@ -351,9 +360,11 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L2, std::make_pair(
         [&](bool firstActivation) {
+            arm->liftPID.kP = armP;
             arm->set_target(REST);
         }, 
         [&]() {
+            arm->liftPID.kP = armP;
             arm->set_target(REST);
         }
     ));
@@ -393,6 +404,7 @@ void opcontrol() {
             lbSetting = true;
         },
         [&]() {
+            arm->liftPID.kP = armP;
             lbSetting = false;
             state = 0;
             arm->set_target(REST);
@@ -476,8 +488,6 @@ void opcontrol() {
         temperatureSum = 0.0;
 
         master.print(0, 0, "Intake: %.2f°C", pct);
-        // delay(1);
-        // master.print(0, 0, "Avg: %.0f°C", averageTemperature);
 
         pros::delay(1);
     }

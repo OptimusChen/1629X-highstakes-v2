@@ -246,6 +246,8 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
 
     uint32_t start = 0;
 
+    bool close = false;
+
     while (true) {
         start = pros::millis();
         Pose pose = get_pose();
@@ -316,6 +318,7 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         }
 
         moveOut = util::clamp(moveOut, -maxSpeed, maxSpeed);
+        turnOut = util::clamp(turnOut, -maxSpeed, maxSpeed);
 
         // Calculate motor speeds for tank drive (left and right motor speeds)
         float left_motor_speed = moveOut + turnOut;
@@ -334,15 +337,6 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         left->move(left_motor_speed);
         right->move(right_motor_speed);
 
-        // Check if the robot is close enough to the target to stop
-        if (abs(dist) < 0.5f) {
-            stability++;
-
-            if (stability > 10) break;
-        } else {
-            stability = 0;
-        }
-        
         pros::c::task_delay_until(&start, 10);
     }
 

@@ -7,10 +7,10 @@ ADIDigitalOut sortingPiston(SORTING_PISTON);
 
 void Intake::initialize() {
     if (initialized) return;
-    colorSortOptical.set_integration_time(3);
-    colorSortOptical.set_led_pwm(100);
-    optical.set_integration_time(3);
+    optical.set_integration_time(10);
     optical.set_led_pwm(100);
+    colorSortOptical.set_integration_time(10);
+    colorSortOptical.set_led_pwm(100);
 
     hooks.set_gearing(E_MOTOR_GEAR_BLUE);
     hooks.set_reversed(true);
@@ -23,29 +23,15 @@ void Intake::initialize() {
 }
 
 void Intake::update() {
+    colorSortOptical.set_integration_time(10);
+    colorSortOptical.set_led_pwm(100);
+
     auto opticalMeasure = colorSortOptical.get_hue();
     int off = 100;
     bool loading = arm->armTarget == LOAD;
     if (loading) {
         off = 100;
     }
-
-    // if (color == BLUE && ((opticalMeasure > 0) && (opticalMeasure < 30)) && color_sort) {
-    //     color_sort = false;
-    //     Task t{[&] {
-    //         delay(500);
-    //         hooks.move(-127);
-    //         delay(100);
-    //         voltsMutex.take();
-    //         const auto _volts = volts;
-    //         voltsMutex.give();
-    //         hooks.move(_volts);
-    //         color_sort = true;
-    //     }};   
-    // }
-
-    // 600, 175
-    // 300, 400
     
     if (color == BLUE && ((opticalMeasure > 0) && (opticalMeasure < 30)) && color_sort && !toSort) {
         toSort = true;
@@ -55,7 +41,7 @@ void Intake::update() {
         std::cout << "sort1" << std::endl;
     }
 
-    if (color == RED && ((opticalMeasure > 170) && (opticalMeasure < 245)) && color_sort && !toSort && colorSortOptical.get_proximity() > 150) {
+    if (color == RED && ((opticalMeasure > 180) && (opticalMeasure < 215)) && color_sort && !toSort && colorSortOptical.get_proximity() > 120) {
         this->toSort = true;
 
         pros::Task ejectRingTask([&] {
@@ -64,29 +50,12 @@ void Intake::update() {
           hooks.move(-127); // we suddenly stop the intake right before the ring reaches the top, so
                                               // it's inertia flings it off the hook before it can score onto the mogo
 
-          pros::delay(300);
+          pros::delay(200);
           hooks.move(127);
           this->toSort = false;
         });
 
     }
-
-    // std::cout << opticalMeasure << std::endl;;
-    
-    // if (toSort && !color_sort && abs(hooks.get_position() - (wrongDetected + off)) < 30) {
-    //     std::cout << "sort2" << std::endl;
-    //     color_sort = true;
-    //     sortingPiston.set_value(false);
-
-    //     hooks.tare_position();
-    //     toSort = false;
-    // }
-
-    // if (toSort && hooks.get_position() > 2*off) {
-    //     color_sort = true;
-    //     toSort = false;
-    //     sortingPiston.set_value(false);
-    // }
 
     if (!reversed && antijam && (arm->armTarget != LOAD) && (arm->armTarget != MID)) {
         movingMutex.take();
