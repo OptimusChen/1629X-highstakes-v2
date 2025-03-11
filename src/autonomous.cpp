@@ -187,7 +187,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->turnToHeading(70, 500);
     intake->stop();
 
-    robot->moveToPoint(62, 51, 1000, true, true, fast_speed);
+    robot->moveToPoint(62, 51, 1000, true, true, 127);
 
     Task doinkerdelay1([&] {
         delay(200);
