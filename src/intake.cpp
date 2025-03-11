@@ -7,10 +7,13 @@ ADIDigitalOut sortingPiston(SORTING_PISTON);
 
 void Intake::initialize() {
     if (initialized) return;
-    optical.set_integration_time(10);
-    optical.set_led_pwm(100);
-    colorSortOptical.set_integration_time(10);
-    colorSortOptical.set_led_pwm(100);
+    optical = new Optical(OPTICAL);
+    colorSortOptical = new Optical(COLOR_SORT_OPTICAL);
+    
+    optical->set_integration_time(10);
+    optical->set_led_pwm(100);
+    colorSortOptical->set_integration_time(10);
+    colorSortOptical->set_led_pwm(100);
 
     hooks.set_gearing(E_MOTOR_GEAR_BLUE);
     hooks.set_reversed(true);
@@ -23,10 +26,7 @@ void Intake::initialize() {
 }
 
 void Intake::update() {
-    colorSortOptical.set_integration_time(10);
-    colorSortOptical.set_led_pwm(100);
-
-    auto opticalMeasure = colorSortOptical.get_hue();
+    auto opticalMeasure = colorSortOptical->get_hue();
     int off = 100;
     bool loading = arm->armTarget == LOAD;
     if (loading) {
@@ -41,7 +41,7 @@ void Intake::update() {
         std::cout << "sort1" << std::endl;
     }
 
-    if (color == RED && ((opticalMeasure > 180) && (opticalMeasure < 215)) && color_sort && !toSort && colorSortOptical.get_proximity() > 120) {
+    if (color == RED && ((opticalMeasure > 180) && (opticalMeasure < 215)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120) {
         this->toSort = true;
 
         pros::Task ejectRingTask([&] {
@@ -139,7 +139,7 @@ void Intake::stop() {
 }
 
 bool Intake::detected_ring(int threshold) {
-    return optical.get_proximity() > threshold;
+    return optical->get_proximity() > threshold;
 }
 
 void Intake::set_stop_condition(std::function<bool()> condition) {

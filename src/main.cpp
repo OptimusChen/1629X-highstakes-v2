@@ -57,7 +57,7 @@ static PID linear(
 static PID angular(
 	2, // proportional gain (kP)
 	0, // integral gain (kI)
-	20 // derivative gain (kD)
+	10 // derivative gain (kD)
 );
 
 static PID angular_slow(

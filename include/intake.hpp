@@ -24,8 +24,8 @@ public:
     bool antijam = false;
     bool moving = false;
     int color = RED;
-    Optical optical{OPTICAL};
-    Optical colorSortOptical{COLOR_SORT_OPTICAL};
+    Optical* optical;
+    Optical* colorSortOptical;
     Motor hooks{HOOKS};
     Arm* arm;
 

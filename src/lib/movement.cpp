@@ -318,7 +318,7 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         }
 
         moveOut = util::clamp(moveOut, -maxSpeed, maxSpeed);
-        turnOut = util::clamp(turnOut, -maxSpeed, maxSpeed);
+        // turnOut = util::clamp(turnOut, -maxSpeed, maxSpeed);
 
         // Calculate motor speeds for tank drive (left and right motor speeds)
         float left_motor_speed = moveOut + turnOut;

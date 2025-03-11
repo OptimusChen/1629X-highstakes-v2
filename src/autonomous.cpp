@@ -62,7 +62,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
         return intake->detected_ring(STAGE_1);
     };
     auto stage_1_stop_color = [&] {
-        auto hue = intake->optical.get_hue();
+        auto hue = intake->optical->get_hue();
         return intake->detected_ring(STAGE_1) && (hue > 0 && hue < 30);
     };
     auto stage_2_stop = [&] {
@@ -129,11 +129,10 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //-----------SCORE THREE RINGS------------------//
 
-    robot->moveToPoint(0, 47, 1000, false, false, fast_speed, true);
+    robot->moveToPoint(0, 47, 750, false, false, fast_speed, true);
     arm->set_target(REST);
 
-    robot->turnToHeading(180, 300);
-    robot->moveToPoint(-40, 47, 700, true, false, fast_speed);
+    robot->moveToPoint(-40, 47, 1000, true, false, fast_speed);
     robot->moveToPoint(-58, 47, 1000, true, false, 60);
     delay(250);
     robot->moveToPoint(-43, 60, 1500, true, true, mid_speed);
@@ -173,7 +172,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //Clamp second goal
 
     arm->set_target(LOAD);
-    robot->turnToHeading(130, 500, false, 0, 127);
+    robot->turnToHeading(130, 1000, false, 0, 127);
     robot->moveToPoint(58, 23, 1200, false, true, fast_speed);
     // robot->timedMove(-20, 500);
     robot->set_rush_arm_right(false);
@@ -188,7 +187,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->turnToHeading(70, 500);
     intake->stop();
 
-    robot->moveToPoint(62, 51, 1000, true, false, fast_speed);
+    robot->moveToPoint(62, 51, 1000, true, true, fast_speed);
 
     Task doinkerdelay1([&] {
         delay(200);
@@ -196,10 +195,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     });
     robot->turnToHeading(210, 1000);
 
-    Task mogodelay0([&] {
-        delay(500);
-        robot->set_mogo(false);
-    });
+    robot->set_mogo(false);
     robot->moveToPoint(68, 64, 1000, false, true, 127);
  
     intake->stop();
@@ -207,7 +203,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //get third goal
     robot->moveToPoint(48, 30, 500, true, true, fast_speed);
     
-    arm->set_target(MID + 10);
+    arm->set_target(MID + 5);
     intake->stop();
     robot->turnToHeading(90, 500);
     
@@ -222,7 +218,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //score alliance stake
 
-    int target = 1715;
+    int target = 1725;
     float error = front.get_distance() - target;
     while (abs(error) > 5) {
         float power = error * 0.2;
@@ -276,8 +272,8 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //score one ring
     robot->moveToPoint(48, robot->get_pose().y, 500, true, false, fast_speed);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->turnToPoint(24, 24, 500);
-    robot->moveToPoint(24, 24, 1500, true, false, fast_speed);
+    robot->turnToPoint(22, 22, 500);
+    robot->moveToPoint(22, 22, 1500, true, true, fast_speed);
 
     //cross under ladder score 3
     // robot->turnToPoint(-47, -47, 500);
@@ -292,7 +288,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
             if (distanceFrom00 < 5) {
                 intake->forwards();
             } else {
-                intake->forwards(30);
+                intake->stop();
             }
             delay(10);
         }
@@ -301,16 +297,16 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->moveToPoint(-20, -20, 1000, true, true, fast_speed);
     under = false;
     Task intakedelay1([&] {
-        delay(200);
+        delay(500);
         intake->forwards();
     });
     // SCORE 3 RINGS
-    robot->moveToPoint(-44, -44, 1500, true, true, mid_speed - 15);
-    delay(500);
+    robot->moveToPoint(-41, -41, 1500, true, true, mid_speed - 15);
+    robot->turnToHeading(180, 500);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
     robot->moveToPoint(-56, -47, 1000, true, false, mid_speed);
-    robot->moveToPoint(-44, -44, 750, false, false);
-    robot->moveToPoint(-45, -60, 1500, true, true, mid_speed);
+    delay(250);
+    robot->moveToPoint(-40, -60, 1500, true, true, mid_speed);
 
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
     // delay(500);
@@ -319,15 +315,14 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->moveToPoint(-60, -63, 1250, false, true, fast_speed);
     robot->particleFilter->setNoiseNextUpdate(true);
     robot->set_mogo(false);
-    delay(200);
+    delay(500);
 
     ///////////////////////////////////////////////
     //--------------4th SECTION------------------//
     ///////////////////////////////////////////////
-    robot->moveToPoint(-47, -60, 500, true);
+    robot->moveToPoint(-46, -45, 500, true, true, fast_speed);
     intake->stop();
-    robot->moveToPoint(-47, -40, 1000, false, true, 127);
-    robot->moveToPoint(-47, -21, 750, false, true, mid_speed);
+    robot->moveToPoint(-47, -21, 2000, false, true, mid_speed);
     robot->set_mogo(true);
     delay(300);
 
@@ -398,13 +393,14 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->set_color_sort_piston(false);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     robot->moveToPoint(27, -27, 1000, true);
-    robot->turnToHeading(315, 500);
+    robot->turnToHeading(315, 750, false, 0, mid_speed);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
     robot->timedMove(-100, 2000);
 
     intake->stop();
     runningAuton = false;
     dump_all();    
+
 }
 
 void bestautonfr::red_rush(Robot* robot, lemlib::Chassis* chassis) {
@@ -873,7 +869,7 @@ void bestautonfr::skills(Robot* robot) {
         return intake->detected_ring(STAGE_1);
     };
     auto stage_1_stop_color = [&] {
-        auto hue = intake->optical.get_hue();
+        auto hue = intake->optical->get_hue();
         return intake->detected_ring(STAGE_1) && (hue > 0 && hue < 30);
     };
     auto stage_2_stop = [&] {
