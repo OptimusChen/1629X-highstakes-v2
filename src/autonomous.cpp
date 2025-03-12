@@ -43,12 +43,6 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     Task updates([&]() {
         while (runningAuton) {
             arm->update();
-            delay(1);
-        }
-    });
-
-    Task intakeupdates([&]() {
-        while (runningAuton) {
             intake->update();
             delay(1);
         }
@@ -77,7 +71,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //-----------CLAMP FIRST MOGO------------------//
 
-    robot->moveToPoint(-49, 0, 900, true, false, fast_speed);
+    robot->moveToPoint(-49, 0, 500, true, false, fast_speed);
 
     robot->turnToHeading(270, 500);
 
@@ -97,7 +91,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //-----------OBTAIN 2nd RING------------------//
 
     Task lbdelay1([&] {
-        delay(1200);
+        delay(1300);
         arm->set_target(LOAD);
     });
 
@@ -115,6 +109,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     arm->set_target(MID + 40);
     delay(200);
     intake->forwards();
+    arm->liftPID.kP = 0.5;
     robot->moveToPoint(0, 62, 1000, true, true, fast_speed);
     // robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
@@ -142,6 +137,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->set_mogo(false);
     robot->moveToPoint(-64, robot->get_pose().y, 500, false, false, 80, true);
 
+    intake->backwards();
     Task intakedelay0([&] {
         delay(400);
         intake->forwards(80);
@@ -155,9 +151,9 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //Get ring for alliance stake
 
     intake->antijam = true;
+    arm->set_target(LOAD);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     // robot->moveToPoint(38, 46, 1700, true, true, 100);
-    intake->set_stop_condition(stage_1_stop_color);
     robot->moveToPoint(42, 46, 2000, true, true, 127);
     robot->set_rush_arm_right(true);
 
@@ -167,9 +163,8 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     
     //Clamp second goal
 
-    arm->set_target(LOAD);
-    robot->turnToHeading(130, 1000, false, 0, 127);
-    robot->moveToPoint(58, 23, 1200, false, true, fast_speed);
+    robot->turnToHeading(130, 500, false, 0, 127);
+    robot->moveToPoint(58, 23, 1000, false, true, fast_speed);
     // robot->timedMove(-20, 500);
     robot->set_rush_arm_right(false);
     robot->set_mogo(true);
@@ -199,7 +194,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //get third goal
     robot->moveToPoint(48, 30, 500, true, true, fast_speed);
     
-    arm->set_target(MID + 5);
+    arm->set_target(MID + 10);
     intake->stop();
     robot->turnToHeading(90, 500);
     
@@ -258,7 +253,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     intake->forwards();
     intake->color_sort = true;
-    robot->moveToPoint(40, robot->get_pose().y, 1000, false, false, 80);
+    robot->moveToPoint(40, robot->get_pose().y, 500, false, false, 80);
     arm->set_target(REST);
 
     ///////////////////////////////////////////////
@@ -268,8 +263,8 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //score one ring
     robot->moveToPoint(48, robot->get_pose().y, 500, true, false, fast_speed);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->turnToPoint(22, 22, 500);
-    robot->moveToPoint(22, 22, 1500, true, true, fast_speed);
+    robot->turnToPoint(24, 24, 500);
+    robot->moveToPoint(24, 24, 1500, true, true, fast_speed);
 
     //cross under ladder score 3
     // robot->turnToPoint(-47, -47, 500);
@@ -292,15 +287,17 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     robot->moveToPoint(-20, -20, 1000, true, true, fast_speed);
     under = false;
+    intake->forwards(30);
     Task intakedelay1([&] {
         delay(500);
         intake->forwards();
     });
     // SCORE 3 RINGS
-    robot->moveToPoint(-41, -41, 1500, true, true, mid_speed - 15);
+    robot->moveToPoint(-35, -35, 1000, true, true, mid_speed - 30);
+    robot->moveToPoint(-45, -45, 1000, true, true, mid_speed);
     robot->turnToHeading(180, 500);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
-    robot->moveToPoint(-56, -47, 1000, true, false, mid_speed);
+    robot->moveToPoint(-58, -47, 1000, true, false, mid_speed);
     delay(250);
     robot->moveToPoint(-40, -60, 1500, true, true, mid_speed);
 
@@ -316,9 +313,9 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     ///////////////////////////////////////////////
     //--------------4th SECTION------------------//
     ///////////////////////////////////////////////
-    robot->moveToPoint(-46, -45, 500, true, true, fast_speed);
+    robot->moveToPoint(-46, -60, 500, true, true, fast_speed);
     intake->stop();
-    robot->moveToPoint(-47, -21, 2000, false, true, mid_speed);
+    robot->moveToPoint(-47, -21, 1750, false, true, mid_speed);
     robot->set_mogo(true);
     delay(300);
 
@@ -331,7 +328,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //lady brown stuff
     robot->moveToPoint(-1, -40, 1300, false, true, fast_speed);
     intake->stop();
-    arm->set_target(MID + 20);
+    arm->set_target(MID + 40);
 
     //-----------LADY BROWN 1------------------//
     Task intakedelay2([&] {
@@ -339,6 +336,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
         intake->forwards();
     });
     robot->turnToHeading(270, 450);
+    arm->liftPID.kP = 0.5;
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
     robot->moveToPoint(0, -61, 1000, true, true, mid_speed);
@@ -353,7 +351,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     // now go score rings
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->moveToPoint(24, -48, 850+500, true, true, fast_speed);
+    robot->moveToPoint(23, -48, 850+500, true, true, fast_speed);
     delay(250);
     robot->moveToPoint(25.5, -16, 1500, true, true, fast_speed);
     delay(250);
@@ -381,10 +379,10 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->set_mogo(false);
     delay(300);
     robot->moveToPoint(64, -64, 1000, false, false, 127);
-    intake->stop();
 
     // HANG!!!
     intake->hooks.brake();
+    intake->stop();
     arm->set_target(SCORE);
     robot->set_color_sort_piston(false);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);

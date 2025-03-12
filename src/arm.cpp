@@ -11,8 +11,6 @@ void Arm::initialize() {
     // motor->set_encoder_units(MotorEncoderUnits::degrees);
     rotation = new Rotation(LB_ROTATION);
 
-    liftPID = PID(1.5, 0, 0.1);
-
     liftPID.reset();
 
     motor->tare_position();
@@ -23,6 +21,7 @@ void Arm::update() {
     if (moving) return;
     if (!rotation) return;
     if (!motor) return;
+
     float measure = rotation->get_angle() / 100.0f;
     if (measure > 350) measure = 0;
     // float measure = motor->get_position();

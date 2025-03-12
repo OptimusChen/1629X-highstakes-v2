@@ -10,7 +10,7 @@ using namespace pros;
 using namespace lib;
 
 #define REST 0
-#define LOAD 28
+#define LOAD 27
 #define MID 40
 #define SCORE 130
 #define ALLIANCE_STAKE 150
@@ -21,7 +21,7 @@ public:
 
     Motor* motor;
     Rotation* rotation;
-    PID liftPID = PID(1, 0, 0);
+    PID liftPID = PID(1.5, 0, 0);
     bool moving = false;
 
     void initialize() override;

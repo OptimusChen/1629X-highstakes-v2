@@ -184,7 +184,7 @@ void initialize() {
     }
 
     // SKILLS
-    // robot.set_pose(-61, 0, 0);
+    robot.set_pose(-61, 0, 0);
 
     // 6+1 red
     // robot.set_pose(-51, 20, 20);
@@ -193,12 +193,12 @@ void initialize() {
     // robot.set_pose(51, 20, 152);
 
     // sawp red
-    robot.set_pose(-58, 14, 235);
+    // robot.set_pose(-58, 14, 235);
 
     robot.poseSet = true;
     robot.calibrate();
     robot.initialize_particle_filter();
-    // delay(2000);
+    delay(2000);
     robot.set_pose_mode(MCL);
 
     // masterlog.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
@@ -230,7 +230,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::red_sawp(&robot);
+    bestautonfr::casey(&robot, &chassis);
     return;
     switch (sec::auton)
     {
