@@ -166,17 +166,21 @@ void Robot::initialize_particle_filter() {
                 particleFilter->getAngle().getValue() - ANGLE_NOISE.getValue(),
                 particleFilter->getAngle().getValue() + ANGLE_NOISE.getValue());
 
-            // Calculate noisy sensor readings
-            const auto noisy = avgDistribution(de);
-            const auto angle = angleDistribution(de);
+            // // Calculate noisy sensor readings
+            // const auto noisy = avgDistribution(de);
+            // const auto angle = angleDistribution(de);
 
-            auto change = Eigen::Rotation2Df(angle) * Eigen::Vector2f({noisy, 0.0});
-            robotLogger.push_log(LogType::DELTA_MOVEMENT_AND_LOOP_TIME, {change.x(), change.y(), float(pros::millis() - start_time), -1});
-            // robotLogger.push_log(LogType::DELTA_MOVEMENT, {change.x(), change.y(), -1, -1});
+            // auto change = Eigen::Rotation2Df(angle) * Eigen::Vector2f({noisy, 0.0});
+            // robotLogger.push_log(LogType::DELTA_MOVEMENT_AND_LOOP_TIME, {change.x(), change.y(), float(pros::millis() - start_time), -1});
+            // // robotLogger.push_log(LogType::DELTA_MOVEMENT, {change.x(), change.y(), -1, -1});
 
             particleFilter->update([&]() mutable {
+                // Calculate noisy sensor readings
+                const auto noisy = avgDistribution(de);
+                const auto angle = angleDistribution(de);
+
                 // Calculate the translation with the sensor readings
-                return change;
+                return Eigen::Rotation2Df(angle) * Eigen::Vector2f({noisy, 0.0});
             }, pros::millis() * millisecond);
       
             // robotLogger.push_log(LogType::LOOP_TIME, {float(pros::millis() - start_time), -1, -1, -1});

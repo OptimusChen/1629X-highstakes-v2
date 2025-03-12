@@ -7,11 +7,13 @@ ADIDigitalOut sortingPiston(SORTING_PISTON);
 
 void Intake::initialize() {
     if (initialized) return;
+
     optical = new Optical(OPTICAL);
     colorSortOptical = new Optical(COLOR_SORT_OPTICAL);
-    
+
     optical->set_integration_time(10);
     optical->set_led_pwm(100);
+
     colorSortOptical->set_integration_time(10);
     colorSortOptical->set_led_pwm(100);
 
@@ -32,6 +34,8 @@ void Intake::update() {
     if (loading) {
         off = 100;
     }
+
+    std::cout << colorSortOptical->get_integration_time() << std::endl;
     
     if (color == BLUE && ((opticalMeasure > 0) && (opticalMeasure < 30)) && color_sort && !toSort) {
         toSort = true;
@@ -40,6 +44,7 @@ void Intake::update() {
         color_sort = false;
         std::cout << "sort1" << std::endl;
     }
+    // std::cout << colorSortOptical->get_integration_time() << std::endl;
 
     if (color == RED && ((opticalMeasure > 180) && (opticalMeasure < 215)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120) {
         this->toSort = true;

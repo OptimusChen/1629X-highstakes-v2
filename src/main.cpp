@@ -178,6 +178,10 @@ void initialize() {
     robot.set_pf(&particleFilter);
     robot.add_subsystem(new Intake());
     robot.add_subsystem(new Arm());
+    
+    for (Subsystem* subsystem : robot.subsystems) {
+        subsystem->initialize();
+    }
 
     // SKILLS
     // robot.set_pose(-61, 0, 0);
@@ -194,7 +198,7 @@ void initialize() {
     robot.poseSet = true;
     robot.calibrate();
     robot.initialize_particle_filter();
-    delay(2000);
+    // delay(2000);
     robot.set_pose_mode(MCL);
 
     // masterlog.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
@@ -263,10 +267,6 @@ float get_rotation_degrees(Rotation rot) {
 }
 
 void opcontrol() {
-    for (Subsystem* subsystem : robot.subsystems) {
-        subsystem->initialize();
-    }
-
     Intake* intake = robot.get_subsystem<Intake>();
     Arm* arm = robot.get_subsystem<Arm>();
     
