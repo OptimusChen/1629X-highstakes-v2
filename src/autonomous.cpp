@@ -627,18 +627,16 @@ void bestautonfr::red_sawp(Robot* robot) {
     intake->set_stop_condition(stage_1_stop);
     robot->moveToPoint(-24, 50, 1000, true);
 
-    robot->turnToHeading(225, 750, false, 0, 60);
+    robot->turnToHeading(225, 500);
     intake->set_stop_condition(nullptr);
     intake->forwards();
     robot->set_lift_intake(true);
-    Task intakedelay0([&] {
-        delay(1000);
-        robot->set_lift_intake(false);
-    });
-    robot->moveToPoint(-50, -4.5, 1500, true, false);
+    robot->moveToPoint(-40, 12, 750, true, false);
     intake->set_stop_condition(stage_1_stop);
     robot->set_mogo(false);
+    robot->moveToPoint(-50, 4, 1000, true, false, 60);
 
+    robot->set_lift_intake(false);
     arm->set_target(MID + 80);
     
     robot->turnToHeading(135, 1000, false, 0, 40);
@@ -648,12 +646,14 @@ void bestautonfr::red_sawp(Robot* robot) {
     robot->turnToHeading(270, 500);
     intake->set_stop_condition(nullptr);
     intake->forwards();
-    robot->moveToPoint(-23, -50, 1000, true, false);
+    robot->moveToPoint(-23, -43, 1000, true, true);
     robot->particleFilter->setAddNoise(false);
-    robot->moveToPoint(-15, -15, 2000, true, true);
+    robot->moveToPoint(-24, -20, 1000, false, false);
+    robot->turnToHeading(45, 500);
+    robot->timedMove(40, 500);
     intake->stop();
 
-    delay(100000);
+    delay(500);
     runningAuton = false;
     return;
 }
