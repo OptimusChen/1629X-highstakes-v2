@@ -453,7 +453,7 @@ void bestautonfr::red_rush(Robot* robot, lemlib::Chassis* chassis) {
 
     robot->timedMove(40, 1000);
     delay(400);
-    robot->timedMove(-100, 200);
+    robot->timedMove(-40, 500);
     robot->set_lift_intake(true);
     robot->timedMove(40, 500);
     delay(400);
