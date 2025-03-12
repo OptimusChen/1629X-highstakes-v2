@@ -184,10 +184,10 @@ void initialize() {
     }
 
     // SKILLS
-    robot.set_pose(-61, 0, 0);
+    // robot.set_pose(-61, 0, 0);
 
     // 6+1 red
-    // robot.set_pose(-51, 20, 20);
+    robot.set_pose(-51, 29, 20);
 
     // 6+1 blue
     // robot.set_pose(51, 20, 152);
@@ -230,7 +230,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::casey(&robot, &chassis);
+    bestautonfr::red_rush(&robot, &chassis);
     return;
     switch (sec::auton)
     {

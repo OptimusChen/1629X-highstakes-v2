@@ -230,7 +230,7 @@ void Robot::turnToPoint(float x, float y, int timeout, bool reversed, int minSpe
     turnToHeading(util::get_angle_to_target(pose.x, pose.y, x, y), timeout, reversed, minSpeed, maxSpeed);
 }
 
-void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnFirst, int maxSpeed, bool noTurn) {
+void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnFirst, int maxSpeed, bool noTurn, bool slowSettling) {
     auto usedAngular = angular;
     if (useSlowAngular) {
         usedAngular = angular_slow;
@@ -337,6 +337,13 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
         left->move(left_motor_speed);
         right->move(right_motor_speed);
 
+        if (dist < 5.0f) {
+            close = true;
+            if (slowSettling) maxSpeed = 30;
+        }
+
+        if (close) maxSpeed = 30;
+        
         pros::c::task_delay_until(&start, 10);
     }
 

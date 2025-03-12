@@ -88,7 +88,7 @@ namespace lib {
             // movement stuff
             void turnToHeading(float heading, int timeout, bool reversed = false, int minSpeed = 0, int maxSpeed = 127);
             void turnToPoint(float x, float y, int timeout, bool reversed = false, int minSpeed = 0, int maxSpeed = 127);
-            void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false, int maxSpeed = 127, bool noTurn = false);
+            void moveToPoint(float x, float y, int timeout, bool forwards = true, bool turnFirst = false, int maxSpeed = 127, bool noTurn = false, bool slowSettling = false);
             void ramsete(std::vector<bezier::Point>, MPConstraint constraint, Direction direction = Direction::FORWARDS);
             void timedMove(int power, int timeout);
             void swingToHeading(float heading, int timeout, int side = 1);
