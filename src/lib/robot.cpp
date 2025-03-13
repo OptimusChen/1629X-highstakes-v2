@@ -133,6 +133,7 @@ void Robot::reset_particle_filter(float x, float y) {
 }
 
 void Robot::initialize_particle_filter() {
+    std::cout << "Initializing particle filter" << std::endl;
     reset_particle_filter(get_pose().x, get_pose().y);
 
     pros::Task locoTask = pros::Task([&]() {

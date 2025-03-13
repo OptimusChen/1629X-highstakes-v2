@@ -1,5 +1,6 @@
 #include "arm.hpp"
 #include "controls.hpp"
+#include "lib/util.hpp"
 
 void Arm::initialize() {
     if (initialized) return;
@@ -15,6 +16,8 @@ void Arm::initialize() {
 
     motor->tare_position();
     initialized = true;
+
+    rotation->set_data_rate(5);
 }
 
 void Arm::update() {
@@ -28,6 +31,12 @@ void Arm::update() {
 
     float liftPower = liftPID.calculate(armTarget - measure);
 
+    std::cout << armTarget << " - " << measure << " = " << (armTarget - measure) << std::endl;
+
+    if (abs(liftPower) > 5) {
+        liftPower = util::sign(liftPower) * std::fmax(abs(liftPower), 20.0);
+    }
+    std::cout << liftPower << std::endl;
     motor->move(liftPower);
 }
 

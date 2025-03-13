@@ -2,7 +2,7 @@
 
 
 #include <string>
-
+#include "lib/robot.hpp"
 
 //selector configuration
 #define HUE 360
@@ -12,6 +12,7 @@
 namespace sec{
 
 extern int auton;
+extern int color;
 // const char *bee[] = {AUTONS, ""};
-void init(int hue = HUE, int default_auton = DEFAULT, const char **autons = AUTONS);
+void init(lib::Robot* robot, int hue = HUE, int default_auton = DEFAULT, const char **autons = AUTONS);
 }

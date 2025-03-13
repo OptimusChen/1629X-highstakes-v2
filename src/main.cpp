@@ -101,7 +101,7 @@ static int color = BLUE;
 
 void initialize() {
     lcd::initialize();
-    // sec::init();
+    sec::init(&robot);
 
     std::cout << &robot << std::endl;
 
@@ -119,6 +119,8 @@ void initialize() {
     for (Subsystem* subsystem : robot.subsystems) {
         subsystem->initialize();
     }
+
+    robot.calibrate();
 
     // SKILLS
     if (AUTO_SKILLS) {
@@ -149,7 +151,7 @@ void initialize() {
             distanceLogger.push_log(LogType::DISTANCE_SENSOR, {float(left_dist.get_distance()), float(right_dist.get_distance()), float(back_dist.get_distance()), float(front_dist.get_distance())});
 
 			pros::lcd::print(0, "p: %.2f, %.2f, %.2f", pose.x, pose.y, util::degrees(pose.theta)); // print the x position
-			pros::lcd::print(1, "bruh: %d", robot.poseMode); // print the headings
+			pros::lcd::print(1, "pose mode: %s", robot.poseMode == MCL ? "mcl" : "odom"); // print the headings
 			pros::lcd::print(2, "rand: %d", std::rand()); // print the headings
 
 			pros::delay(10);
