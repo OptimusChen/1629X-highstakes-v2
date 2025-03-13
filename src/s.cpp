@@ -92,8 +92,6 @@ namespace sec {
                     robot->set_pose_mode(MCL);
                     break;
                 case 2:
-                    autonomous();
-                    return;
                     if (robot->poseMode == ODOM) {
                         robot->set_pose_mode(MCL);
                     } else {

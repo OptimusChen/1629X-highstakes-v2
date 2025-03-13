@@ -298,9 +298,9 @@
       }
     },
     "upload_options": {
-      "after": "run",
+      "after": "screen",
       "icon": "planet",
-      "slot": 1
+      "slot": 2
     },
     "use_early_access": true
   }

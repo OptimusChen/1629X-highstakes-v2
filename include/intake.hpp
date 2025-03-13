@@ -24,6 +24,7 @@ public:
     bool antijam = false;
     bool moving = false;
     int color = RED;
+    bool sortNextRing = false;
     Optical* optical;
     Optical* colorSortOptical;
     Motor hooks{HOOKS};

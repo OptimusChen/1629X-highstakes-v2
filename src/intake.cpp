@@ -28,6 +28,9 @@ void Intake::initialize() {
 }
 
 void Intake::update() {
+    colorSortOptical->set_integration_time(10);
+    colorSortOptical->set_led_pwm(100);
+
     auto opticalMeasure = colorSortOptical->get_hue();
     int off = 100;
     bool loading = arm->armTarget == LOAD;
@@ -46,7 +49,8 @@ void Intake::update() {
     }
     // std::cout << colorSortOptical->get_integration_time() << std::endl;
 
-    if (color == RED && ((opticalMeasure > 180) && (opticalMeasure < 215)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120) {
+    bool sort = color == RED && ((opticalMeasure > 170) && (opticalMeasure < 245)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120;
+    if (sort || sortNextRing) {
         this->toSort = true;
 
         pros::Task ejectRingTask([&] {
@@ -58,6 +62,7 @@ void Intake::update() {
           pros::delay(200);
           hooks.move(127);
           this->toSort = false;
+          this->sortNextRing = false;
         });
 
     }

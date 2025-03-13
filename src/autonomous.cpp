@@ -194,7 +194,7 @@ void bestautonfr::casey(Robot* robot) {
     //get third goal
     robot->moveToPoint(48, 30, 500, true, true, fast_speed);
     
-    arm->set_target(MID + 10);
+    arm->set_target(MID + 20);
     intake->stop();
     robot->turnToHeading(90, 500);
     
@@ -294,7 +294,7 @@ void bestautonfr::casey(Robot* robot) {
     });
     // SCORE 3 RINGS
     robot->moveToPoint(-35, -35, 1000, true, true, mid_speed - 30);
-    robot->moveToPoint(-45, -45, 1000, true, true, mid_speed);
+    robot->moveToPoint(-41, -41, 1000, true, true, mid_speed - 15);
     robot->turnToHeading(180, 500);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
     robot->moveToPoint(-58, -47, 1000, true, false, mid_speed);
@@ -424,6 +424,9 @@ void bestautonfr::red_rush(Robot* robot) {
         return intake->detected_ring(STAGE_2);
     };
 
+    // intake->forwards();
+    // delay(1000000);
+
     robot->set_rush_arm_left(true);
     intake->antijam = false;
     intake->forwards(100);
@@ -442,22 +445,19 @@ void bestautonfr::red_rush(Robot* robot) {
     intake->set_stop_condition(nullptr);
     intake->forwards();
 
-    robot->moveToPoint(-23.5, 53, 1000, true, false, 100);
+    robot->moveToPoint(-21.5, 53, 1000, true, false, 100);
     delay(500);
 
-    robot->turnToPoint(-50, 53, 500);
+    robot->turnToPoint(-48, 53, 500);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->moveToPoint(-50, 53, 1000, true, false, 80, false, true);
+    robot->moveToPoint(-48, 53, 1000, true, false, 80, false, true);
     robot->turnToHeading(135, 500);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
+    // intake->sortNextRing = true;
     robot->timedMove(40, 1000);
-    delay(400);
-    robot->timedMove(-40, 500);
-    robot->set_lift_intake(true);
-    robot->timedMove(40, 500);
-    delay(400);
-    robot->set_lift_intake(false);
+    delay(500);
+    // robot->timedMove(-40, 1000);
 
     robot->lateral->kP = 6;
 
@@ -467,13 +467,17 @@ void bestautonfr::red_rush(Robot* robot) {
     arm->set_target(LOAD);
     robot->lateral->kP = 4;
     robot->particleFilter->setAddNoise(false);
-    robot->moveToPoint(-47, 23, 1250, true, true);
+    robot->moveToPoint(-44, 23, 1250, true, true);
     arm->set_target(MID + 20);
     robot->set_lift_intake(true);
     robot->moveToPoint(-47, -4, 1000, true, true, 127);
     robot->set_lift_intake(false);
     delay(500);
+    robot->set_rush_arm_right(true);
     robot->turnToHeading(184, 500, false, 0, 80);
+    robot->set_rush_arm_right(false);
+    delay(300);
+    robot->moveToPoint(-70, 0, 500, true);
     int target = 380;
     float error = front.get_distance() - target;
     while (abs(error) > 20) {

@@ -97,7 +97,8 @@ static int color = BLUE;
 
 // IMPORTANT
 #define AUTO_SKILLS false
-#define DRIVER_SKILLS true
+#define DRIVER_SKILLS false
+#define AUWTON true
 
 void initialize() {
     lcd::initialize();
@@ -120,6 +121,7 @@ void initialize() {
         subsystem->initialize();
     }
 
+    robot.poseSet = true;
     robot.calibrate();
 
     // SKILLS
@@ -128,7 +130,7 @@ void initialize() {
     }
 
     // 6+1 red
-    // robot.set_pose(-51, 29, 20);
+    robot.set_pose(-51, 29, 20);
 
     // 6+1 blue
     // robot.set_pose(51, 20, 152);
@@ -136,9 +138,9 @@ void initialize() {
     // sawp red
     // robot.set_pose(-58, 14, 235);
 
-    if (AUTO_SKILLS || !DRIVER_SKILLS) {
-        robot.poseSet = true;
-        robot.calibrate();
+    if (AUTO_SKILLS || !DRIVER_SKILLS || AUWTON) {
+        // robot.poseSet = true;
+        // robot.calibrate();
         robot.initialize_particle_filter();
         delay(2000);
         robot.set_pose_mode(MCL);
@@ -158,7 +160,9 @@ void initialize() {
 		}
 	}};
 
-    // autonomous();
+    if (AUTO_SKILLS || AUWTON) {
+        autonomous();
+    }
 }
 
 void disabled() {}
@@ -170,6 +174,7 @@ void autonomous() {
         bestautonfr::casey(&robot);
         return;
     }
+    if (AUWTON) bestautonfr::red_rush(&robot);
     switch (sec::auton)
     {
         case 0:
@@ -267,17 +272,18 @@ void opcontrol() {
                 arm->liftPID.kP = armP;
                 arm->moving = false;
                 if (counter < 250) {
-                    if (arm->armTarget == (LOAD+1)) {
+                    if (arm->armTarget == (LOAD+4)) {
                         arm->set_target(MID + 40);
                         abc2 = false;
                     } else if (arm->armTarget == (MID + 40)) {
                         arm->liftPID.kP = 0.5;
                         arm->set_target(ALLIANCE_STAKE - 10);
                     } else {
-                        arm->set_target(LOAD+1);
+                        arm->set_target(LOAD+4);
                     }
                 } else {
-                    arm->set_target(LOAD+1);
+                    arm->liftPID.kP = 0.7;
+                    arm->set_target(LOAD+4);
                 }
 
                 if (abc) abc2 = true;

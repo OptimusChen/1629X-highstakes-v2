@@ -4,12 +4,9 @@
 
 void Arm::initialize() {
     if (initialized) return;
-    // left = new Motor(ARM_LEFT, MotorGears::green);
-    // right = new Motor(-ARM_RIGHT, MotorGears::green);
     motor = new Motor(LADYBROWN, MotorGears::red);
     motor->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     motor->set_reversed(true);
-    // motor->set_encoder_units(MotorEncoderUnits::degrees);
     rotation = new Rotation(LB_ROTATION);
 
     liftPID.reset();
