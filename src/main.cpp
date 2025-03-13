@@ -82,11 +82,6 @@ static Angle angle() {
 }
 
 // initialize the distance sensors
-// static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((3.5_in).getValue(), (-6.25_in).getValue(), (270_deg).getValue()), right_dist);
-// static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((3.5_in).getValue(), (6.25_in).getValue(), (90_deg).getValue()), left_dist);
-// static loco::DistanceSensorModel backDistance(Eigen::Vector3f((1.1_in).getValue(), (-6.5_in).getValue(), (180_deg).getValue()), back_dist);
-// static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((2.25_in).getValue(), (-4.75_in).getValue(), (0_deg).getValue()), front_dist);
-
 static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((4.25_in).getValue(), (-6.25_in).getValue(), (270_deg).getValue()), right_dist);
 static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((4.25_in).getValue(), (6.25_in).getValue(), (90_deg).getValue()), left_dist);
 static loco::DistanceSensorModel backDistance(Eigen::Vector3f((2.75_in).getValue(), (-6.5_in).getValue(), (180_deg).getValue()), back_dist);
@@ -94,73 +89,15 @@ static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((4.25_in).getValu
 
 static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 
-/* Lemlib */
-
-lemlib::Drivetrain drivetrain(
-    &left_motor_group, // left motor group
-    &right_motor_group,// right motor group
-    TRACK_WIDTH, // 10 inch track width
-    lemlib::Omniwheel::NEW_275, // using new 4" omnis
-    450, // drivetrain rpm is 360
-    2 // horizontal drift is 2 (for now)
-);
-
-lemlib::ControllerSettings lateral_controller(
-    5.5, // proportional gain (kP)
-    0, // integral gain (kI)
-    2, // derivative gain (kD)
-    3, // anti windup
-    1, // small error range, in inches
-    100, // small error range timeout, in milliseconds
-    3, // large error range, in inches
-    500, // large error range timeout, in milliseconds
-    20 // maximum acceleration (slew)
-);
-
-// angular PID controller
-lemlib::ControllerSettings angular_controller(
-    1, // proportional gain (kP)
-    0, // integral gain (kI)
-    1, // derivative gain (kD)
-    3, // anti windup
-    1, // small error range, in degrees
-    100, // small error range timeout, in milliseconds
-    3, // large error range, in degrees
-    500, // large error range timeout, in milliseconds
-    0 // maximum acceleration (slew)
-);
-
-lemlib::OdomSensors sensors(
-    nullptr, // vertical tracking wheel 1, set to null
-    nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-    nullptr, // horizontal tracking wheel 1
-    nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
-    &imu // inertial sensor
-);
-
-lemlib::Chassis chassis(drivetrain, // drivetrain settings
-    lateral_controller, // lateral PID settings
-    angular_controller, // angular PID settings
-    sensors // odometry sensors
-);
-
 #define BLUE 0
 #define RED 1
 #define NONE -1
 
 static int color = BLUE;
 
-// rd::Selector selector(&robot, {
-//     {"Skills", -58, 0, 0, [](Robot* robot) {
-//         bestautonfr::skills(robot);
-//     }},
-//     {"Red Rush", -52, 27, 25, [](Robot* robot) {
-//         bestautonfr::rush(robot);
-//     }},
-//     {"Red AWP", -55, -15, 90, [](Robot* robot) {
-//         bestautonfr::sawp(robot);
-//     }}
-// });
+// IMPORTANT
+#define AUTO_SKILLS false
+#define DRIVER_SKILLS true
 
 void initialize() {
     lcd::initialize();
@@ -184,10 +121,12 @@ void initialize() {
     }
 
     // SKILLS
-    // robot.set_pose(-61, 0, 0);
+    if (AUTO_SKILLS) {
+        robot.set_pose(-61, 0, 0);
+    }
 
     // 6+1 red
-    robot.set_pose(-51, 29, 20);
+    // robot.set_pose(-51, 29, 20);
 
     // 6+1 blue
     // robot.set_pose(51, 20, 152);
@@ -195,34 +134,29 @@ void initialize() {
     // sawp red
     // robot.set_pose(-58, 14, 235);
 
-    robot.poseSet = true;
-    robot.calibrate();
-    robot.initialize_particle_filter();
-    delay(2000);
-    robot.set_pose_mode(MCL);
-
-    // masterlog.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
+    if (AUTO_SKILLS || !DRIVER_SKILLS) {
+        robot.poseSet = true;
+        robot.calibrate();
+        robot.initialize_particle_filter();
+        delay(2000);
+        robot.set_pose_mode(MCL);
+    }
 
     Task trackingTask = Task {[&] {
 		while (true) {
             auto pose = robot.get_pose();
 
-            // std::cout << "x: " << pose.x << " y: " << pose.y << " theta: " << pose.theta << std::endl;
-            
             distanceLogger.push_log(LogType::DISTANCE_SENSOR, {float(left_dist.get_distance()), float(right_dist.get_distance()), float(back_dist.get_distance()), float(front_dist.get_distance())});
-            // distanceLogger.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
 
-			pros::lcd::print(0, "x: %f", pose.x); // print the x position
-			pros::lcd::print(1, "y: %f", pose.y); // print the y position
-			pros::lcd::print(2, "heading: %f", util::degrees(pose.theta)); // print the heading
-			pros::lcd::print(3, "bruh: %d", robot.poseMode); // print the headings
-			pros::lcd::print(4, "rand: %d", std::rand()); // print the headings
+			pros::lcd::print(0, "p: %.2f, %.2f, %.2f", pose.x, pose.y, util::degrees(pose.theta)); // print the x position
+			pros::lcd::print(1, "bruh: %d", robot.poseMode); // print the headings
+			pros::lcd::print(2, "rand: %d", std::rand()); // print the headings
 
 			pros::delay(10);
 		}
 	}};
 
-    autonomous();
+    // autonomous();
 }
 
 void disabled() {}
@@ -230,15 +164,17 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    bestautonfr::red_rush(&robot, &chassis);
-    return;
+    if (AUTO_SKILLS) {
+        bestautonfr::casey(&robot);
+        return;
+    }
     switch (sec::auton)
     {
         case 0:
             bestautonfr::blue_sawp(&robot);
             break;
         case 1:
-            bestautonfr::blue_rush( &robot, &chassis);
+            bestautonfr::blue_rush(&robot);
             break;
         case 2:
             bestautonfr::blue_positive(&robot);
@@ -247,7 +183,7 @@ void autonomous() {
             bestautonfr::red_sawp(&robot);
             break;
         case 4:
-            bestautonfr::red_rush( &robot, &chassis);
+            bestautonfr::red_rush(&robot);
             break;
         case 5:
             bestautonfr::red_positive(&robot);
@@ -255,7 +191,7 @@ void autonomous() {
         case 6:
             break;
         case 7:
-            bestautonfr::casey(&robot, &chassis);
+            bestautonfr::casey(&robot);
             break;
     }
 }
@@ -283,52 +219,68 @@ void opcontrol() {
 
     bool lbSetting = false;
 
-    arm->set_target(REST);
+    if (DRIVER_SKILLS) {
+        arm->set_target(LOAD);
+    } else {
+        arm->set_target(REST);
+    }
 
     std::unordered_map<controller_digital_e_t, std::function<void()>> toggle_controls;
     std::unordered_map<controller_digital_e_t, std::pair<std::function<void(bool)>, std::function<void()>>> hold_controls;
     std::unordered_set<controller_digital_e_t> held;
 
     int numStates = 4;
-    int states[numStates] = {REST, LOAD, SCORE, ALLIANCE_STAKE};
+    const int DESCORE = 125;
+    int states[numStates] = {DESCORE + 10, DESCORE + 20, DESCORE + 30, DESCORE + 40};
     int state = 0;
 
     double pct = 1.0;
     int counter = 0;
     
-    const float armP = 1.0f;
+    const float armP = 1.5f;
 
     intake->color_sort = true;
     intake->set_color(RED);
 
     robot.set_brake_mode(MOTOR_BRAKE_HOLD);
 
+    arm->liftPID.kP = armP;
+
+    bool abc = false;
+    bool abc2 = false;
+
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
         [&](bool firstActivation) {
             if (!lbSetting) {
-                if ((arm->rotation->get_angle() / 100.0f) < LOAD / 3) {
-                    arm->move(60);
+                if (arm->armTarget == REST || abc) {
+                    abc = true;
+                    arm->set_target(LOAD);
                 } else {
                     arm->move(127);
                 }
             }
         },
         [&]() {
-            arm->liftPID.kP = armP;
             if (!lbSetting) {
+                arm->liftPID.kP = armP;
                 arm->moving = false;
                 if (counter < 250) {
-                    if (arm->armTarget == LOAD) {
-                        arm->set_target(MID + 20);
-                    } else if (arm->armTarget == (MID + 20)) {
+                    if (arm->armTarget == (LOAD+1)) {
+                        arm->set_target(MID + 40);
+                        abc2 = false;
+                    } else if (arm->armTarget == (MID + 40)) {
                         arm->liftPID.kP = 0.5;
                         arm->set_target(ALLIANCE_STAKE - 10);
                     } else {
-                        arm->set_target(LOAD);
+                        arm->set_target(LOAD+1);
                     }
                 } else {
-                    arm->set_target(LOAD);
+                    arm->set_target(LOAD+1);
                 }
+
+                if (abc) abc2 = true;
+                else abc2 = false;
+                abc = false;
             }
         }
     ));
@@ -340,7 +292,6 @@ void opcontrol() {
     });
 
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_L1, [&]() {
-        arm->liftPID.kP = armP;
         if (lbSetting) {
             state++;
             if (state >= numStates) state = 0;
@@ -402,6 +353,10 @@ void opcontrol() {
     hold_controls.emplace(E_CONTROLLER_DIGITAL_Y, std::make_pair(
         [&](bool firstActivation) {
             lbSetting = true;
+            arm->liftPID.kP = 1;
+            if (firstActivation) {
+                arm->set_target(states[0]);
+            }
         },
         [&]() {
             arm->liftPID.kP = armP;
