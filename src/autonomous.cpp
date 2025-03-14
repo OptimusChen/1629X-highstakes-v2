@@ -6,6 +6,7 @@
 #include "intake.hpp"
 #include "arm.hpp"
 #include "lib/logging.hpp"
+#include "s.hpp"
 
 MPConstraint fast{60, 150, INCH};
 MPConstraint medium{50, 150, INCH};
@@ -414,7 +415,7 @@ void bestautonfr::red_rush(Robot* robot) {
 
     Distance front(F_DISTANCE);
 
-    intake->set_color(RED);
+    intake->set_color(sec::color);
 
     intake->color_sort = true;
 
@@ -515,7 +516,7 @@ void bestautonfr::blue_rush(Robot* robot) {
 
     Distance front(F_DISTANCE);
 
-    intake->set_color(BLUE);
+    intake->set_color(sec::color);
 
     intake->color_sort = true;
 
@@ -531,19 +532,18 @@ void bestautonfr::blue_rush(Robot* robot) {
         return intake->detected_ring(STAGE_2);
     };
 
-    robot->set_pose(51, 20, 152);
+    // intake->forwards();
+    // delay(1000000);
 
     robot->set_rush_arm_right(true);
     intake->antijam = false;
     intake->forwards(100);
     intake->set_stop_condition(stage_1_stop);
     robot->lateral->kP = 8;
-    robot->moveToPoint(11, 42, 1300, true, false, 127, true);
-    robot->particleFilter->setNoiseNextUpdate(true);
+    robot->moveToPoint(11, 40, 1300, true, false, 127);
 
-    robot->moveToPoint(23.5, 20, 1250, false, true, 80);
+    robot->moveToPoint(30.5, 19, 1250, false, true, 80);
     robot->set_mogo(true);
-    robot->turnToHeading(90, 500);
 
     robot->set_rush_arm_right(false);
     delay(500);
@@ -553,38 +553,55 @@ void bestautonfr::blue_rush(Robot* robot) {
     intake->set_stop_condition(nullptr);
     intake->forwards();
 
-    robot->moveToPoint(23.5, 52, 1000, true, false, 100);
+    robot->moveToPoint(21.5, 53, 1000, true, false, 100);
     delay(500);
 
-    robot->turnToHeading(0, 500);
+    robot->turnToPoint(48, 53, 500);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->moveToPoint(49, 52, 800, true, false);
+    robot->moveToPoint(48, 53, 1000, true, false, 80, false, true);
     robot->turnToHeading(45, 500);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
-    robot->timedMove(50, 800);
-    delay(400);
-    robot->timedMove(-40, 400);
-    robot->set_lift_intake(true);
-    robot->timedMove(50, 800);
-    delay(400);
-    robot->set_lift_intake(false);
+    // intake->sortNextRing = true;
+    robot->timedMove(40, 1000);
+    delay(500);
+    // robot->timedMove(-40, 1000);
 
     robot->lateral->kP = 6;
 
     robot->moveToPoint(52, 52, 700, false, false);
     robot->turnToHeading(270, 500);
+    
     arm->set_target(LOAD);
     robot->lateral->kP = 4;
     robot->particleFilter->setAddNoise(false);
-    robot->moveToPoint(45, 23, 1250, true, true);
+    robot->moveToPoint(44, 23, 1250, true, true);
     arm->set_target(MID + 20);
     robot->set_lift_intake(true);
-    robot->moveToPoint(45, 0, 1000, true, true, 127);
+    robot->moveToPoint(47, -4, 1000, true, true, 127);
     robot->set_lift_intake(false);
     delay(500);
-    robot->turnToHeading(-10, 1000, false, 0, 60);
+    robot->set_rush_arm_right(true);
+    robot->turnToHeading(4, 500, false, 0, 80);
+    robot->set_rush_arm_right(false);
+    delay(300);
+    robot->moveToPoint(70, 0, 500, true);
+    int target = 380;
+    float error = front.get_distance() - target;
+    while (abs(error) > 20) {
+        float power = util::sign(error) * 20;
+        robot->left->move(power);
+        robot->right->move(power);
+        error = front.get_distance() - target;
+
+        delay(5);
+    }
+    robot->left->move(0);
+    robot->right->move(0);
+    arm->liftPID.kP = 100;
     arm->set_target(ALLIANCE_STAKE + 50);
+    delay(1000);
+    arm->liftPID.kP = 1.5;
 
     runningAuton = false;
 }
@@ -597,7 +614,7 @@ void bestautonfr::red_sawp(Robot* robot) {
     Intake* intake = robot->get_subsystem<Intake>();
     Arm* arm = robot->get_subsystem<Arm>();
     intake->arm = arm;
-    intake->set_color(RED);
+    intake->set_color(sec::color);
     intake->color_sort = true;
 
     Task updates([&]() {
@@ -670,7 +687,7 @@ void bestautonfr::blue_sawp(Robot* robot) {
     Intake* intake = robot->get_subsystem<Intake>();
     Arm* arm = robot->get_subsystem<Arm>();
     intake->arm = arm;
-    intake->set_color(BLUE);
+    intake->set_color(sec::color);
     intake->color_sort = true;
 
     Task updates([&]() {

@@ -96,7 +96,7 @@ static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 static int color = BLUE;
 
 // IMPORTANT
-#define AUTO_SKILLS true
+#define AUTO_SKILLS false
 #define DRIVER_SKILLS false
 #define AUWTON false
 
@@ -138,7 +138,7 @@ void initialize() {
     robot.poseSet = true;
     robot.calibrate();
 
-    if (AUTO_SKILLS || !DRIVER_SKILLS || AUWTON) {
+    if (AUTO_SKILLS || AUWTON) {
         // robot.poseSet = true;
         // robot.calibrate();
         robot.initialize_particle_filter();
@@ -178,31 +178,32 @@ void autonomous() {
     switch (sec::auton)
     {
         case 0:
-            bestautonfr::blue_sawp(&robot);
+            bestautonfr::red_rush(&robot);
             break;
         case 1:
             bestautonfr::blue_rush(&robot);
             break;
         case 2:
-            bestautonfr::blue_positive(&robot);
-            break;
-        case 3:
             bestautonfr::red_sawp(&robot);
             break;
+        case 3:
+            bestautonfr::blue_sawp(&robot);
+            break;
         case 4:
-            bestautonfr::red_rush(&robot);
+            bestautonfr::red_positive(&robot);
             break;
         case 5:
-            bestautonfr::red_positive(&robot);
+            bestautonfr::blue_positive(&robot);
             break;
         case 6:
             break;
         case 7:
             break;
         case 8:
+            bestautonfr::casey(&robot);
             break;
         case 9:
-            bestautonfr::casey(&robot);
+            robot.timedMove(-40, 1000);
             break;
     }
 }
@@ -251,7 +252,7 @@ void opcontrol() {
     const float armP = 1.5f;
 
     intake->color_sort = true;
-    intake->set_color(RED);
+    intake->set_color(sec::color);
 
     robot.set_brake_mode(MOTOR_BRAKE_HOLD);
 
