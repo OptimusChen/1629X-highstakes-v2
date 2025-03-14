@@ -245,28 +245,15 @@ namespace loco
             }
             variance /= static_cast<float>(L);
             float standardDeviation = std::sqrt(variance) / avgWeight;
-            size_t uniqueParticles = numUniqueParticles();
-
-            pfLogger.push_log(LogType::DEVIATION_AND_UNIQUE, {standardDeviation, static_cast<float>(uniqueParticles), -1, -1});
 
             if (standardDeviation > 0.15)
             {
                 resample(avgWeight);
             }
 
-            if (uniqueParticles < 40 && addNoise) {
-                /*
-                 * If the number of unique particles is less than 5, add noise to the particles to prevent the filter from
-                 * converging to a single point.
-                 */
-                std::uniform_real_distribution noise(-0.127, 0.127);
+            size_t uniqueParticles = numUniqueParticles();
 
-                for (size_t i = 0; i < L; i++)
-                {
-                    particles[i][0] += noise(de);
-                    particles[i][1] += noise(de);
-                }
-            }
+            pfLogger.push_log(LogType::DEVIATION_AND_UNIQUE, {standardDeviation, static_cast<float>(uniqueParticles), -1, -1});
 
             if (noiseNextUpdate)
             {
@@ -287,6 +274,20 @@ namespace loco
             predmutex.take();
             prediction = Eigen::Vector3f(xSum / static_cast<float>(L), ySum / static_cast<float>(L), angle.getValue());
             predmutex.give();
+
+            if (uniqueParticles < 40 && addNoise) {
+                /*
+                 * If the number of unique particles is less than 5, add noise to the particles to prevent the filter from
+                 * converging to a single point.
+                 */
+                std::uniform_real_distribution noise(-0.127, 0.127);
+
+                for (size_t i = 0; i < L; i++)
+                {
+                    particles[i][0] += noise(de);
+                    particles[i][1] += noise(de);
+                }
+            }
 
             lastUpdateTime = now;
             distanceSinceUpdate = 0.0;

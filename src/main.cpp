@@ -150,17 +150,7 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 
 static int color = BLUE;
 
-// rd::Selector selector(&robot, {
-//     {"Skills", -58, 0, 0, [](Robot* robot) {
-//         bestautonfr::skills(robot);
-//     }},
-//     {"Red Rush", -52, 27, 25, [](Robot* robot) {
-//         bestautonfr::rush(robot);
-//     }},
-//     {"Red AWP", -55, -15, 90, [](Robot* robot) {
-//         bestautonfr::sawp(robot);
-//     }}
-// });
+constexpr bool COMPSWITCH = false;
 
 void initialize() {
     lcd::initialize();
@@ -198,7 +188,9 @@ void initialize() {
     robot.poseSet = true;
     robot.calibrate();
     robot.initialize_particle_filter();
-    delay(2000);
+    if (!COMPSWITCH) {
+        delay(2000);
+    }
     robot.set_pose_mode(MCL);
 
     // masterlog.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
