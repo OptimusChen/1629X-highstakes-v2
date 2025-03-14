@@ -198,7 +198,7 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
             counter = 0;
         }
 
-        if (counter > 5) {
+        if (counter > 10) {
             break;
         }
 
@@ -208,6 +208,14 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
         // Set the chassis motor speeds based on the PID output
         float left_speed = util::clamp(output, -maxSpeed, maxSpeed);
         float right_speed = util::clamp(-output, -maxSpeed, maxSpeed);
+
+        if (abs(left_speed) < 15) {
+            left_speed = util::sign(left_speed) * 15;
+        }
+
+        if (abs(right_speed) < 15) {
+            right_speed = util::sign(right_speed) * 15;
+        }
 
         // std::cout << left_speed << std::endl;
 
@@ -332,6 +340,13 @@ void Robot::moveToPoint(float x, float y, int timeout, bool forwards, bool turnF
             left_motor_speed /= ratio;
             right_motor_speed /= ratio;
         }
+
+        // if (abs(left_motor_speed) < 15) {
+        //     left_motor_speed = util::sign(left_motor_speed) * 15;
+        // }
+        // if (abs(right_motor_speed) < 15) {
+        //     right_motor_speed = util::sign(right_motor_speed) * 15;
+        // }
 
         // Set motor speeds to move the robot toward the target
         left->move(left_motor_speed);

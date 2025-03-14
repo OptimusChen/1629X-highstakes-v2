@@ -26,6 +26,11 @@ SKILLS
 void bestautonfr::casey(Robot* robot) {
     bool runningAuton = true;
 
+    // robot->set_pose_mode(ODOM);
+    // robot->turnToHeading(90, 5000000);
+
+    // delay(100000);
+
     robot->set_pose_mode(MCL);
 
     Intake* intake = robot->get_subsystem<Intake>();
@@ -71,7 +76,7 @@ void bestautonfr::casey(Robot* robot) {
 
     //-----------CLAMP FIRST MOGO------------------//
 
-    robot->moveToPoint(-49, 0, 500, true, false, fast_speed);
+    robot->moveToPoint(-52, 0, 500, true, false, fast_speed);
 
     robot->turnToHeading(270, 500);
 
@@ -86,7 +91,7 @@ void bestautonfr::casey(Robot* robot) {
 
     intake->forwards();
 
-    robot->moveToPoint(-26, 23, 700, true, false, 127);
+    robot->moveToPoint(-26, 23., 700, true, false, 127);
 
     //-----------OBTAIN 2nd RING------------------//
 
@@ -114,7 +119,7 @@ void bestautonfr::casey(Robot* robot) {
     // robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
     arm->liftPID.kP = 100;
-    arm->set_target(SCORE + 50);
+    arm->set_target(SCORE + 20);
     arm->liftPID.kP = 1.5;
     robot->timedMove(40, 400);
 
@@ -227,7 +232,6 @@ void bestautonfr::casey(Robot* robot) {
 
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     robot->turnToHeading(0, 750);
-    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
     arm->liftPID.kP = 1;
     arm->set_target(MID + 20);
@@ -245,6 +249,7 @@ void bestautonfr::casey(Robot* robot) {
     }
     robot->left->move(0);
     robot->right->move(0);
+    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
     arm->liftPID.kP = 100;
     arm->set_target(ALLIANCE_STAKE + 50);
@@ -313,9 +318,10 @@ void bestautonfr::casey(Robot* robot) {
     ///////////////////////////////////////////////
     //--------------4th SECTION------------------//
     ///////////////////////////////////////////////
-    robot->moveToPoint(-46, -60, 500, true, true, fast_speed);
+    robot->timedMove(30, 500);
     intake->stop();
-    robot->moveToPoint(-47, -21, 1750, false, true, mid_speed);
+    robot->moveToPoint(-47, -40, 750, false, true, 127);
+    robot->moveToPoint(-47, -20, 1000, false, true, 60);
     robot->set_mogo(true);
     delay(300);
 
@@ -342,7 +348,7 @@ void bestautonfr::casey(Robot* robot) {
     robot->moveToPoint(0, -61, 1000, true, true, mid_speed);
 
     arm->liftPID.kP = 100;
-    arm->set_target(SCORE + 50);
+    arm->set_target(SCORE + 20);
     arm->liftPID.kP = 1.5;
     robot->timedMove(40, 500);
 

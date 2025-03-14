@@ -11,9 +11,9 @@ Controller cm(E_CONTROLLER_MASTER);
 namespace sec {
     int auton;
     int color;
-    const char *btnmMap[] = {"Red Rush","Blue Rush","Red AWP","\n","Blue AWP","RPBN","BPRN","\n","Skills","Backward",""}; // up to 10 autons
+    const char *btnmMap[] = {"Red Rush","Blue Rush","Red AWP","\n","Blue AWP","RPBN","BPRN","\n","RPBNA","BPRNA","Skills","\n","Backward","",""}; // up to 10 autons
     const char *toolsMap[] = {"Color","Calibrate","MCL","","","","","","","","","",""}; // up to 10 autons
-    const char *textMap[] = {"Red Rush","Blue Rush","Red AWP","Blue AWP","RPBN","BPRN","Skills","Backward",""}; // up to 10 autons
+    const char *textMap[] = {"Red Rush","Blue Rush","Red AWP","Blue AWP","RPBN","BPRN","RPBNA","BPRNA","Skills","Backward",""}; // up to 10 autons
     lv_obj_t* colorLabel;
     lv_obj_t* selectedLabel;
     lib::Robot* robot;
@@ -40,7 +40,7 @@ namespace sec {
                     robot->set_pose(-51, 29, 20);
                     break;
                 case 1:
-                    robot->set_pose(51, 20, 152);
+                    robot->set_pose(51, 29, 160);
                     break;
                 case 2:
                     robot->set_pose(-58, 14, 235);
@@ -57,9 +57,17 @@ namespace sec {
                     robot->set_pose(58, 14, 145);
                     break;
                 case 6:
-                    robot->set_pose(-61, 0, 0);
+                    // placeholder
+                    robot->set_pose(-58, 14, 235);
                     break;
                 case 7:
+                    // placeholder
+                    robot->set_pose(58, 14, 145);
+                    break;
+                case 8:
+                    robot->set_pose(-61, 0, 0);
+                    break;
+                case 9:
                     robot->set_pose(0, 0, 0);
                     break;
             }
@@ -135,7 +143,7 @@ namespace sec {
     }
 
     void init(lib::Robot* bot, int hue, int default_auton, const char **autons){
-        auton = 6;
+        auton = 9;
         color = BLUE;
         robot = bot;
 
@@ -143,6 +151,7 @@ namespace sec {
 
         lv_obj_t* autonsMatrix = lv_btnmatrix_create(lv_scr_act());
         lv_btnmatrix_set_map(autonsMatrix, btnmMap);
+        lv_obj_set_size(autonsMatrix, autonsMatrix->class_p->width_def, autonsMatrix->class_p->height_def + 30);
 
         lv_obj_t* toolsMatrix = lv_btnmatrix_create(lv_scr_act());
         lv_btnmatrix_set_map(toolsMatrix, toolsMap);

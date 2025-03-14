@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "DRIVER SKILLS 3/12",
+    "project_name": "auton",
     "target": "v5",
     "templates": {
       "LemLib": {

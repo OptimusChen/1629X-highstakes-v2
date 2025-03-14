@@ -96,9 +96,9 @@ static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 static int color = BLUE;
 
 // IMPORTANT
-#define AUTO_SKILLS false
+#define AUTO_SKILLS true
 #define DRIVER_SKILLS false
-#define AUWTON true
+#define AUWTON false
 
 void initialize() {
     lcd::initialize();
@@ -121,22 +121,22 @@ void initialize() {
         subsystem->initialize();
     }
 
-    robot.poseSet = true;
-    robot.calibrate();
-
     // SKILLS
     if (AUTO_SKILLS) {
         robot.set_pose(-61, 0, 0);
     }
 
     // 6+1 red
-    robot.set_pose(-51, 29, 20);
+    // robot.set_pose(-51, 29, 20);
 
     // 6+1 blue
     // robot.set_pose(51, 20, 152);
 
     // sawp red
     // robot.set_pose(-58, 14, 235);
+
+    robot.poseSet = true;
+    robot.calibrate();
 
     if (AUTO_SKILLS || !DRIVER_SKILLS || AUWTON) {
         // robot.poseSet = true;
@@ -198,6 +198,10 @@ void autonomous() {
         case 6:
             break;
         case 7:
+            break;
+        case 8:
+            break;
+        case 9:
             bestautonfr::casey(&robot);
             break;
     }
@@ -237,7 +241,7 @@ void opcontrol() {
     std::unordered_set<controller_digital_e_t> held;
 
     int numStates = 4;
-    const int DESCORE = 125;
+    const int DESCORE = 140;
     int states[numStates] = {DESCORE + 10, DESCORE + 20, DESCORE + 30, DESCORE + 40};
     int state = 0;
 
@@ -276,13 +280,13 @@ void opcontrol() {
                         arm->set_target(MID + 40);
                         abc2 = false;
                     } else if (arm->armTarget == (MID + 40)) {
-                        arm->liftPID.kP = 0.5;
-                        arm->set_target(ALLIANCE_STAKE - 10);
+                        arm->liftPID.kP = 1;
+                        arm->set_target(ALLIANCE_STAKE);
                     } else {
                         arm->set_target(LOAD+4);
                     }
                 } else {
-                    arm->liftPID.kP = 0.7;
+                    arm->liftPID.kP = 1;
                     arm->set_target(LOAD+4);
                 }
 
