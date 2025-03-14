@@ -164,7 +164,8 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //Clamp second goal
 
     robot->turnToHeading(130, 500, false, 0, 127);
-    robot->moveToPoint(58, 23, 1200, false, true, fast_speed);
+    robot->moveToPoint(58, 23, 1000, false, true, fast_speed);
+    robot->moveToPoint(60, 22, 500, false, true, 60);
     // robot->timedMove(-20, 500);
     robot->set_rush_arm_right(false);
     robot->set_mogo(true);
