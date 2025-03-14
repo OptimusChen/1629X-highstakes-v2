@@ -75,8 +75,8 @@ void bestautonfr::casey(Robot* robot) {
 
     robot->turnToHeading(270, 500);
 
-    robot->moveToPoint(-46.5, 10, 500, false, false, 127, true);
-    robot->moveToPoint(-46.5, 21, 500, false, false, 60);
+    // robot->moveToPoint(-46.5, 10, 500, false, false, 127, true);
+    robot->moveToPoint(-46.5, 21, 1000, false, false, 60);
 
     robot->set_mogo(true);
     delay(200);
