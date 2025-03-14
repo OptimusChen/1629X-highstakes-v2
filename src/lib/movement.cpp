@@ -209,6 +209,14 @@ void Robot::turnToHeading(float target_angle, int timeout, bool reversed, int mi
         float left_speed = util::clamp(output, -maxSpeed, maxSpeed);
         float right_speed = util::clamp(-output, -maxSpeed, maxSpeed);
 
+        if (abs(left_speed) < minSpeed && left_speed != 0) {
+            left_speed = util::sign(left_speed) * minSpeed;
+        }
+
+        if (abs(right_speed) < minSpeed && right_speed != 0) {
+            right_speed = util::sign(right_speed) * minSpeed;
+        }
+
         // std::cout << left_speed << std::endl;
 
         left->move(left_speed);

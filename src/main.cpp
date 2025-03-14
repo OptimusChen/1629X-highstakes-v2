@@ -214,7 +214,7 @@ void initialize() {
 		}
 	}};
 
-    autonomous();
+    if (!COMPSWITCH) autonomous();
 }
 
 void disabled() {}
