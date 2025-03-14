@@ -10,7 +10,7 @@ using namespace pros;
 using namespace lib;
 
 #define REST 0
-#define LOAD 27
+#define LOAD 23
 #define MID 40
 #define SCORE 130
 #define ALLIANCE_STAKE 150
