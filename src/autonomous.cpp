@@ -164,7 +164,7 @@ void bestautonfr::casey(Robot* robot) {
     //Clamp second goal
 
     robot->turnToHeading(130, 500, false, 0, 127);
-    robot->moveToPoint(58, 23, 1000, false, true, fast_speed);
+    robot->moveToPoint(58, 23, 1200, false, true, fast_speed);
     // robot->timedMove(-20, 500);
     robot->set_rush_arm_right(false);
     robot->set_mogo(true);
@@ -306,7 +306,7 @@ void bestautonfr::casey(Robot* robot) {
 
     //-----------Place in corner------------------//
     robot->moveToPoint(-60, -63, 1250, false, true, fast_speed);
-    robot->particleFilter->setNoiseNextUpdate(true);
+    // robot->particleFilter->setNoiseNextUpdate(true);
     robot->set_mogo(false);
     delay(500);
 
@@ -316,7 +316,7 @@ void bestautonfr::casey(Robot* robot) {
     robot->timedMove(30, 500);
     intake->stop();
     robot->moveToPoint(-47, -40, 750, false, true, 127);
-    robot->moveToPoint(-47, -21, 1000, false, true, 60);
+    robot->moveToPoint(-47, -21, 1250, false, true, 60);
     robot->set_mogo(true);
     delay(300);
 
@@ -361,7 +361,7 @@ void bestautonfr::casey(Robot* robot) {
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
     // score 3 rings
-    robot->moveToPoint(44, -47, 1000, true, false, mid_speed);
+    robot->moveToPoint(44, -47, 1000, true, false, fast_speed);
     delay(500);
     robot->moveToPoint(56, -47, 750, true, false, fast_speed);
     robot->moveToPoint(44, -40, 500, false, false, mid_speed);
@@ -385,10 +385,11 @@ void bestautonfr::casey(Robot* robot) {
     intake->hooks.brake();
     intake->stop();
     arm->set_target(SCORE);
-    robot->set_color_sort_piston(false);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     robot->moveToPoint(27, -27, 1000, true);
     robot->turnToHeading(315, 750, false, 0, mid_speed);
+    intake->hooks.brake();
+    intake->stop();
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
     robot->timedMove(-100, 2000);
 
