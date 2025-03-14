@@ -96,9 +96,9 @@ static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 static int color = BLUE;
 
 // IMPORTANT
-#define AUTO_SKILLS false
+#define AUTO_SKILLS true
 #define DRIVER_SKILLS false
-#define AUWTON true
+#define AUWTON false
 
 void initialize() {
     lcd::initialize();
@@ -121,8 +121,6 @@ void initialize() {
         subsystem->initialize();
     }
 
-    robot.poseSet = true;
-    robot.calibrate();
 
     // SKILLS
     if (AUTO_SKILLS) {
@@ -130,7 +128,7 @@ void initialize() {
     }
 
     // 6+1 red
-    robot.set_pose(-51, 29, 20);
+    // robot.set_pose(-51, 29, 20);
 
     // 6+1 blue
     // robot.set_pose(51, 20, 152);
@@ -141,6 +139,8 @@ void initialize() {
     if (AUTO_SKILLS || !DRIVER_SKILLS || AUWTON) {
         // robot.poseSet = true;
         // robot.calibrate();
+        robot.poseSet = true;
+        robot.calibrate();
         robot.initialize_particle_filter();
         delay(2000);
         robot.set_pose_mode(MCL);

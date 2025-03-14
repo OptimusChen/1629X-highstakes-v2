@@ -226,7 +226,7 @@ void bestautonfr::casey(Robot* robot) {
     robot->right->move(0);
 
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
-    robot->turnToHeading(0, 750);
+    robot->turnToHeading(0, 750, false, 15, 127);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
     arm->liftPID.kP = 1;
@@ -313,9 +313,10 @@ void bestautonfr::casey(Robot* robot) {
     ///////////////////////////////////////////////
     //--------------4th SECTION------------------//
     ///////////////////////////////////////////////
-    robot->moveToPoint(-46, -60, 500, true, true, fast_speed);
+    robot->timedMove(30, 500);
     intake->stop();
-    robot->moveToPoint(-47, -21, 1750, false, true, mid_speed);
+    robot->moveToPoint(-47, -40, 750, false, true, 127);
+    robot->moveToPoint(-47, -21, 1000, false, true, 60);
     robot->set_mogo(true);
     delay(300);
 
