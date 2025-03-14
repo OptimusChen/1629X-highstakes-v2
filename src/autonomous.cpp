@@ -140,7 +140,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     intake->backwards();
     Task intakedelay0([&] {
         delay(400);
-        intake->forwards(80);
+        intake->forwards();
     });
 
     ///////////////////////////////////////////////
@@ -154,7 +154,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     arm->set_target(LOAD);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     // robot->moveToPoint(38, 46, 1700, true, true, 100);
-    robot->moveToPoint(42, 46, 2000, true, true, 127);
+    robot->moveToPoint(43, 46, 2000, true, true, 127);
     robot->set_rush_arm_right(true);
 
     delay(200);
