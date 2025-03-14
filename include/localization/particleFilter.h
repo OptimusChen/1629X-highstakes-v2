@@ -45,6 +45,9 @@ namespace loco
         pros::Mutex predmutex;
 
         std::function<Angle()> angleFunction;
+        
+        std::random_device rd;
+        unsigned int seed;
         std::ranlux24_base de;
 
         std::uniform_real_distribution<> fieldDist{-1.78308, 1.78308};
@@ -118,7 +121,7 @@ namespace loco
          * @param angle_function The function to get the angle of the robot.
          */
         explicit ParticleFilter(std::function<Angle()> angle_function)
-            : angleFunction(std::move(angle_function))
+            : angleFunction(std::move(angle_function)), seed(rd()), de(seed)
         {
             for (auto &&particle : particles)
             {
@@ -247,7 +250,7 @@ namespace loco
             float standardDeviation = std::sqrt(variance) / avgWeight;
             size_t uniqueParticles = numUniqueParticles();
 
-            pfLogger.push_log(LogType::DEVIATION_AND_UNIQUE, {standardDeviation, static_cast<float>(uniqueParticles), -1, -1});
+            pfLogger.push_log(LogType::DEVIATION_AND_UNIQUE, {standardDeviation, static_cast<float>(uniqueParticles), seed, -1});
 
             if (standardDeviation > 0.15)
             {
