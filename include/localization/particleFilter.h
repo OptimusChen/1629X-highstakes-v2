@@ -41,7 +41,7 @@ namespace loco
         QTime lastUpdateTime = 0.0;
 
         const QLength minDistanceSinceUpdate = 1_in;
-        const QTime maxUpdateInterval = 0_s;
+        const QTime maxUpdateInterval = 2_s;
         pros::Mutex predmutex;
 
         std::function<Angle()> angleFunction;
@@ -245,33 +245,35 @@ namespace loco
             }
             variance /= static_cast<float>(L);
             float standardDeviation = std::sqrt(variance) / avgWeight;
+            size_t uniqueParticles = numUniqueParticles();
+
+            pfLogger.push_log(LogType::DEVIATION_AND_UNIQUE, {standardDeviation, static_cast<float>(uniqueParticles), -1, -1});
 
             if (standardDeviation > 0.15)
             {
                 resample(avgWeight);
             }
 
-            // Compute Effective Sample Size (ESS)
-            double weightSumSquared = 0.0;
-            for (const auto &weight : weights)
-            {
-                double normalizedWeight = weight / totalWeight;
-                weightSumSquared += normalizedWeight * normalizedWeight;
+            if ((uniqueParticles < 70 && addNoise) || noiseNextUpdate) {
+                /*
+                 * If the number of unique particles is less than 5, add noise to the particles to prevent the filter from
+                 * converging to a single point.
+                 */
+                std::uniform_real_distribution noise(-0.127, 0.127);
+
+                for (size_t i = 0; i < L; i++)
+                {
+                    particles[i][0] += noise(de);
+                    particles[i][1] += noise(de);
+                }
+
+                if (noiseNextUpdate)
+                {
+                    noiseNextUpdate = false;
+                }
             }
 
-            double ESS = 1.0 / weightSumSquared;
-
-            // Resample if ESS is too low (threshold is typically L/2)
-            // if (ESS < L / 2.0)
-            // {
-            //     resample(avgWeight);
-            // }
-
-            size_t uniqueParticles = numUniqueParticles();
-
-            // pfLogger.push_log(LogType::DEVIATION_AND_UNIQUE, {standardDeviation, static_cast<float>(uniqueParticles), ESS, avgWeight});
-
-            if (noiseNextUpdate)
+            if (false)
             {
                 initNormal({prediction.x(), prediction.y()}, Eigen::Matrix2f::Identity() * 0.1, false);
 
@@ -290,20 +292,6 @@ namespace loco
             predmutex.take();
             prediction = Eigen::Vector3f(xSum / static_cast<float>(L), ySum / static_cast<float>(L), angle.getValue());
             predmutex.give();
-
-            if (uniqueParticles < 40 && addNoise) {
-                /*
-                 * If the number of unique particles is less than 5, add noise to the particles to prevent the filter from
-                 * converging to a single point.
-                 */
-                std::uniform_real_distribution noise(-0.127, 0.127);
-
-                for (size_t i = 0; i < L; i++)
-                {
-                    particles[i][0] += noise(de);
-                    particles[i][1] += noise(de);
-                }
-            }
 
             lastUpdateTime = now;
             distanceSinceUpdate = 0.0;

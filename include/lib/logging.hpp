@@ -51,7 +51,7 @@ private:
     std::array<LogElement, MAX_LOG_ENTRIES> logs; // Fixed-size circular buffer
     size_t log_index = 0;  // Circular buffer index
     size_t valid_count = 0;
-    bool enabled = true;
+    bool enabled = false;
     std::string logger_name; // Unique name for identifying the logger instance
 
 public:
@@ -134,9 +134,9 @@ public:
 
 extern void dump_all();
 
-constexpr size_t distanceLogSize = 140000;
-constexpr size_t robotLogSize = 140000;
-constexpr size_t autonLogSize = 1000;
+constexpr size_t distanceLogSize = 10;
+constexpr size_t robotLogSize = 10;
+constexpr size_t autonLogSize = 10;
 constexpr size_t pfLogSize = 10;
 
 extern Logger<distanceLogSize> distanceLogger;

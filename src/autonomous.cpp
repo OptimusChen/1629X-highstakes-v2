@@ -97,6 +97,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     //-----------OBTAIN 2nd RING------------------//
 
     Task lbdelay1([&] {
+        arm->liftPID.kP = 1.5;
         delay(1300);
         arm->set_target(LOAD);
     });
@@ -146,7 +147,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     intake->backwards();
     Task intakedelay0([&] {
         delay(400);
-        intake->forwards(80);
+        intake->forwards();
     });
 
     ///////////////////////////////////////////////
@@ -207,7 +208,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     
     intake->backwards();
     robot->moveToPoint(47, 10, 1000, false, false, mid_speed);
-    robot->moveToPoint(47, 0, 500, false, false, mid_speed - 30);
+    robot->moveToPoint(47, -2, 750, false, false, mid_speed - 30);
     intake->stop();
     robot->set_mogo(true);
 
@@ -277,7 +278,9 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //cross under ladder score 3
     // robot->turnToPoint(-47, -47, 500);
+    robot->angular->kD = 15;
     robot->turnToHeading(225, 500, false, 15, 127);
+    robot->angular->kD = 10;
     intake->stop();
     
     bool under = true;
@@ -315,7 +318,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //-----------Place in corner------------------//
     robot->moveToPoint(-60, -63, 1250, false, true, fast_speed);
-    // robot->particleFilter->setNoiseNextUpdate(true);
+    robot->particleFilter->setNoiseNextUpdate(true);
     robot->set_mogo(false);
     delay(500);
 
