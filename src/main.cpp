@@ -191,11 +191,11 @@ void autonomous() {
             break;
         case 6:
             // IMPORTANT: ACTUAKLLY RED
-            bestautonfr::blue_palliance(&robot);
+            bestautonfr::red_palliance(&robot);
             break;
         case 7:
             // IMPORTANT: ACTUAKLLY BLUE
-            bestautonfr::red_palliance(&robot);
+            bestautonfr::blue_palliance(&robot);
             break;
         case 8:
             bestautonfr::casey(&robot);

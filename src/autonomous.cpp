@@ -886,12 +886,12 @@ void bestautonfr::red_palliance(Robot* robot) {
     robot->moveToPoint(-50, 54, 1500, true, true);
     robot->turnToPoint(-64, 64, 500, false, 15, 127);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
-    robot->timedMove(60, 500);
+    robot->timedMove(60, 1000);
     delay(250);
     robot->moveToPoint(-47, 47, 500, false);
 
     delay(500);
-    robot->moveToPoint(-22, 4, 4000, true, true, 60);
+    robot->moveToPoint(-22, 4, 3000, true, true, 60);
     robot->timedMove(20, 1000);
 
     delay(1000);
@@ -941,12 +941,12 @@ void bestautonfr::blue_palliance(Robot* robot) {
     robot->moveToPoint(50, 54, 1500, true, true);
     robot->turnToPoint(64, 64, 500, false, 15, 127);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
-    robot->timedMove(60, 500);
+    robot->timedMove(60, 1000);
     delay(250);
     robot->moveToPoint(47, 47, 500, false);
 
     delay(500);
-    robot->moveToPoint(22, 4, 4000, true, true, 60);
+    robot->moveToPoint(22, 4, 3000, true, true, 60);
     robot->timedMove(20, 1000);
 
     delay(1000);

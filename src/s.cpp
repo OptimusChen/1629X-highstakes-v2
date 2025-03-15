@@ -11,9 +11,9 @@ Controller cm(E_CONTROLLER_MASTER);
 namespace sec {
     int auton;
     int color = RED;
-    const char *btnmMap[] = {"Red Rush","Blue Rush","Red AWP","\n","Blue AWP","RPBN","BPRN","\n","RPBNA","BPRNA","Skills","\n","Backward","",""}; // up to 10 autons
+    const char *btnmMap[] = {"Red Rush","Blue Rush","Red AWP","\n","Blue AWP","RPBN","BPRN","\n","RNBPA","BNRPA","Skills","\n","Backward","",""}; // up to 10 autons
     const char *toolsMap[] = {"Color","Calibrate","MCL","","","","","","","","","",""}; // up to 10 autons
-    const char *textMap[] = {"Red Rush","Blue Rush","Red AWP","Blue AWP","RPBN","BPRN","RPBNA","BPRNA","Skills","Backward",""}; // up to 10 autons
+    const char *textMap[] = {"Red Rush","Blue Rush","Red AWP","Blue AWP","RPBN","BPRN","RNBPA","BNRPA","Skills","Backward",""}; // up to 10 autons
     lv_obj_t* colorLabel;
     lv_obj_t* selectedLabel;
     lib::Robot* robot;
@@ -58,11 +58,11 @@ namespace sec {
                     break;
                 case 6:
                     // NOTE: ACTUALLY OPPOSITE
-                    robot->set_pose(58, 14, 145);
+                    robot->set_pose(-58, 14, 235);
                     break;
                 case 7:
                     // NOTE: ACTUALLY OPPOSITE
-                    robot->set_pose(-58, 14, 235);
+                    robot->set_pose(58, 14, 305);
                     break;
                 case 8:
                     robot->set_pose(-61, 0, 0);
