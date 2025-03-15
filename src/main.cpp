@@ -97,12 +97,12 @@ static int color = BLUE;
 
 // IMPORTANT
 #define AUTO_SKILLS false
-#define DRIVER_SKILLS false
+#define DRIVER_SKILLS true
 #define AUWTON false
 
 void initialize() {
     lcd::initialize();
-    sec::init(&robot);
+    // sec::init(&robot);
 
     std::cout << &robot << std::endl;
 
@@ -253,6 +253,9 @@ void opcontrol() {
 
     intake->color_sort = true;
     intake->set_color(sec::color);
+    if (DRIVER_SKILLS) {
+        intake->set_color(RED);
+    }
 
     robot.set_brake_mode(MOTOR_BRAKE_HOLD);
 
@@ -282,7 +285,7 @@ void opcontrol() {
                         abc2 = false;
                     } else if (arm->armTarget == (MID + 40)) {
                         arm->liftPID.kP = 1;
-                        arm->set_target(ALLIANCE_STAKE);
+                        arm->set_target(ALLIANCE_STAKE + 10);
                     } else {
                         arm->set_target(LOAD+4);
                     }
