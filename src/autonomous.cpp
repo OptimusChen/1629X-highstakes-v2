@@ -44,6 +44,8 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
         while (runningAuton) {
             arm->update();
             intake->update();
+
+            if ()
             delay(1);
         }
     });
@@ -296,7 +298,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     // SCORE 3 RINGS
     robot->moveToPoint(-35, -35, 1000, true, true, mid_speed - 30);
     robot->moveToPoint(-41, -41, 1000, true, true, mid_speed - 15);
-    robot->turnToHeading(180, 500);
+    robot->turnToHeading(180, 200);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
     robot->moveToPoint(-58, -47, 1000, true, false, mid_speed);
     delay(250);
@@ -392,7 +394,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     intake->hooks.brake();
     intake->stop();
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
-    robot->timedMove(-100, 2000);
+    robot->timedMove(-127, 2000);
 
     intake->stop();
     runningAuton = false;

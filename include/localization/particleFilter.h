@@ -41,7 +41,7 @@ namespace loco
         QTime lastUpdateTime = 0.0;
 
         const QLength minDistanceSinceUpdate = 1_in;
-        const QTime maxUpdateInterval = 2_s;
+        const QTime maxUpdateInterval = 0_s;
         pros::Mutex predmutex;
 
         std::function<Angle()> angleFunction;

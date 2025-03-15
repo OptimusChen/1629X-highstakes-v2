@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "auton stuff TEST",
+    "project_name": "auton skills",
     "target": "v5",
     "templates": {
       "LemLib": {

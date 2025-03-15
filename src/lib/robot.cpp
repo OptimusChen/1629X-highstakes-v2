@@ -53,6 +53,7 @@ Pose Robot::get_pose() {
 
 void Robot::calibrate() {
     if (!poseSet) return;
+    odometry->inertial->set_data_rate(5);
     odometry->inertial->reset(true);
 
     odometry->start();

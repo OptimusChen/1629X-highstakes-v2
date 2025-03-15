@@ -188,9 +188,10 @@ void initialize() {
     robot.poseSet = true;
     robot.calibrate();
     robot.initialize_particle_filter();
-    if (!COMPSWITCH) {
-        delay(2000);
-    }
+    // if (!COMPSWITCH) {
+    //     // delay(2000);
+    // }
+    delay(2000);
     robot.set_pose_mode(MCL);
 
     // masterlog.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
