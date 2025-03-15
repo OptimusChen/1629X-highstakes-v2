@@ -173,7 +173,6 @@ void Robot::initialize_particle_filter() {
             const auto angle = angleDistribution(de);
 
             auto change = Eigen::Rotation2Df(angle) * Eigen::Vector2f({noisy, 0.0});
-            robotLogger.push_log(LogType::DELTA_MOVEMENT_AND_LOOP_TIME, {change.x(), change.y(), float(pros::millis() - start_time), -1});
             // robotLogger.push_log(LogType::DELTA_MOVEMENT, {change.x(), change.y(), -1, -1});
 
             particleFilter->update([&]() mutable {
@@ -183,6 +182,7 @@ void Robot::initialize_particle_filter() {
       
             // robotLogger.push_log(LogType::LOOP_TIME, {float(pros::millis() - start_time), -1, -1, -1});
             robotLogger.push_log(LogType::POSITION_REAL, {particleFilter->getPrediction().x(), particleFilter->getPrediction().y(), particleFilter->getPrediction().z(), -1});
+            robotLogger.push_log(LogType::DELTA_MOVEMENT_AND_LOOP_TIME, {change.x(), change.y(), float(pros::millis() - start_time), -1});
 
             pros::c::task_delay_until(&start_time, 10);
         }

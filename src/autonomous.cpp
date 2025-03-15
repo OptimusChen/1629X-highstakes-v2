@@ -45,11 +45,11 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
             arm->update();
             intake->update();
 
-            if (robot->mogostate) {
-                robot->angular->kD = 15;
-            } else {
-                robot->angular->kD = 10;
-            }
+            // if (robot->mogostate) {
+            //     robot->angular->kD = 15;
+            // } else {
+            //     robot->angular->kD = 10;
+            // }
             delay(1);
         }
     });
@@ -233,7 +233,9 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->right->move(0);
 
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
+    robot->angular->kD = 15;
     robot->turnToHeading(0, 750, false, 15, 127);
+    robot->angular->kD = 10;
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
     arm->liftPID.kP = 1;
@@ -271,7 +273,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->moveToPoint(48, robot->get_pose().y, 500, true, false, fast_speed);
     robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
     robot->turnToPoint(24, 24, 500);
-    robot->moveToPoint(24, 24, 1500, true, true, fast_speed);
+    robot->moveToPoint(24, 24, 1500, true, false, fast_speed);
 
     //cross under ladder score 3
     // robot->turnToPoint(-47, -47, 500);

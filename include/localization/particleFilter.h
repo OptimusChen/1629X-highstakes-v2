@@ -251,9 +251,25 @@ namespace loco
                 resample(avgWeight);
             }
 
+            // Compute Effective Sample Size (ESS)
+            double weightSumSquared = 0.0;
+            for (const auto &weight : weights)
+            {
+                double normalizedWeight = weight / totalWeight;
+                weightSumSquared += normalizedWeight * normalizedWeight;
+            }
+
+            double ESS = 1.0 / weightSumSquared;
+
+            // Resample if ESS is too low (threshold is typically L/2)
+            // if (ESS < L / 2.0)
+            // {
+            //     resample(avgWeight);
+            // }
+
             size_t uniqueParticles = numUniqueParticles();
 
-            pfLogger.push_log(LogType::DEVIATION_AND_UNIQUE, {standardDeviation, static_cast<float>(uniqueParticles), -1, -1});
+            pfLogger.push_log(LogType::DEVIATION_AND_UNIQUE, {standardDeviation, static_cast<float>(uniqueParticles), ESS, avgWeight});
 
             if (noiseNextUpdate)
             {

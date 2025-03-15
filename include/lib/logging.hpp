@@ -112,7 +112,7 @@ public:
                     sprintf(log_string, "%s, StandardDeviation, %d, %f\n", logger_name.c_str(), log.time, log.a);
                     break;
                 case LogType::DEVIATION_AND_UNIQUE:
-                    sprintf(log_string, "%s, DeviationAndUnique, %d, %f, %f\n", logger_name.c_str(), log.time, log.a, log.b);
+                    sprintf(log_string, "%s, DeviationAndUnique, %d, %f, %f, %f, %f\n", logger_name.c_str(), log.time, log.a, log.b, log.c, log.d);
                     break;
                 case LogType::DELTA_MOVEMENT_AND_LOOP_TIME:
                     sprintf(log_string, "%s, DeltaMovementAndLoopTime, %d, %f, %f, %f\n", logger_name.c_str(), log.time, log.a, log.b, log.c);
