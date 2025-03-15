@@ -629,52 +629,55 @@ void bestautonfr::red_sawp(Robot* robot) {
         return intake->detected_ring(STAGE_2);
     };
 
+    arm->liftPID.kP = 100;
     arm->set_target(ALLIANCE_STAKE + 50);
     delay(500);
+    arm->liftPID.kP = 1.5;
 
-    robot->moveToPoint(-48, 23, 500, false, false);
+    intake->set_stop_condition(nullptr);
+    intake->forwards();
+
+    robot->moveToPoint(-48, 23, 500, false, false, 127, true);
     arm->set_target(REST);
     robot->moveToPoint(-20, 23, 1250, false, true, 60);
     
     robot->set_mogo(true);
     delay(200);
 
-    robot->turnToHeading(50, 500);
-    intake->forwards();
-    robot->moveToPoint(-5, 40, 850, true, false);
-    robot->moveToPoint(-5, 52, 700, true, false);
-
-    robot->moveToPoint(-24, 24, 700, false, false);
-    intake->set_stop_condition(stage_1_stop);
     robot->moveToPoint(-24, 50, 1000, true);
 
-    robot->turnToHeading(225, 500);
+    robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
+    robot->moveToPoint(-50, 54, 1500, true, true);
+    robot->turnToPoint(-64, 64, 500, false, 15, 127);
+    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
+    robot->timedMove(60, 500);
+    delay(250);
+    robot->moveToPoint(-47, 47, 500, false);
+
+    robot->turnToHeading(270, 500);
     intake->set_stop_condition(nullptr);
     intake->forwards();
     robot->set_lift_intake(true);
-    robot->moveToPoint(-40, 12, 750, true, false);
+    robot->moveToPoint(-47, 5, 1000, true, true);
     intake->set_stop_condition(stage_1_stop);
     robot->set_mogo(false);
-    robot->moveToPoint(-50, 4, 1000, true, false, 60);
-
+    robot->moveToPoint(-47, -5, 750, true, false, 60);
     robot->set_lift_intake(false);
+
     arm->set_target(MID + 80);
     
-    robot->turnToHeading(135, 1000, false, 0, 40);
-    robot->moveToPoint(-20, -26, 1000, false, true, 80);
+    robot->moveToPoint(-20, -23, 1500, false, true, 80);
     robot->set_mogo(true);
     delay(200);
     robot->turnToHeading(270, 500);
     intake->set_stop_condition(nullptr);
     intake->forwards();
-    robot->moveToPoint(-23, -47, 1000, true, true);
-    robot->particleFilter->setAddNoise(false);
-    robot->moveToPoint(-24, -20, 1000, false, false);
-    robot->turnToHeading(45, 500);
-    robot->timedMove(60, 1000);
-    intake->stop();
+    robot->moveToPoint(-23, -50, 1000, true, true);
+    robot->moveToPoint(-14, -10, 1000, false, false);
+    arm->set_target(MID);
 
     delay(500);
+    intake->stop();
     runningAuton = false;
     return;
 }
@@ -702,52 +705,55 @@ void bestautonfr::blue_sawp(Robot* robot) {
         return intake->detected_ring(STAGE_2);
     };
 
+    arm->liftPID.kP = 100;
     arm->set_target(ALLIANCE_STAKE + 50);
     delay(500);
+    arm->liftPID.kP = 1.5;
 
-    robot->moveToPoint(48, 23, 500, false, false);
+    intake->set_stop_condition(nullptr);
+    intake->forwards();
+
+    robot->moveToPoint(48, 23, 500, false, false, 127, true);
     arm->set_target(REST);
     robot->moveToPoint(20, 23, 1250, false, true, 60);
     
     robot->set_mogo(true);
     delay(200);
 
-    robot->turnToHeading(130, 500);
-    intake->forwards();
-    robot->moveToPoint(5, 40, 850, true, false);
-    robot->moveToPoint(5, 52, 700, true, false);
-
-    robot->moveToPoint(24, 24, 700, false, false);
-    intake->set_stop_condition(stage_1_stop);
     robot->moveToPoint(24, 50, 1000, true);
 
-    robot->turnToHeading(315, 500);
+    robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
+    robot->moveToPoint(50, 54, 1500, true, true);
+    robot->turnToPoint(64, 64, 500, false, 15, 127);
+    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
+    robot->timedMove(60, 500);
+    delay(250);
+    robot->moveToPoint(47, 47, 500, false);
+
+    robot->turnToHeading(270, 500);
     intake->set_stop_condition(nullptr);
     intake->forwards();
     robot->set_lift_intake(true);
-    robot->moveToPoint(40, 12, 750, true, false);
+    robot->moveToPoint(47, 5, 1000, true, true);
     intake->set_stop_condition(stage_1_stop);
     robot->set_mogo(false);
-    robot->moveToPoint(50, 4, 1000, true, false, 60);
-
+    robot->moveToPoint(47, -5, 750, true, false, 60);
     robot->set_lift_intake(false);
+
     arm->set_target(MID + 80);
     
-    robot->turnToHeading(45, 1000, false, 0, 40);
-    robot->moveToPoint(20, -23, 1000, false, true, 80);
+    robot->moveToPoint(20, -23, 1500, false, true, 80);
     robot->set_mogo(true);
     delay(200);
     robot->turnToHeading(270, 500);
     intake->set_stop_condition(nullptr);
     intake->forwards();
-    robot->moveToPoint(23, -47, 1000, true, true);
-    robot->particleFilter->setAddNoise(false);
-    robot->moveToPoint(24, -20, 1000, false, false);
-    robot->turnToHeading(135, 500);
-    robot->timedMove(40, 500);
-    intake->stop();
+    robot->moveToPoint(23, -50, 1000, true, true);
+    robot->moveToPoint(14, -10, 1000, false, false);
+    arm->set_target(MID);
 
     delay(500);
+    intake->stop();
     runningAuton = false;
     return;
 }
@@ -761,6 +767,8 @@ void bestautonfr::red_positive(Robot* robot) {
     Arm* arm = robot->get_subsystem<Arm>();
     intake->arm = arm;
     intake->color_sort = true;
+
+    intake->set_color(sec::color);
 
     Task updates([&]() {
         while (runningAuton) {
@@ -802,6 +810,8 @@ void bestautonfr::blue_positive(Robot* robot) {
     intake->arm = arm;
     intake->color_sort = true;
 
+    intake->set_color(sec::color);
+
     Task updates([&]() {
         while (runningAuton) {
             arm->update();
@@ -830,6 +840,116 @@ void bestautonfr::blue_positive(Robot* robot) {
     intake->stop();
 
     runningAuton = false;
+}
+
+void bestautonfr::red_palliance(Robot* robot) {
+    bool runningAuton = true;
+
+    robot->set_pose_mode(MCL);
+
+    Intake* intake = robot->get_subsystem<Intake>();
+    Arm* arm = robot->get_subsystem<Arm>();
+    intake->arm = arm;
+    intake->set_color(sec::color);
+    intake->color_sort = true;
+
+    Task updates([&]() {
+        while (runningAuton) {
+            arm->update();
+            intake->update();
+            delay(1);
+        }
+    });
+
+    auto stage_1_stop = [&] {
+        return intake->detected_ring(STAGE_2);
+    };
+
+    arm->liftPID.kP = 100;
+    arm->set_target(ALLIANCE_STAKE + 50);
+    delay(500);
+    arm->liftPID.kP = 1.5;
+
+    intake->set_stop_condition(nullptr);
+    intake->forwards();
+
+    robot->moveToPoint(-48, 23, 500, false, false, 127, true);
+    arm->set_target(REST);
+    robot->moveToPoint(-20, 23, 1250, false, true, 60);
+    
+    robot->set_mogo(true);
+    delay(200);
+
+    robot->moveToPoint(-24, 50, 1000, true);
+
+    robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
+    robot->moveToPoint(-50, 54, 1500, true, true);
+    robot->turnToPoint(-64, 64, 500, false, 15, 127);
+    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
+    robot->timedMove(60, 500);
+    delay(250);
+    robot->moveToPoint(-47, 47, 500, false);
+
+    delay(500);
+    robot->moveToPoint(-22, 4, 4000, true, true, 60);
+    robot->timedMove(20, 1000);
+
+    delay(1000);
+}
+
+void bestautonfr::blue_palliance(Robot* robot) {
+    bool runningAuton = true;
+
+    robot->set_pose_mode(MCL);
+
+    Intake* intake = robot->get_subsystem<Intake>();
+    Arm* arm = robot->get_subsystem<Arm>();
+    intake->arm = arm;
+    intake->set_color(sec::color);
+    intake->color_sort = true;
+
+    Task updates([&]() {
+        while (runningAuton) {
+            arm->update();
+            intake->update();
+            delay(1);
+        }
+    });
+
+    auto stage_1_stop = [&] {
+        return intake->detected_ring(STAGE_2);
+    };
+
+    arm->liftPID.kP = 100;
+    arm->set_target(ALLIANCE_STAKE + 50);
+    delay(500);
+    arm->liftPID.kP = 1.5;
+
+    intake->set_stop_condition(nullptr);
+    intake->forwards();
+
+    robot->moveToPoint(48, 23, 500, false, false, 127, true);
+    arm->set_target(REST);
+    robot->moveToPoint(20, 23, 1250, false, true, 60);
+    
+    robot->set_mogo(true);
+    delay(200);
+
+    robot->moveToPoint(24, 50, 1000, true);
+
+    robot->set_brake_mode(E_MOTOR_BRAKE_HOLD);
+    robot->moveToPoint(50, 54, 1500, true, true);
+    robot->turnToPoint(64, 64, 500, false, 15, 127);
+    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
+    robot->timedMove(60, 500);
+    delay(250);
+    robot->moveToPoint(47, 47, 500, false);
+
+    delay(500);
+    robot->moveToPoint(22, 4, 4000, true, true, 60);
+    robot->timedMove(20, 1000);
+
+    delay(1000);
 }
 
 void bestautonfr::skills(Robot* robot) {}

@@ -10,7 +10,7 @@ Controller cm(E_CONTROLLER_MASTER);
 
 namespace sec {
     int auton;
-    int color;
+    int color = RED;
     const char *btnmMap[] = {"Red Rush","Blue Rush","Red AWP","\n","Blue AWP","RPBN","BPRN","\n","RPBNA","BPRNA","Skills","\n","Backward","",""}; // up to 10 autons
     const char *toolsMap[] = {"Color","Calibrate","MCL","","","","","","","","","",""}; // up to 10 autons
     const char *textMap[] = {"Red Rush","Blue Rush","Red AWP","Blue AWP","RPBN","BPRN","RPBNA","BPRNA","Skills","Backward",""}; // up to 10 autons
@@ -29,7 +29,7 @@ namespace sec {
 
             lv_btnmatrix_set_selected_btn(obj, id);
 
-            std::cout << auton << std::endl;
+            // std::cout << auton << std::endl;
 
             const char* selectedName = textMap[auton];
 
@@ -46,7 +46,7 @@ namespace sec {
                     robot->set_pose(-58, 14, 235);
                     break;
                 case 3:
-                    robot->set_pose(58, 14, 145);
+                    robot->set_pose(58, 14, 305);
                     break;
                 case 4:
                     // placeholder
@@ -57,12 +57,12 @@ namespace sec {
                     robot->set_pose(58, 14, 145);
                     break;
                 case 6:
-                    // placeholder
-                    robot->set_pose(-58, 14, 235);
+                    // NOTE: ACTUALLY OPPOSITE
+                    robot->set_pose(58, 14, 145);
                     break;
                 case 7:
-                    // placeholder
-                    robot->set_pose(58, 14, 145);
+                    // NOTE: ACTUALLY OPPOSITE
+                    robot->set_pose(-58, 14, 235);
                     break;
                 case 8:
                     robot->set_pose(-61, 0, 0);
@@ -112,16 +112,16 @@ namespace sec {
 
     void createColorLabel() {
         colorLabel = lv_label_create(lv_scr_act());
-        lv_label_set_text_fmt(colorLabel, "Color: Blue");
+        lv_label_set_text_fmt(colorLabel, "Color: Red");
 
         // Enable background color
         lv_obj_set_style_bg_opa(colorLabel, LV_OPA_COVER, LV_PART_MAIN);  // Ensure opacity is set
-        lv_obj_set_style_bg_color(colorLabel, lv_palette_main(LV_PALETTE_BLUE), LV_PART_MAIN);  // Set background color
+        lv_obj_set_style_bg_color(colorLabel, lv_palette_main(LV_PALETTE_RED), LV_PART_MAIN);  // Set background color
 
         // Optionally, set padding/border for better appearance
         lv_obj_set_style_pad_all(colorLabel, 10, LV_PART_MAIN);
         lv_obj_set_style_border_width(colorLabel, 2, LV_PART_MAIN);
-        lv_obj_set_style_border_color(colorLabel, lv_palette_darken(LV_PALETTE_BLUE, 2), LV_PART_MAIN);
+        lv_obj_set_style_border_color(colorLabel, lv_palette_darken(LV_PALETTE_RED, 2), LV_PART_MAIN);
 
         lv_obj_align(colorLabel, LV_ALIGN_TOP_RIGHT, 0, 0);
     }
@@ -144,7 +144,7 @@ namespace sec {
 
     void init(lib::Robot* bot, int hue, int default_auton, const char **autons){
         auton = 9;
-        color = BLUE;
+        color = RED;
         robot = bot;
 
         lv_obj_t* background = lv_bar_create(lv_scr_act());

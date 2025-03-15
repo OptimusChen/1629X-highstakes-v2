@@ -89,20 +89,14 @@ static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((4.25_in).getValu
 
 static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 
-#define BLUE 0
-#define RED 1
-#define NONE -1
-
-static int color = BLUE;
-
 // IMPORTANT
 #define AUTO_SKILLS false
-#define DRIVER_SKILLS true
+#define DRIVER_SKILLS false
 #define AUWTON false
 
 void initialize() {
     lcd::initialize();
-    // sec::init(&robot);
+    sec::init(&robot);
 
     std::cout << &robot << std::endl;
 
@@ -174,7 +168,7 @@ void autonomous() {
         bestautonfr::casey(&robot);
         return;
     }
-    if (AUWTON) bestautonfr::red_rush(&robot);
+    if (AUWTON) bestautonfr::red_sawp(&robot);
     switch (sec::auton)
     {
         case 0:
@@ -196,8 +190,12 @@ void autonomous() {
             bestautonfr::blue_positive(&robot);
             break;
         case 6:
+            // IMPORTANT: ACTUAKLLY RED
+            bestautonfr::blue_palliance(&robot);
             break;
         case 7:
+            // IMPORTANT: ACTUAKLLY BLUE
+            bestautonfr::red_palliance(&robot);
             break;
         case 8:
             bestautonfr::casey(&robot);
@@ -221,13 +219,16 @@ void opcontrol() {
     intake->arm = arm;
     intake->color_sort = true;
     intake->antijam = false;
+    intake->toSort = false;
 
 	auto mogo = ADIDigitalOut(MOGO);
     auto doinker_left = ADIDigitalOut(DOINKER_LEFT);
     auto doinker_right = ADIDigitalOut(DOINKER_RIGHT);
     bool dlActive = false;
     bool drActive = false;
-    bool mogoActive = false;
+    bool mogoActive = true;
+
+    mogo.set_value(mogoActive);
 
     bool lbSetting = false;
 
@@ -252,9 +253,10 @@ void opcontrol() {
     const float armP = 1.5f;
 
     intake->color_sort = true;
-    intake->set_color(sec::color);
     if (DRIVER_SKILLS) {
         intake->set_color(RED);
+    } else {
+        intake->set_color(sec::color);
     }
 
     robot.set_brake_mode(MOTOR_BRAKE_HOLD);

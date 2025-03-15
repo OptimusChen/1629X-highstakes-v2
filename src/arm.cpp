@@ -28,12 +28,12 @@ void Arm::update() {
 
     float liftPower = liftPID.calculate(armTarget - measure);
 
-    std::cout << armTarget << " - " << measure << " = " << (armTarget - measure) << std::endl;
+    // std::cout << armTarget << " - " << measure << " = " << (armTarget - measure) << std::endl;
 
     if (abs(liftPower) > 5) {
         liftPower = util::sign(liftPower) * std::fmax(abs(liftPower), 20.0);
     }
-    std::cout << liftPower << std::endl;
+    // std::cout << liftPower << std::endl;
     motor->move(liftPower);
 }
 

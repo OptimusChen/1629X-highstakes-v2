@@ -38,19 +38,18 @@ void Intake::update() {
         off = 100;
     }
 
-    std::cout << colorSortOptical->get_integration_time() << std::endl;
-    
-    if (color == BLUE && ((opticalMeasure > 0) && (opticalMeasure < 30)) && color_sort && !toSort) {
-        toSort = true;
-        hooks.tare_position();
-        wrongDetected = hooks.get_position();
-        color_sort = false;
-        std::cout << "sort1" << std::endl;
-    }
-    // std::cout << colorSortOptical->get_integration_time() << std::endl;
+    bool sort = false;
 
-    bool sort = color == RED && ((opticalMeasure > 170) && (opticalMeasure < 245)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120;
-    if (sort || sortNextRing) {
+    if (color == RED) {
+        sort = color == RED && ((opticalMeasure > 170) && (opticalMeasure < 245)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120;
+    }
+    if (color == BLUE) {
+        sort = color == BLUE && ((opticalMeasure > 340 && opticalMeasure < 360) || (opticalMeasure < 20)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120;
+    }
+
+    std::cout << "a"<< sort << std::endl;
+
+    if (sort) {
         this->toSort = true;
 
         pros::Task ejectRingTask([&] {
@@ -102,6 +101,7 @@ void Intake::set_color(int color) {
 }
 
 void Intake::forwards(int power) {
+    std::cout << "b" << toSort << std::endl;
     if (toSort) {
         return;
     }

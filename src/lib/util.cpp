@@ -65,7 +65,13 @@ namespace util {
         float deltaX = targetX - robotX;
         float deltaY = targetY - robotY;
 
-        return fmod(degrees(atan2(deltaY, deltaX)), 360);
+        float angle = fmod(degrees(atan2(deltaY, deltaX)), 360);
+
+        if (angle < 0) {
+            angle += 360;
+        }
+
+        return angle;
     }
 
     float no_big_angles_pls(float theta) {

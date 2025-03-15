@@ -16,4 +16,6 @@ namespace bestautonfr {
     void casey(Robot* robot);
     void blue_positive(Robot* robot);
     void red_positive(Robot* robot);
+    void blue_palliance(Robot* robot);
+    void red_palliance(Robot* robot);
 }
