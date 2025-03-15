@@ -57,6 +57,7 @@ namespace lib {
             int poseMode = ODOM;
             bool poseSet = false;
             bool useSlowAngular = false;
+            bool mogostate = false;
 
             Robot(Odom* odom, MotorGroup* left, MotorGroup* right, PID* lateral, PID* angular, PID* angular_slow);
 

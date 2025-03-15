@@ -45,7 +45,11 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
             arm->update();
             intake->update();
 
-            if ()
+            if (robot->mogostate) {
+                robot->angular->kD = 15;
+            } else {
+                robot->angular->kD = 10;
+            }
             delay(1);
         }
     });

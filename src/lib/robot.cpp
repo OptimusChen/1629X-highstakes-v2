@@ -86,6 +86,7 @@ void Robot::set_pf(loco::ParticleFilter<PARTICLES>* particleFilter) {
 
 void Robot::set_mogo(bool value) {
     mogo.set_value(value);
+    mogostate = value;
 }
 
 void Robot::set_rush_arm_left(bool value) {
