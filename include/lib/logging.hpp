@@ -24,6 +24,7 @@ enum class LogType {
     STANDARD_DEVIATION, // Log type for standard deviation
     DEVIATION_AND_UNIQUE, // Log type for deviation and unique particles
     DELTA_MOVEMENT_AND_LOOP_TIME,  // Log type for delta movement and loop time
+    OBJECT_SIZE // Log type for object size
 };
 
 /**
@@ -117,6 +118,9 @@ public:
                 case LogType::DELTA_MOVEMENT_AND_LOOP_TIME:
                     sprintf(log_string, "%s, DeltaMovementAndLoopTime, %d, %f, %f, %f\n", logger_name.c_str(), log.time, log.a, log.b, log.c);
                     break;
+                case LogType::OBJECT_SIZE:
+                    sprintf(log_string, "%s, ObjectSize, %d, %f, %f, %f, %f\n", logger_name.c_str(), log.time, log.a, log.b, log.c, log.d);
+                    break;
                 default:
                     break;
             }
@@ -130,10 +134,10 @@ public:
 
 extern void dump_all();
 
-constexpr size_t distanceLogSize = 70000;
+constexpr size_t distanceLogSize = 140000;
 constexpr size_t robotLogSize = 140000;
 constexpr size_t autonLogSize = 1000;
-constexpr size_t pfLogSize = 70000;
+constexpr size_t pfLogSize = 10;
 
 extern Logger<distanceLogSize> distanceLogger;
 extern Logger<robotLogSize> robotLogger;

@@ -120,7 +120,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     // robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
     arm->liftPID.kP = 100;
-    arm->set_target(SCORE + 50);
+    arm->set_target(SCORE + 20);
     arm->liftPID.kP = 1.5;
     robot->timedMove(40, 400);
 
@@ -277,7 +277,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
 
     //cross under ladder score 3
     // robot->turnToPoint(-47, -47, 500);
-    robot->turnToHeading(225, 500);
+    robot->turnToHeading(225, 500, false, 15, 127);
     intake->stop();
     
     bool under = true;
@@ -303,7 +303,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     });
     // SCORE 3 RINGS
     robot->moveToPoint(-35, -35, 1000, true, true, mid_speed - 30);
-    robot->moveToPoint(-41, -41, 1000, true, true, mid_speed - 15);
+    robot->moveToPoint(-43, -43, 1000, true, true, mid_speed - 15);
     robot->turnToHeading(180, 200);
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
     robot->moveToPoint(-58, -47, 1000, true, false, mid_speed);
@@ -352,7 +352,7 @@ void bestautonfr::casey(Robot* robot, lemlib::Chassis* chassis) {
     robot->moveToPoint(0, -61, 1000, true, true, mid_speed);
 
     arm->liftPID.kP = 100;
-    arm->set_target(SCORE + 50);
+    arm->set_target(SCORE + 20);
     arm->liftPID.kP = 1.5;
     robot->timedMove(40, 500);
 

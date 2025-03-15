@@ -203,6 +203,7 @@ void initialize() {
             // std::cout << "x: " << pose.x << " y: " << pose.y << " theta: " << pose.theta << std::endl;
             
             distanceLogger.push_log(LogType::DISTANCE_SENSOR, {float(left_dist.get_distance()), float(right_dist.get_distance()), float(back_dist.get_distance()), float(front_dist.get_distance())});
+            distanceLogger.push_log(LogType::OBJECT_SIZE, {float(left_dist.get_object_size()), float(right_dist.get_object_size()), float(back_dist.get_object_size()), float(front_dist.get_object_size())});
             // distanceLogger.push_log(LogType::POSITION_REAL, {robot.get_pose().x, robot.get_pose().y, robot.get_pose().theta, -1});
 
 			pros::lcd::print(0, "x: %f", pose.x); // print the x position

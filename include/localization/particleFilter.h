@@ -269,7 +269,7 @@ namespace loco
 
             size_t uniqueParticles = numUniqueParticles();
 
-            pfLogger.push_log(LogType::DEVIATION_AND_UNIQUE, {standardDeviation, static_cast<float>(uniqueParticles), ESS, avgWeight});
+            // pfLogger.push_log(LogType::DEVIATION_AND_UNIQUE, {standardDeviation, static_cast<float>(uniqueParticles), ESS, avgWeight});
 
             if (noiseNextUpdate)
             {
