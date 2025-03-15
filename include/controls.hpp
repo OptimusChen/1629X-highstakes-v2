@@ -18,7 +18,7 @@
 
 #define HOOKS 5
 
-#define R_DISTANCE 16
+#define R_DISTANCE 12
 #define L_DISTANCE 17
 #define B_DISTANCE 14
 #define F_DISTANCE 15
@@ -41,7 +41,7 @@
 #define VERTICAL 10
 #define HORIZONTAL 21
 
-#define INERTIAL_PORT 6
+#define INERTIAL_PORT 11   
 
 #define LB_ROTATION 13
 #define ARM_LEFT 19

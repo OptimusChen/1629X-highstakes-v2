@@ -150,7 +150,7 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 
 static int color = BLUE;
 
-constexpr bool COMPSWITCH = false;
+constexpr bool COMPSWITCH = true;
 
 void initialize() {
     lcd::initialize();
