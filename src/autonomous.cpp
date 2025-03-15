@@ -661,7 +661,7 @@ void bestautonfr::red_sawp(Robot* robot) {
     arm->set_target(MID + 80);
     
     robot->turnToHeading(135, 1000, false, 0, 40);
-    robot->moveToPoint(-20, -23, 1000, false, true, 80);
+    robot->moveToPoint(-20, -26, 1000, false, true, 80);
     robot->set_mogo(true);
     delay(200);
     robot->turnToHeading(270, 500);
@@ -671,7 +671,7 @@ void bestautonfr::red_sawp(Robot* robot) {
     robot->particleFilter->setAddNoise(false);
     robot->moveToPoint(-24, -20, 1000, false, false);
     robot->turnToHeading(45, 500);
-    robot->timedMove(40, 500);
+    robot->timedMove(60, 1000);
     intake->stop();
 
     delay(500);
