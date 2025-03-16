@@ -985,7 +985,7 @@ void bestautonfr::red_sixringplus(Robot* robot, lemlib::Chassis* chassis) {
     chassis->waitUntil(105);
     intake->forwards();
     chassis->waitUntilDone();
-    chassis->moveToPoint(-20, -11, 1000, {.maxSpeed = 90});
+    chassis->moveToPoint(-19, -10, 1000, {.maxSpeed = 90});
     chassis->waitUntil(3.6);
     intake->stop();
     chassis->waitUntilDone();

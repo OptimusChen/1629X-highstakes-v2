@@ -142,7 +142,7 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 // IMPORTANT
 #define AUTO_SKILLS false
 #define DRIVER_SKILLS false
-#define AUWTON true
+#define AUWTON false
 #define ELIMS true
 
 void initialize() {
@@ -182,8 +182,8 @@ void initialize() {
 
     if (ELIMS) {
         chassis.calibrate(true);
-    } else {
-        robot.poseSet = true;
+    } else { 
+         robot.poseSet = true;
         robot.calibrate();
     }
 
@@ -221,7 +221,7 @@ void competition_initialize() {}
 
 void autonomous() {
     if (ELIMS) {
-        bestautonfr::blue_sixringplus(&robot, &chassis);
+        bestautonfr::red_sixringplus(&robot, &chassis);
         return;
     }
     if (AUTO_SKILLS) {
