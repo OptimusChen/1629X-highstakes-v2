@@ -143,6 +143,7 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 #define AUTO_SKILLS false
 #define DRIVER_SKILLS false
 #define AUWTON true
+#define ELIMS true
 
 void initialize() {
     lcd::initialize();
@@ -179,8 +180,12 @@ void initialize() {
     // sawp red
     // robot.set_pose(-58, 14, 235);
 
-    robot.poseSet = true;
-    robot.calibrate();
+    if (ELIMS) {
+        chassis.calibrate(true);
+    } else {
+        robot.poseSet = true;
+        robot.calibrate();
+    }
 
     if (AUTO_SKILLS || AUWTON) {
         // robot.poseSet = true;
@@ -188,7 +193,7 @@ void initialize() {
         // robot.initialize_particle_filter();
         // delay(2000);
         // robot.set_pose_mode(MCL);
-        chassis.calibrate(true);
+        // chassis.calibrate(true);
     }
 
     Task trackingTask = Task {[&] {
@@ -215,6 +220,10 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
+    if (ELIMS) {
+        bestautonfr::blue_sixringplus(&robot, &chassis);
+        return;
+    }
     if (AUTO_SKILLS) {
         bestautonfr::casey(&robot);
         return;

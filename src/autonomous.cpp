@@ -985,26 +985,32 @@ void bestautonfr::red_sixringplus(Robot* robot, lemlib::Chassis* chassis) {
     chassis->waitUntil(105);
     intake->forwards();
     chassis->waitUntilDone();
-    chassis->moveToPoint(-15.5, -8, 1000, {.maxSpeed = 90});
+    chassis->moveToPoint(-20, -11, 1000, {.maxSpeed = 90});
     chassis->waitUntil(3.6);
     intake->stop();
     chassis->waitUntilDone();
     robot->set_rush_arm_right(true);
     pros::delay(100);
-    chassis->moveToPoint(-13, -6, 750, {.minSpeed=40});
+
+    // chassis->moveToPoint(-13, -6, 750, {.minSpeed=40});
    // chassis->moveToPoint(-13.19, -6.75, 250, {.minSpeed = 10, .earlyExitRange = 0.3});
     chassis->swingToHeading(69, lemlib::DriveSide::RIGHT, 700, {.minSpeed=40});
     chassis->waitUntilDone();
+    chassis->moveToPoint(-14, -5, 500, {.maxSpeed = 60});
+    chassis->waitUntilDone();
     robot->set_rush_arm_left(true);
     pros::delay(140);
-    chassis->swingToHeading(49, lemlib::DriveSide::RIGHT, 700, {.minSpeed=40});
-    chassis->waitUntilDone();
+
+    // chassis->swingToHeading(49, lemlib::DriveSide::RIGHT, 700, {.minSpeed=40});
+    // chassis->waitUntilDone();
 
     intake->backwards(30);
 
     // return;
-
-    chassis->moveToPoint(-44, -29.5, 1200, {.forwards = false, .minSpeed=30});
+    // chassis->swingToPoint(-44, -33, DriveSide::RIGHT, 300, {.maxSpeed=40});
+    // chassis->turnToPoint(-44, -33, 300, {.maxSpeed=30});
+    // chassis->waitUntilDone();
+    chassis->moveToPoint(-48, -38, 1500, {.forwards = false, .minSpeed=30});
     chassis->waitUntilDone();
 
     // return;
@@ -1013,73 +1019,148 @@ void bestautonfr::red_sixringplus(Robot* robot, lemlib::Chassis* chassis) {
     robot->set_rush_arm_left(false);
     robot->set_rush_arm_right(false);
     delay(500);
-
+    
     intake->forwards();
     lemlib::Pose a = chassis->getPose();
 
 
     chassis->turnToHeading(0, 750, {.maxSpeed=60, .minSpeed=5});
     chassis->waitUntilDone();
-    chassis->moveToPoint(-43.75, a.y+6.5, 450, {.minSpeed=52});
+    chassis->moveToPoint(-43.75, a.y+15, 1000, {.minSpeed=52});
         // f=true;
 
-    chassis->swingToHeading(155, lemlib::DriveSide::RIGHT, 1000, {.direction=lemlib::AngularDirection::CW_CLOCKWISE,.maxSpeed=85, .minSpeed=3});
+    chassis->swingToHeading(180, lemlib::DriveSide::RIGHT, 1000, {.direction=lemlib::AngularDirection::CW_CLOCKWISE,.maxSpeed=85, .minSpeed=3});
     chassis->waitUntilDone();
     lemlib::Pose b = chassis->getPose();
 
-    chassis->moveToPoint(b.x+7, -45, 2000, {.maxSpeed=64});
+    chassis->moveToPoint(b.x, -47, 2000, {.maxSpeed=64});
     chassis->waitUntilDone();
-    chassis->turnToHeading(262.5,  1200, {.maxSpeed=55, .minSpeed=6});
+    chassis->turnToPoint(-55, -55, 400, {.maxSpeed=127, .minSpeed=6});
+    chassis->waitUntilDone();
+    chassis->moveToPoint(-55, -55, 1000, {.maxSpeed=127});
     chassis->waitUntilDone();
 
-
-    chassis->setPose(0, 0, chassis->getPose().theta);
-            // intake.setColorSort(true);
-
-    chassis->moveToPoint(-24.75, -2.5, 1100, {.minSpeed=5});
-
-
-    // intake.anySort=true;
-
-    chassis->waitUntilDone();
-    chassis->turnToHeading(217, 500, {.maxSpeed=100, .minSpeed=15});
+    chassis->turnToHeading(225, 500, {.maxSpeed=100, .minSpeed=15});
     chassis->waitUntilDone();
 
     //BACKSHOTS!!!!!
 
-    chassis->setPose(0, 0, 0);
-
-    chassis->moveToPoint(0, 15.5, 700, {.maxSpeed=90, .minSpeed=5});
+    chassis->moveToPoint(-63, -63, 500, {.forwards=true, .maxSpeed=127});
     chassis->waitUntilDone();
-    chassis->moveToPoint(0, 50, 900, {.maxSpeed=50, .minSpeed=5});
+    chassis->moveToPoint(-80, -80, 1000, {.forwards=true,.maxSpeed=127});
+    chassis->waitUntilDone();
+    chassis->setPose(-60, -60, chassis->getPose().theta);
+    chassis->moveToPoint(-50, -50, 1000, {.forwards=false,.maxSpeed=127, .minSpeed=80});
+    chassis->waitUntilDone();
     
-    chassis->waitUntilDone();
-    chassis->setPose(0, 0, 0);  
-
-    chassis->moveToPoint(0, -6, 1200, {.forwards=false,.maxSpeed=7, .minSpeed=3.5});
-    chassis->waitUntilDone();
-    robot->set_lift_intake(true);
-
-    chassis->setPose(0, 0, 0);
-    chassis->moveToPoint(-0.3, 50, 629, {.maxSpeed=45, .minSpeed=5});  
-    chassis->waitUntilDone();
-
-    robot->set_lift_intake(false);
-    intake->forwards();
-    chassis->setPose(0, 0, 0);
-
-    pros::delay(120);
-
-    chassis->moveToPoint(3, -9, 1000, {.forwards=false,.maxSpeed=25, .minSpeed=7});
-    chassis->waitUntil(3);  
-    // f=true;
-    chassis->waitUntilDone();
-    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
-    chassis->setPose(0, 0, 225);
+    chassis->swingToHeading(0, lemlib::DriveSide::LEFT, 1200, {.direction=lemlib::AngularDirection::CW_CLOCKWISE, .maxSpeed=127, .minSpeed=127});
+    delay(500);
     robot->set_mogo(false);
-        chassis->turnToHeading(265, 1200, {.minSpeed=127});
+    robot->timedMove(80, 500);
+    chassis->turnToHeading(270, 500);
+
+    runningAuton = false;
+}
+
+void bestautonfr::blue_sixringplus(Robot* robot, lemlib::Chassis* chassis) {
+    bool runningAuton = true;
+
+    Intake* intake = robot->get_subsystem<Intake>();
+    Arm* arm = robot->get_subsystem<Arm>();
+    intake->arm = arm;
+    intake->set_color(BLUE);
+    intake->color_sort = true;
+
+    Task updates([&]() {
+        while (runningAuton) {
+            arm->update();
+            intake->update();
+            delay(1);
+        }
+    });
+
+    auto stage_1_stop = [&] {
+        return intake->detected_ring(STAGE_2);
+    };
+
+    chassis->setPose(54, -24, 90);
+    intake->set_color(BLUE);
+
+    chassis->moveToPoint(31, -24, 2500, {.forwards = false, .maxSpeed = 60});
     chassis->waitUntilDone();
-    chassis->cancelAllMotions();  
+    robot->set_mogo(true);
+    delay(200);
+
+    chassis->turnToHeading(313.5, 700, {.maxSpeed = 85});
+    chassis->waitUntil(105);
+    intake->forwards();
+    chassis->waitUntilDone();
+
+    chassis->moveToPoint(20, -11, 1000, {.maxSpeed = 90});
+    chassis->waitUntil(3.6);
+    intake->stop();
+    chassis->waitUntilDone();
+    robot->set_rush_arm_left(true);
+    pros::delay(100);
+
+    // chassis->moveToPoint(-13, -6, 750, {.minSpeed=40});
+   // chassis->moveToPoint(-13.19, -6.75, 250, {.minSpeed = 10, .earlyExitRange = 0.3});
+    chassis->swingToHeading(291, lemlib::DriveSide::RIGHT, 700, {.minSpeed=40});
+    chassis->waitUntilDone();
+    chassis->moveToPoint(14, -5, 500, {.maxSpeed = 60});
+    chassis->waitUntilDone();
+    robot->set_rush_arm_right(true);
+    pros::delay(140);
+
+    intake->backwards(30);
+
+    chassis->moveToPoint(48, -38, 1500, {.forwards = false, .minSpeed=30});
+    chassis->waitUntilDone();
+
+    chassis->turnToHeading(270, 500, {.maxSpeed = 50, .minSpeed = 15});
+    chassis->waitUntilDone();
+    robot->set_rush_arm_left(false);
+    robot->set_rush_arm_right(false);
+    delay(500);
+    
+    intake->forwards();
+    lemlib::Pose a = chassis->getPose();
+
+
+    chassis->turnToHeading(0, 750, {.maxSpeed=60, .minSpeed=5});
+    chassis->waitUntilDone();
+    chassis->moveToPoint(43.75, a.y+15, 1000, {.minSpeed=52});
+        // f=true;
+
+    chassis->swingToHeading(180, lemlib::DriveSide::RIGHT, 1000, {.direction=lemlib::AngularDirection::CCW_COUNTERCLOCKWISE,.maxSpeed=85, .minSpeed=3});
+    chassis->waitUntilDone();
+    lemlib::Pose b = chassis->getPose();
+
+    chassis->moveToPoint(b.x, -47, 2000, {.maxSpeed=64});
+    chassis->waitUntilDone();
+    chassis->turnToPoint(55, -55, 400, {.maxSpeed=127, .minSpeed=6});
+    chassis->waitUntilDone();
+    chassis->moveToPoint(55, -55, 1000, {.maxSpeed=127});
+    chassis->waitUntilDone();
+
+    chassis->turnToHeading(135, 500, {.maxSpeed=100, .minSpeed=15});
+    chassis->waitUntilDone();
+
+    //BACKSHOTS!!!!!
+
+    chassis->moveToPoint(63, -63, 500, {.forwards=true, .maxSpeed=127});
+    chassis->waitUntilDone();
+    chassis->moveToPoint(80, -80, 1000, {.forwards=true,.maxSpeed=127});
+    chassis->waitUntilDone();
+    chassis->setPose(60, -60, chassis->getPose().theta);
+    chassis->moveToPoint(50, -50, 1000, {.forwards=false,.maxSpeed=127, .minSpeed=80});
+    chassis->waitUntilDone();
+    
+    chassis->swingToHeading(0, lemlib::DriveSide::LEFT, 1200, {.direction=lemlib::AngularDirection::CCW_COUNTERCLOCKWISE, .maxSpeed=127, .minSpeed=127});
+    delay(500);
+    robot->set_mogo(false);
+    robot->timedMove(80, 500);
+    chassis->turnToHeading(90, 500);
 
     runningAuton = false;
 }
