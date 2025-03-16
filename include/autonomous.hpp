@@ -18,4 +18,6 @@ namespace bestautonfr {
     void red_positive(Robot* robot);
     void blue_palliance(Robot* robot);
     void red_palliance(Robot* robot);
+
+    void red_sixringplus(Robot* robot, lemlib::Chassis* chassis);
 }

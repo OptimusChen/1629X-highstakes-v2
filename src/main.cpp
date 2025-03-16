@@ -89,10 +89,60 @@ static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((4.25_in).getValu
 
 static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 
+/* Lemlib */
+
+lemlib::Drivetrain drivetrain(
+    &left_motor_group, // left motor group
+    &right_motor_group,// right motor group
+    TRACK_WIDTH, // 10 inch track width
+    lemlib::Omniwheel::NEW_275, // using new 4" omnis
+    450, // drivetrain rpm is 360
+    2 // horizontal drift is 2 (for now)
+);
+
+lemlib::ControllerSettings lateral_controller(
+    8, // proportional gain (kP)
+    0, // integral gain (kI)
+    1, // derivative gain (kD)
+    3, // anti windup
+    1, // small error range, in inches
+    100, // small error range timeout, in milliseconds
+    3, // large error range, in inches
+    500, // large error range timeout, in milliseconds
+    20 // maximum acceleration (slew)
+);
+
+// angular PID controller
+lemlib::ControllerSettings angular_controller(
+    2, // proportional gain (kP)
+    0, // integral gain (kI)
+    10, // derivative gain (kD)
+    3, // anti windup
+    1, // small error range, in degrees
+    100, // small error range timeout, in milliseconds
+    3, // large error range, in degrees
+    500, // large error range timeout, in milliseconds
+    0 // maximum acceleration (slew)
+);
+
+lemlib::OdomSensors sensors(
+    nullptr, // vertical tracking wheel 1, set to null
+    nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
+    nullptr, // horizontal tracking wheel 1
+    nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
+    &imu // inertial sensor
+);
+
+lemlib::Chassis chassis(drivetrain, // drivetrain settings
+    lateral_controller, // lateral PID settings
+    angular_controller, // angular PID settings
+    sensors // odometry sensors
+);
+
 // IMPORTANT
 #define AUTO_SKILLS false
 #define DRIVER_SKILLS false
-#define AUWTON false
+#define AUWTON true
 
 void initialize() {
     lcd::initialize();
@@ -135,9 +185,10 @@ void initialize() {
     if (AUTO_SKILLS || AUWTON) {
         // robot.poseSet = true;
         // robot.calibrate();
-        robot.initialize_particle_filter();
-        delay(2000);
-        robot.set_pose_mode(MCL);
+        // robot.initialize_particle_filter();
+        // delay(2000);
+        // robot.set_pose_mode(MCL);
+        chassis.calibrate(true);
     }
 
     Task trackingTask = Task {[&] {
@@ -168,7 +219,7 @@ void autonomous() {
         bestautonfr::casey(&robot);
         return;
     }
-    if (AUWTON) bestautonfr::red_sawp(&robot);
+    if (AUWTON) bestautonfr::red_sixringplus(&robot, &chassis);
     switch (sec::auton)
     {
         case 0:
