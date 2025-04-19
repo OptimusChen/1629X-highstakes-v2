@@ -221,7 +221,7 @@ void competition_initialize() {}
 
 void autonomous() {
     if (ELIMS) {
-        bestautonfr::red_sixringplus(&robot, &chassis);
+        bestautonfr::blue_sixringplus(&robot, &chassis);
         return;
     }
     if (AUTO_SKILLS) {
@@ -286,7 +286,7 @@ void opcontrol() {
     auto doinker_right = ADIDigitalOut(DOINKER_RIGHT);
     bool dlActive = false;
     bool drActive = false;
-    bool mogoActive = true;
+    bool mogoActive = false;
 
     mogo.set_value(mogoActive);
 
@@ -318,6 +318,8 @@ void opcontrol() {
     } else {
         intake->set_color(sec::color);
     }
+
+    if (ELIMS) intake->set_color(BLUE);
 
     robot.set_brake_mode(MOTOR_BRAKE_HOLD);
 

@@ -1,38 +1,30 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-# import ace_tools as tools  # For displaying data in ChatGPT
+import statistics
+from scipy.stats import norm
+from scipy.integrate import quad
 
-# Define the file path
-file_path = "your_file.csv"  # Change this to your actual file
+# Original data
+data = [4.546, 4.5, 4.567, 4.508, 4.602, 4.504, 4.666, 4.662, 4.624, 4.518,
+        4.743, 4.748, 4.775, 4.627, 4.642, 4.747, 4.566, 4.551, 4.536, 4.622,
+        4.676, 4.557, 4.733, 4.532, 4.667, 4.732, 4.634, 4.7, 4.764, 4.602,
+        4.644, 4.77, 4.624, 4.717, 4.538, 4.502, 4.798, 4.772, 4.537, 4.586,
+        4.543, 4.563, 4.675, 4.713, 4.509, 4.678, 4.729, 4.782, 4.722, 4.579]
 
-# Read the file and filter relevant lines
-filtered_data = []
-with open(file_path, "r") as file:
-    for line in file:
-        if line.startswith("robot, Real"):
-            filtered_data.append(line.strip().split(","))
+# Apply bias correction
+bias = 0.36
+corrected_data = [x + bias for x in data]
 
-# Convert to DataFrame
-columns = ["category", "type", "timestamp", "x", "y", "theta"]
-df = pd.DataFrame(filtered_data, columns=columns)
+# New mean and standard deviation
+mu = statistics.mean(corrected_data)
+sigma = statistics.stdev(corrected_data)
 
-# Convert numeric columns to the correct data type
-df["x"] = pd.to_numeric(df["x"])
-df["y"] = pd.to_numeric(df["y"])
+# Define normal PDF with corrected parameters
+def corrected_pdf(x):
+    return norm.pdf(x, loc=mu, scale=sigma)
 
-# Display filtered data
-# tools.display_dataframe_to_user(name="Filtered Real Distance Sensor Coordinates", dataframe=df)
+print(mu)
 
-# Plot X and Y coordinates
-plt.figure(figsize=(8, 8))
-plt.scatter(df["x"], df["y"], c="blue", marker="o", label="Sensor Data")
-plt.plot(df["x"], df["y"], linestyle="-", color="gray", alpha=0.5)  # Connect points for trajectory
+# Compute P(4.9 ≤ X ≤ 5.1)
+probability, _ = quad(corrected_pdf, 4.85, mu)
 
-plt.xlabel("X Coordinate")
-plt.ylabel("Y Coordinate")
-plt.title("Distance Sensor Data (X-Y Plot)")
-plt.legend()
-plt.grid(True)
-
-# Show the plot
-plt.show()
+# Print result
+print("P(4.9 ≤ X ≤ 5.1) after bias correction:", round(probability, 2))
