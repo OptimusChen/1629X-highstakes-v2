@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "elims blueefwji",
+    "project_name": "red",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -300,7 +300,7 @@
     "upload_options": {
       "after": "screen",
       "icon": "planet",
-      "slot": 5
+      "slot": 2
     },
     "use_early_access": true
   }

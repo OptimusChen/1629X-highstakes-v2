@@ -31,7 +31,7 @@ using namespace pros::c;
 using namespace controls;
 using namespace lib;
 
-#define TRACK_WIDTH 11.5
+#define TRACK_WIDTH 11.25
 
 static Controller master(E_CONTROLLER_MASTER);
 
@@ -42,8 +42,8 @@ static auto imu = Imu(INERTIAL_PORT);
 static auto pl = TrackingWheel(&r, -0.7f, 2.0f);
 static auto pd = TrackingWheel(&r2, -8.0f, 2.75f);
 
-static MotorGroup left_motor_group({L_DRIVE_FRONT, -L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
-static MotorGroup right_motor_group({-R_DRIVE_FRONT, R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
+static MotorGroup left_motor_group({-L_DRIVE_FRONT, L_DRIVE_MID, -L_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
+static MotorGroup right_motor_group({R_DRIVE_FRONT, -R_DRIVE_MID, R_DRIVE_BACK}, MotorGears::blue, MotorUnits::rotations);
 
 static Odom odom(450, 2.75, TRACK_WIDTH, &left_motor_group, &right_motor_group, &imu);
 
@@ -68,26 +68,26 @@ static PID angular_slow(
 
 static Distance left_dist(L_DISTANCE);
 static Distance right_dist(R_DISTANCE);
-static Distance back_dist(B_DISTANCE);
-static Distance front_dist(F_DISTANCE);
+// static Distance back_dist(B_DISTANCE);
+// static Distance front_dist(F_DISTANCE);
 
 Robot robot(&odom, &left_motor_group, &right_motor_group, &linear, &angular, &angular_slow);
 
 // convert the angle from the odometry
-static Angle angle() {
-    float angle = fmod(robot.get_pose().theta - (M_PI / 2), (2 * M_PI));
-    if (angle < 0) angle = 2 * M_PI + angle;
+// static Angle angle() {
+//     float angle = fmod(robot.get_pose().theta - (M_PI / 2), (2 * M_PI));
+//     if (angle < 0) angle = 2 * M_PI + angle;
     
-    return angle * radian;
-}
+//     return angle * radian;
+// }
 
 // initialize the distance sensors
-static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((4.25_in).getValue(), (-6.25_in).getValue(), (270_deg).getValue()), right_dist);
-static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((4.25_in).getValue(), (6.25_in).getValue(), (90_deg).getValue()), left_dist);
-static loco::DistanceSensorModel backDistance(Eigen::Vector3f((2.75_in).getValue(), (-6.5_in).getValue(), (180_deg).getValue()), back_dist);
-static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((4.25_in).getValue(), (-4.75_in).getValue(), (0_deg).getValue()), front_dist);
+// static loco::DistanceSensorModel rightDistance(Eigen::Vector3f((4.25_in).getValue(), (-6.25_in).getValue(), (270_deg).getValue()), right_dist);
+// static loco::DistanceSensorModel leftDistance(Eigen::Vector3f((4.25_in).getValue(), (6.25_in).getValue(), (90_deg).getValue()), left_dist);
+// static loco::DistanceSensorModel backDistance(Eigen::Vector3f((2.75_in).getValue(), (-6.5_in).getValue(), (180_deg).getValue()), back_dist);
+// static loco::DistanceSensorModel frontDistance(Eigen::Vector3f((4.25_in).getValue(), (-4.75_in).getValue(), (0_deg).getValue()), front_dist);
 
-static loco::ParticleFilter<PARTICLES> particleFilter(angle);
+// static loco::ParticleFilter<PARTICLES> particleFilter(angle);
 
 /* Lemlib */
 
@@ -95,7 +95,7 @@ lemlib::Drivetrain drivetrain(
     &left_motor_group, // left motor group
     &right_motor_group,// right motor group
     TRACK_WIDTH, // 10 inch track width
-    lemlib::Omniwheel::NEW_275, // using new 4" omnis
+    lemlib::Omniwheel::NEW_325, // using new 4" omnis
     450, // drivetrain rpm is 360
     2 // horizontal drift is 2 (for now)
 );
@@ -125,10 +125,19 @@ lemlib::ControllerSettings angular_controller(
     0 // maximum acceleration (slew)
 );
 
+// horizontal tracking wheel encoder
+pros::Rotation horizontal_encoder(HORIZONTAL);
+// vertical tracking wheel encoder
+pros::Rotation vertical_encoder(VERTICAL);
+// horizontal tracking wheel
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, lemlib::Omniwheel::NEW_2, 1.87);
+// vertical tracking wheel
+lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_2, -0.8);
+
 lemlib::OdomSensors sensors(
-    nullptr, // vertical tracking wheel 1, set to null
+    &vertical_tracking_wheel, // vertical tracking wheel 1, set to null
     nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-    nullptr, // horizontal tracking wheel 1
+    &horizontal_tracking_wheel, // horizontal tracking wheel 1
     nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
     &imu // inertial sensor
 );
@@ -143,22 +152,22 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 #define AUTO_SKILLS false
 #define DRIVER_SKILLS false
 #define AUWTON false
-#define ELIMS true
+#define ELIMS false
 
 void initialize() {
     lcd::initialize();
-    sec::init(&robot);
+    // sec::init(&robot);
 
-    std::cout << &robot << std::endl;
+    // std::cout << &robot << std::endl;
 
-    robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 3);
+    // robot.set_constants(2.75, 450, 5.3, TRACK_WIDTH, 3);
 
-    particleFilter.addSensor(&leftDistance);
-    particleFilter.addSensor(&rightDistance);
-    particleFilter.addSensor(&backDistance);
-    particleFilter.addSensor(&frontDistance);
+    // particleFilter.addSensor(&leftDistance);
+    // particleFilter.addSensor(&rightDistance);
+    // particleFilter.addSensor(&backDistance);
+    // particleFilter.addSensor(&frontDistance);
 
-    robot.set_pf(&particleFilter);
+    // robot.set_pf(&particleFilter);
     robot.add_subsystem(new Intake());
     robot.add_subsystem(new Arm());
     
@@ -180,11 +189,14 @@ void initialize() {
     // sawp red
     // robot.set_pose(-58, 14, 235);
 
+    chassis.calibrate(true);
+    chassis.setPose(0, 0, 0);
+
     if (ELIMS) {
         chassis.calibrate(true);
     } else { 
-         robot.poseSet = true;
-        robot.calibrate();
+        //  robot.poseSet = true;
+        // robot.calibrate();
     }
 
     if (AUTO_SKILLS || AUWTON) {
@@ -198,13 +210,16 @@ void initialize() {
 
     Task trackingTask = Task {[&] {
 		while (true) {
-            auto pose = robot.get_pose();
+            // auto pose = robot.get_pose();
 
-            distanceLogger.push_log(LogType::DISTANCE_SENSOR, {float(left_dist.get_distance()), float(right_dist.get_distance()), float(back_dist.get_distance()), float(front_dist.get_distance())});
+            // // distanceLogger.push_log(LogType::DISTANCE_SENSOR, {float(left_dist.get_distance()), float(right_dist.get_distance()), float(back_dist.get_distance()), float(front_dist.get_distance())});
 
-			pros::lcd::print(0, "p: %.2f, %.2f, %.2f", pose.x, pose.y, util::degrees(pose.theta)); // print the x position
-			pros::lcd::print(1, "pose mode: %s", robot.poseMode == MCL ? "mcl" : "odom"); // print the headings
-			pros::lcd::print(2, "rand: %d", std::rand()); // print the headings
+			// pros::lcd::print(0, "p: %.2f, %.2f, %.2f", pose.x, pose.y, util::degrees(pose.theta)); // print the x position
+			// pros::lcd::print(1, "pose mode: %s", robot.poseMode == MCL ? "mcl" : "odom"); // print the headings
+			// pros::lcd::print(2, "rand: %d", std::rand()); // print the headings
+
+            auto pose = chassis.getPose();
+            pros::lcd::print(0, "p: %.2f, %.2f, %.2f", pose.x, pose.y, (pose.theta)); // print the x position
 
 			pros::delay(10);
 		}
@@ -220,6 +235,108 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
+    // chassis.setPose(0, 0, 0);
+    // chassis.turnToHeading(90, 500000);
+    // chassis.moveToPoint(0, 10, 50000);
+
+    chassis.setPose(58, -14, 33.5);
+    Arm * arm = robot.get_subsystem<Arm>();
+    Intake * intake = robot.get_subsystem<Intake>();
+    intake->arm = arm;
+
+    auto stage_1_stop = [&] {
+        return intake->detected_ring(STAGE_2);
+    };
+
+    intake->color_sort = false;
+    intake->set_color(BLUE);
+
+    bool runningAuton = true;
+
+    std::cout << "test" << std::endl;
+
+    Task updates([&]() {
+        while (runningAuton) {
+            arm->update();
+            intake->update();
+            delay(1);
+        }
+    });
+
+    arm->set_target(ALLIANCE_STAKE + 80);
+
+    delay(750);
+
+    chassis.moveToPoint(54, -23.5, 2000, {.forwards=false, .maxSpeed=127, .minSpeed=10});
+    chassis.waitUntilDone();
+
+    robot.set_lift_intake(true);
+    arm->set_target(REST);
+    intake->set_stop_condition(stage_1_stop);
+    intake->forwards(80);
+
+    chassis.turnToPoint(49, -6, 500);
+    chassis.waitUntilDone();
+    chassis.moveToPoint(49, -6, 100000, {.forwards=true, .maxSpeed=80, .minSpeed=0});    
+    chassis.waitUntilDone();
+    delay(200);
+    robot.set_lift_intake(false);
+    intake->set_stop_condition(stage_1_stop);
+    intake->set_stop_condition(stage_1_stop);
+    intake->set_stop_condition(stage_1_stop);
+
+    delay(1000);
+
+    intake->backwards(40);
+    chassis.turnToPoint(20.5, -25.5, 500, {.forwards=false});
+    chassis.waitUntilDone();
+    intake->stop();
+    intake->set_stop_condition(nullptr);
+    chassis.moveToPoint(20.5, -25.5, 5000, {.forwards=false, .maxSpeed=60, .minSpeed=0});
+    chassis.waitUntilDone();
+
+    robot.set_mogo(true);
+    delay(500);
+    intake->set_stop_condition(nullptr);
+    intake->forwards();
+    delay(1000);
+
+    chassis.turnToPoint(15.5, -41, 1000);
+    chassis.waitUntilDone();
+
+    Task t([&] {
+        delay(750);
+        intake->antijam = false;
+        arm->set_target(LOAD + 4);
+    });
+
+    chassis.moveToPoint(15.5, -41, 2000, {.forwards=true, .maxSpeed=100, .minSpeed=0});
+    chassis.waitUntilDone();
+
+    chassis.turnToPoint(3, -61, 500);
+    chassis.waitUntilDone();
+    chassis.moveToPoint(3, -61, 2000, {.forwards=true, .maxSpeed=80, .minSpeed=0});
+    chassis.waitUntilDone();
+    chassis.turnToHeading(225, 500);
+    chassis.waitUntilDone();
+    // chassis.moveToPose(3, -60, 225, 2000, {.forwards=true, .maxSpeed=80, .minSpeed=0});
+    // chassis.waitUntilDone();
+
+    intake->stop();
+    delay(200);
+    intake->forwards();
+    delay(200);
+    intake->stop();
+    arm->liftPID.kP = 1000;
+    arm->set_target(SCORE + 20);
+    delay(1000);
+    arm->liftPID.kP = ARM_P_VALUE;
+
+    delay(100000);
+
+    runningAuton = false;
+
+    return;
     if (ELIMS) {
         bestautonfr::blue_sixringplus(&robot, &chassis);
         return;
@@ -303,21 +420,21 @@ void opcontrol() {
     std::unordered_set<controller_digital_e_t> held;
 
     int numStates = 4;
-    const int DESCORE = 140;
     int states[numStates] = {DESCORE + 10, DESCORE + 20, DESCORE + 30, DESCORE + 40};
     int state = 0;
 
     double pct = 1.0;
     int counter = 0;
     
-    const float armP = 1.5f;
+    const float armP = ARM_P_VALUE;
 
     intake->color_sort = true;
-    if (DRIVER_SKILLS) {
-        intake->set_color(RED);
-    } else {
-        intake->set_color(sec::color);
-    }
+    // if (DRIVER_SKILLS) {
+    //     intake->set_color(RED);
+    // } else {
+    //     intake->set_color(sec::color);
+    // }
+    intake->set_color(BLUE);
 
     if (ELIMS) intake->set_color(BLUE);
 
@@ -344,18 +461,17 @@ void opcontrol() {
                 arm->liftPID.kP = armP;
                 arm->moving = false;
                 if (counter < 250) {
-                    if (arm->armTarget == (LOAD+4)) {
+                    if (arm->armTarget == (LOAD+1)) {
                         arm->set_target(MID + 40);
                         abc2 = false;
                     } else if (arm->armTarget == (MID + 40)) {
-                        arm->liftPID.kP = 1;
+                        // arm->liftPID.kP = 1;
                         arm->set_target(ALLIANCE_STAKE + 10);
                     } else {
-                        arm->set_target(LOAD+4);
+                        arm->set_target(LOAD+1);
                     }
                 } else {
-                    arm->liftPID.kP = 1;
-                    arm->set_target(LOAD+4);
+                    arm->set_target(LOAD+1);
                 }
 
                 if (abc) abc2 = true;
@@ -391,11 +507,9 @@ void opcontrol() {
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L2, std::make_pair(
         [&](bool firstActivation) {
-            arm->liftPID.kP = armP;
             arm->set_target(REST);
         }, 
         [&]() {
-            arm->liftPID.kP = armP;
             arm->set_target(REST);
         }
     ));
@@ -433,7 +547,7 @@ void opcontrol() {
     hold_controls.emplace(E_CONTROLLER_DIGITAL_Y, std::make_pair(
         [&](bool firstActivation) {
             lbSetting = true;
-            arm->liftPID.kP = 1;
+            // arm->liftPID.kP = 1;
             if (firstActivation) {
                 arm->set_target(states[0]);
             }

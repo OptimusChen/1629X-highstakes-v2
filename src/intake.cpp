@@ -149,7 +149,7 @@ void Intake::stop() {
 }
 
 bool Intake::detected_ring(int threshold) {
-    return optical->get_proximity() > threshold;
+    return colorSortOptical->get_proximity() > threshold;
 }
 
 void Intake::set_stop_condition(std::function<bool()> condition) {
