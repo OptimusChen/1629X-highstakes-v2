@@ -21,6 +21,8 @@ using namespace lib;
 class Arm : public Subsystem {
 public:
     int armTarget;
+    float armpos = 0;
+    float initialangle = 0;
 
     Motor* motor;
     Rotation* rotation;

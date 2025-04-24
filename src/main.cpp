@@ -156,7 +156,7 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 
 void initialize() {
     lcd::initialize();
-    // sec::init(&robot);
+    sec::init(&robot);
 
     // std::cout << &robot << std::endl;
 
@@ -234,107 +234,207 @@ void disabled() {}
 
 void competition_initialize() {}
 
+// blue = 0
+#define hahaha 0
+
 void autonomous() {
     // chassis.setPose(0, 0, 0);
     // chassis.turnToHeading(90, 500000);
     // chassis.moveToPoint(0, 10, 50000);
 
-    chassis.setPose(58, -14, 33.5);
-    Arm * arm = robot.get_subsystem<Arm>();
-    Intake * intake = robot.get_subsystem<Intake>();
-    intake->arm = arm;
+    if (hahaha == 0) {
+        chassis.setPose(58, -14, 33.5);
+        Arm * arm = robot.get_subsystem<Arm>();
+        Intake * intake = robot.get_subsystem<Intake>();
+        intake->arm = arm;
 
-    auto stage_1_stop = [&] {
-        return intake->detected_ring(STAGE_2);
-    };
+        // arm->initialangle = LOAD;
 
-    intake->color_sort = false;
-    intake->set_color(BLUE);
+        auto stage_1_stop = [&] {
+            return intake->detected_ring(STAGE_2);
+        };
 
-    bool runningAuton = true;
+        intake->color_sort = false;
+        intake->set_color(BLUE);
 
-    std::cout << "test" << std::endl;
+        bool runningAuton = true;
 
-    Task updates([&]() {
-        while (runningAuton) {
-            arm->update();
-            intake->update();
-            delay(1);
-        }
-    });
+        std::cout << "test" << std::endl;
 
-    arm->set_target(ALLIANCE_STAKE + 80);
+        Task updates([&]() {
+            while (runningAuton) {
+                arm->update();
+                intake->update();
+                delay(1);
+            }
+        });
 
-    delay(750);
+        arm->set_target(ALLIANCE_STAKE + 80);
 
-    chassis.moveToPoint(54, -23.5, 2000, {.forwards=false, .maxSpeed=127, .minSpeed=10});
-    chassis.waitUntilDone();
-
-    robot.set_lift_intake(true);
-    arm->set_target(REST);
-    intake->set_stop_condition(stage_1_stop);
-    intake->forwards(80);
-
-    chassis.turnToPoint(49, -6, 500);
-    chassis.waitUntilDone();
-    chassis.moveToPoint(49, -6, 100000, {.forwards=true, .maxSpeed=80, .minSpeed=0});    
-    chassis.waitUntilDone();
-    delay(200);
-    robot.set_lift_intake(false);
-    intake->set_stop_condition(stage_1_stop);
-    intake->set_stop_condition(stage_1_stop);
-    intake->set_stop_condition(stage_1_stop);
-
-    delay(1000);
-
-    intake->backwards(40);
-    chassis.turnToPoint(20.5, -25.5, 500, {.forwards=false});
-    chassis.waitUntilDone();
-    intake->stop();
-    intake->set_stop_condition(nullptr);
-    chassis.moveToPoint(20.5, -25.5, 5000, {.forwards=false, .maxSpeed=60, .minSpeed=0});
-    chassis.waitUntilDone();
-
-    robot.set_mogo(true);
-    delay(500);
-    intake->set_stop_condition(nullptr);
-    intake->forwards();
-    delay(1000);
-
-    chassis.turnToPoint(15.5, -41, 1000);
-    chassis.waitUntilDone();
-
-    Task t([&] {
         delay(750);
-        intake->antijam = false;
-        arm->set_target(LOAD + 4);
-    });
 
-    chassis.moveToPoint(15.5, -41, 2000, {.forwards=true, .maxSpeed=100, .minSpeed=0});
-    chassis.waitUntilDone();
+        chassis.moveToPoint(54, -23.5, 2000, {.forwards=false, .maxSpeed=127, .minSpeed=10});
+        chassis.waitUntilDone();
 
-    chassis.turnToPoint(3, -61, 500);
-    chassis.waitUntilDone();
-    chassis.moveToPoint(3, -61, 2000, {.forwards=true, .maxSpeed=80, .minSpeed=0});
-    chassis.waitUntilDone();
-    chassis.turnToHeading(225, 500);
-    chassis.waitUntilDone();
-    // chassis.moveToPose(3, -60, 225, 2000, {.forwards=true, .maxSpeed=80, .minSpeed=0});
-    // chassis.waitUntilDone();
+        robot.set_lift_intake(true);
+        arm->set_target(REST);
+        intake->set_stop_condition(stage_1_stop);
+        intake->forwards(80);
 
-    intake->stop();
-    delay(200);
-    intake->forwards();
-    delay(200);
-    intake->stop();
-    arm->liftPID.kP = 1000;
-    arm->set_target(SCORE + 20);
-    delay(1000);
-    arm->liftPID.kP = ARM_P_VALUE;
+        chassis.turnToPoint(49, -6, 500);
+        chassis.waitUntilDone();
+        chassis.moveToPoint(49, -6, 100000, {.forwards=true, .maxSpeed=80, .minSpeed=0});    
+        chassis.waitUntilDone();
+        delay(200);
+        robot.set_lift_intake(false);
+        intake->set_stop_condition(stage_1_stop);
+        intake->set_stop_condition(stage_1_stop);
+        intake->set_stop_condition(stage_1_stop);
 
-    delay(100000);
+        delay(1000);
 
-    runningAuton = false;
+        intake->backwards(40);
+        chassis.turnToPoint(20.5, -25.5, 500, {.forwards=false});
+        chassis.waitUntilDone();
+        intake->stop();
+        intake->set_stop_condition(nullptr);
+        chassis.moveToPoint(20.5, -25.5, 5000, {.forwards=false, .maxSpeed=60, .minSpeed=0});
+        chassis.waitUntilDone();
+
+        robot.set_mogo(true);
+        delay(500);
+        intake->set_stop_condition(nullptr);
+        intake->forwards();
+        delay(1000);
+
+        chassis.turnToPoint(15.5, -41, 1000);
+        chassis.waitUntilDone();
+
+        Task t([&] {
+            delay(750);
+            intake->antijam = false;
+            arm->set_target(LOAD+2);
+        });
+
+        chassis.moveToPoint(15.5, -41, 2000, {.forwards=true, .maxSpeed=100, .minSpeed=0});
+        chassis.waitUntilDone();
+
+        chassis.turnToPoint(3, -61, 500);
+        chassis.waitUntilDone();
+        chassis.moveToPoint(3, -61, 2000, {.forwards=true, .maxSpeed=80, .minSpeed=0});
+        chassis.waitUntilDone();
+        chassis.turnToHeading(225, 500);
+        chassis.waitUntilDone();
+        // chassis.moveToPose(3, -60, 225, 2000, {.forwards=true, .maxSpeed=80, .minSpeed=0});
+        // chassis.waitUntilDone();
+
+        intake->stop();
+        delay(200);
+        intake->forwards();
+        delay(200);
+        intake->stop();
+        arm->liftPID.kP = 1000;
+        arm->set_target(SCORE + 20);
+        delay(1000);
+        arm->liftPID.kP = ARM_P_VALUE;
+    } else {
+        chassis.setPose(-58, -14, 326.5);
+        Arm * arm = robot.get_subsystem<Arm>();
+        Intake * intake = robot.get_subsystem<Intake>();
+        intake->arm = arm;
+
+        arm->initialangle = LOAD;
+
+        auto stage_1_stop = [&] {
+            return intake->detected_ring(STAGE_2);
+        };
+
+        intake->color_sort = false;
+        intake->set_color(RED);
+
+        bool runningAuton = true;
+
+        std::cout << "test" << std::endl;
+
+        Task updates([&]() {
+            while (runningAuton) {
+                arm->update();
+                intake->update();
+                delay(1);
+            }
+        });
+
+        arm->set_target(ALLIANCE_STAKE + 80);
+
+        delay(750);
+
+        chassis.moveToPoint(-54, -23.5, 2000, {.forwards=false, .maxSpeed=127, .minSpeed=10});
+        chassis.waitUntilDone();
+
+        robot.set_lift_intake(true);
+        arm->set_target(REST);
+        intake->set_stop_condition(stage_1_stop);
+        intake->forwards(80);
+
+        chassis.turnToPoint(-49, -6, 500);
+        chassis.waitUntilDone();
+        chassis.moveToPoint(-49, -6, 100000, {.forwards=true, .maxSpeed=80, .minSpeed=0});    
+        chassis.waitUntilDone();
+        delay(200);
+        robot.set_lift_intake(false);
+        intake->set_stop_condition(stage_1_stop);
+        intake->set_stop_condition(stage_1_stop);
+        intake->set_stop_condition(stage_1_stop);
+
+        delay(1000);
+
+        intake->backwards(40);
+        chassis.turnToPoint(-20.5, -25.5, 500, {.forwards=false});
+        chassis.waitUntilDone();
+        intake->stop();
+        intake->set_stop_condition(nullptr);
+        chassis.moveToPoint(-20.5, -25.5, 5000, {.forwards=false, .maxSpeed=60, .minSpeed=0});
+        chassis.waitUntilDone();
+
+        robot.set_mogo(true);
+        delay(500);
+        intake->set_stop_condition(nullptr);
+        intake->forwards();
+        delay(1000);
+
+        chassis.turnToPoint(-28.5, -41, 1000);
+        chassis.waitUntilDone();
+
+        Task t([&] {
+            delay(750);
+            intake->antijam = false;
+            arm->set_target(LOAD + 2);
+        });
+
+        chassis.moveToPoint(-28.5, -41, 2000, {.forwards=true, .maxSpeed=100, .minSpeed=0});
+        chassis.waitUntilDone();
+
+        chassis.turnToPoint(-16, -66, 500);
+        chassis.waitUntilDone();
+        chassis.moveToPoint(-16, -66, 2000, {.forwards=true, .maxSpeed=80, .minSpeed=0});
+        chassis.waitUntilDone();
+        chassis.turnToHeading(135, 500);
+        chassis.waitUntilDone();
+        // chassis.moveToPose(3, -60, 225, 2000, {.forwards=true, .maxSpeed=80, .minSpeed=0});
+        // chassis.waitUntilDone();
+
+        intake->stop();
+        delay(200);
+        intake->forwards();
+        delay(200);
+        intake->stop();
+        arm->liftPID.kP = 1000;
+        arm->set_target(SCORE + 20);
+        delay(1000);
+        arm->liftPID.kP = ARM_P_VALUE;
+
+        runningAuton = false;
+    }
 
     return;
     if (ELIMS) {
@@ -428,13 +528,13 @@ void opcontrol() {
     
     const float armP = ARM_P_VALUE;
 
-    intake->color_sort = true;
+    intake->color_sort = false;
     // if (DRIVER_SKILLS) {
     //     intake->set_color(RED);
     // } else {
     //     intake->set_color(sec::color);
     // }
-    intake->set_color(BLUE);
+    intake->set_color(RED);
 
     if (ELIMS) intake->set_color(BLUE);
 
@@ -486,6 +586,19 @@ void opcontrol() {
         // pct += 0.1;
         // if (pct > 1) pct = 0.0;
     });
+
+    hold_controls.emplace(E_CONTROLLER_DIGITAL_A, std::make_pair(
+        [&](bool firstActivation) {
+            arm->move(-127);
+            if (abs(arm->motor->get_current_draw()) > 2000) {
+                arm->armpos = arm->rotation->get_angle() / 100.0f;
+                arm->set_target(REST);
+            }
+        },
+        [&]() {
+            
+        }
+    ));
 
     toggle_controls.emplace(E_CONTROLLER_DIGITAL_L1, [&]() {
         if (lbSetting) {

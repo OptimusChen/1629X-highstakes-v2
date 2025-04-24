@@ -2,7 +2,6 @@
 #include "controls.hpp"
 #include "lib/util.hpp"
 
-float armpos = 0;
 float prev = 0;
 
 void Arm::initialize() {
@@ -18,8 +17,10 @@ void Arm::initialize() {
     initialized = true;
 
     rotation->set_data_rate(5);
+    rotation->reset_position();
+    rotation->reset();
 
-    armpos = rotation->get_angle() / 100.0f;
+    armpos = rotation->get_position() / 100.0f;
     prev = armpos;
 }
 
@@ -27,7 +28,7 @@ void Arm::update() {
     if (!rotation) return;
     if (!motor) return;
 
-    float measure = rotation->get_angle() / 100.0f;
+    float measure = rotation->get_position() / 100.0f;
     float delta = measure - prev;
     // Fix for wraparound
     if (delta > 180.0f) delta -= 360.0f;
@@ -36,11 +37,19 @@ void Arm::update() {
     armpos += delta / 3.0f;
 
     if (moving) return;
+
+    armpos = measure / 3.0f;
+
+    // armpos = measure / 3.0f;
+
+    // std::cout << armpos << std::endl;
+
+    // return;
     
     // if (measure > 350) measure = 0;
     // float measure = motor->get_position();
 
-    float liftPower = liftPID.calculate(armTarget - armpos);
+    float liftPower = liftPID.calculate(armTarget - armpos - initialangle);
 
     std::cout << armTarget << " - " << armpos << " = " << (armTarget - armpos) << std::endl;
 
