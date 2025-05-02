@@ -691,7 +691,19 @@ void opcontrol() {
         }
     ));
 
+    bool backwerds = true;
+
     while (true) {
+        if (backwerds) {
+            arm->move(-127);
+
+            std::cout << arm->motor->get_current_draw() << std::endl;
+            if (arm->motor->get_current_draw() > 2100) {
+                backwerds = false;
+                arm->armpos = 350;
+                arm->set_target(LOAD);
+            }
+        }
         float rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         float leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 

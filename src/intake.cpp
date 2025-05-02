@@ -47,8 +47,6 @@ void Intake::update() {
         sort = color == BLUE && ((opticalMeasure > 340 && opticalMeasure < 360) || (opticalMeasure < 20)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120;
     }
 
-    std::cout << "a"<< sort << std::endl;
-
     if (sort) {
         this->toSort = true;
 
@@ -101,7 +99,6 @@ void Intake::set_color(int color) {
 }
 
 void Intake::forwards(int power) {
-    std::cout << "b" << toSort << std::endl;
     if (toSort) {
         return;
     }

@@ -32,8 +32,8 @@
 #define SORTING_PISTON 5
 #define INTAKE_LIFT 6
 
-#define DOINKER_LEFT 2
-#define DOINKER_RIGHT 3
+#define DOINKER_LEFT 7
+#define DOINKER_RIGHT 8
 #define MOGO 5
 
 #define CORNER_ARM 0

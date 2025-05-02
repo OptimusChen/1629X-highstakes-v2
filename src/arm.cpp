@@ -16,11 +16,7 @@ void Arm::initialize() {
     motor->tare_position();
     initialized = true;
 
-    rotation->set_data_rate(5);
-    rotation->reset_position();
-    rotation->reset();
-
-    armpos = rotation->get_position() / 100.0f;
+    armpos = 0;
     prev = armpos;
 }
 
@@ -28,7 +24,7 @@ void Arm::update() {
     if (!rotation) return;
     if (!motor) return;
 
-    float measure = rotation->get_position() / 100.0f;
+    float measure = rotation->get_angle() / 100.0f;
     float delta = measure - prev;
     // Fix for wraparound
     if (delta > 180.0f) delta -= 360.0f;
@@ -38,7 +34,7 @@ void Arm::update() {
 
     if (moving) return;
 
-    armpos = measure / 3.0f;
+    armpos = fmod(armpos, 360.0f);
 
     // armpos = measure / 3.0f;
 
@@ -51,7 +47,9 @@ void Arm::update() {
 
     float liftPower = liftPID.calculate(armTarget - armpos - initialangle);
 
-    std::cout << armTarget << " - " << armpos << " = " << (armTarget - armpos) << std::endl;
+    // std::cout << armTarget << " - " << armpos << " = " << (armTarget - armpos) << std::endl;
+
+    std::cout << armpos << std::endl;
 
     if (abs(liftPower) > 5 && abs(liftPower) < 20) {
         liftPower = util::sign(liftPower) * std::fmax(abs(liftPower), 20.0);
