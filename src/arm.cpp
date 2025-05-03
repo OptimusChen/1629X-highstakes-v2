@@ -16,7 +16,7 @@ void Arm::initialize() {
     motor->tare_position();
     initialized = true;
 
-    armpos = 0;
+    armpos = rotation->get_angle() / 100.0f;
     prev = armpos;
 }
 
@@ -36,25 +36,13 @@ void Arm::update() {
 
     armpos = fmod(armpos, 360.0f);
 
-    // armpos = measure / 3.0f;
-
-    // std::cout << armpos << std::endl;
-
-    // return;
-    
-    // if (measure > 350) measure = 0;
-    // float measure = motor->get_position();
-
     float liftPower = liftPID.calculate(armTarget - armpos - initialangle);
-
-    // std::cout << armTarget << " - " << armpos << " = " << (armTarget - armpos) << std::endl;
 
     std::cout << armpos << std::endl;
 
     if (abs(liftPower) > 5 && abs(liftPower) < 20) {
         liftPower = util::sign(liftPower) * std::fmax(abs(liftPower), 20.0);
     }
-    // std::cout << liftPower << std::endl;
     motor->move(liftPower);
 }
 
