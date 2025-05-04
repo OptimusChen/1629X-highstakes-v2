@@ -52,11 +52,11 @@ void Intake::update() {
 
         pros::Task ejectRingTask([&] {
           hooks.move(127);
-          pros::delay(50);
+          if (hooks.get_actual_velocity() < 450) pros::delay(50);
           hooks.move(-127); // we suddenly stop the intake right before the ring reaches the top, so
                                               // it's inertia flings it off the hook before it can score onto the mogo
 
-          pros::delay(200);
+          pros::delay(400);
           hooks.move(127);
           this->toSort = false;
           this->sortNextRing = false;
@@ -103,7 +103,9 @@ void Intake::forwards(int power) {
         return;
     }
     if (reversed) power = -power;
-    hooks.move(power);
+    double pct = power / 127.0;
+    // hooks.move(power);
+    hooks.move_velocity(600 * pct);
     voltsMutex.take();
     volts = power;
     voltsMutex.give();

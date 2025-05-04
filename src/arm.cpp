@@ -38,7 +38,7 @@ void Arm::update() {
 
     float liftPower = liftPID.calculate(armTarget - armpos - initialangle);
 
-    std::cout << armpos << std::endl;
+    // std::cout << armpos << std::endl;
 
     if (abs(liftPower) > 5 && abs(liftPower) < 20) {
         liftPower = util::sign(liftPower) * std::fmax(abs(liftPower), 20.0);

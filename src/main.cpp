@@ -86,13 +86,13 @@ lemlib::Drivetrain drivetrain(
 lemlib::ControllerSettings lateral_controller(
     10, // proportional gain (kP)
     0, // integral gain (kI)
-    1, // derivative gain (kD)
+    60, // derivative gain (kD)
     3, // anti windup
     1, // small error range, in inches
-    100, // small error range timeout, in milliseconds
+    100, // small error range timeout, in millisecond
     3, // large error range, in inches
     500, // large error range timeout, in milliseconds
-    20 // maximum acceleration (slew)
+    0 // maximum acceleration (slew)
 );
 
 // angular PID controller
@@ -167,6 +167,8 @@ float get_rotation_degrees(Rotation rot) {
     if (measure > 350) return 0;
     return measure;
 }
+
+bool backwerds = true;
 
 void opcontrol() {
     Intake* intake = robot.get_subsystem<Intake>();
@@ -352,24 +354,27 @@ void opcontrol() {
         }
     ));
 
-    bool backwerds = true;
-    arm->motor->brake(); double start = pros::millis();
+    double start = pros::millis();
 
     while (true) {
-        if (backwerds) {
-            arm->motor->move(-127);
+        std::cout << "Arm: " << arm->motor->get_actual_velocity() << std::endl;
+        std::cout << "Arm 2: " << arm->motor->get_voltage() << std::endl;
+        std::cout << "Arm 2: " << backwerds << std::endl;
 
-            if (pros::millis() - start > 500 && arm->motor->get_actual_velocity() < 10) {
+        if (backwerds) {
+            std::cout << "Voltage: " << arm->motor->get_voltage() << std::endl;
+            arm->motor->move(-127);
+            arm->moving = true;
+
+            if (pros::millis() - start > 500 && abs(arm->motor->get_actual_velocity()) < 1) {
                 arm->motor->brake();
                 backwerds = false;
-                arm->armpos = 355;
-                arm->set_target(LOAD);
+                arm->armpos = 0;
+                arm->set_target(REST);
                 arm->moving = false;
             }
-        } else if (arm->motor->get_current_draw() > 2000) {
-            arm->motor->brake();
-            arm->motor->move(0);
-        }
+        } 
+
         float rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         float leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 
@@ -379,8 +384,6 @@ void opcontrol() {
         for (Subsystem* subsystem : robot.subsystems) {
             subsystem->update();
         }
-
-        // std::cout << intake->optical.get_proximity() << std::endl;
 
         for (auto control : toggle_controls) {
             if (master.get_digital_new_press(control.first) && !held.contains(control.first)) {
