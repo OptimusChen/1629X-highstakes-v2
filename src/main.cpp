@@ -159,7 +159,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
-    worldsautonomous::red_sawp(&chassis, &robot);
+    worldsautonomous::blue_sawp(&chassis, &robot);
 }
 
 float get_rotation_degrees(Rotation rot) {
@@ -174,7 +174,6 @@ void opcontrol() {
     Intake* intake = robot.get_subsystem<Intake>();
     Arm* arm = robot.get_subsystem<Arm>();
     
-    intake->arm = arm;
     intake->color_sort = true;
     intake->antijam = false;
     intake->toSort = false;
@@ -203,15 +202,14 @@ void opcontrol() {
     
     const float armP = ARM_P_VALUE;
 
-    intake->color_sort = false;
-    intake->set_color(RED);
-
     robot.set_brake_mode(MOTOR_BRAKE_HOLD);
 
     arm->liftPID.kP = armP;
 
     bool abc = false;
     bool abc2 = false;
+
+    return;
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
         [&](bool firstActivation) {
