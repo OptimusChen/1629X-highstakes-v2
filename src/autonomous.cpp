@@ -68,7 +68,7 @@ void red6p1Start(lemlib::Chassis* chassis, Robot* robot, Arm* arm, Intake* intak
  
     intake->color_sort = false;
     intake->antijam = false;    
-    chassis->moveToPoint(-70, 70, 500, {.forwards = true, .maxSpeed = 80, .minSpeed=60});  
+    chassis->moveToPoint(-70, 70, 500, {.forwards = true, .maxSpeed = 127});  
     chassis->waitUntilDone();   
     
     chassis->moveToPoint(-47, 47, 1000, {.forwards = false, .maxSpeed = 40});
@@ -89,14 +89,16 @@ void red6p1Start(lemlib::Chassis* chassis, Robot* robot, Arm* arm, Intake* intak
     chassis->turnToPoint(-47, 18, 500);
     chassis->waitUntilDone();
     robot->set_rush_arm_left(false);
+    Task pistakeTask([&] {
+        pros::delay(500);
+        robot->set_lift_intake(true);
+    });
     chassis->moveToPose(-47, 12, 180, 1000, {.forwards = true, .lead=0.2, .maxSpeed=127, .minSpeed=60});
     chassis->waitUntilDone();
-    robot->set_lift_intake(true);
     chassis->moveToPoint(-47, 6, 1000, {.forwards = true, .maxSpeed = 60});
     chassis->waitUntilDone();
     robot->set_lift_intake(false);
 }
-
 void worldsautonomous::red6p1CornerClear(lemlib::Chassis* chassis, Robot* robot) {
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
@@ -177,6 +179,54 @@ void worldsautonomous::red6p1CornerNoSweep(lemlib::Chassis* chassis, Robot* robo
 
     runningAuton = false;
 }
+
+void worldsautonomous::red6p1Ladder(lemlib::Chassis* chassis, Robot* robot) {
+    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
+
+    Arm * arm = robot->get_subsystem<Arm>();
+    Intake * intake = robot->get_subsystem<Intake>();
+    intake->arm = arm; 
+    
+    intake->color_sort = true;
+    intake->set_color(RED);  
+
+    auto stage_1_stop = [&] {
+        auto opticalMeasure = intake->optical->get_hue();
+        bool correctColor = true;
+        if (intake->color == RED && ((opticalMeasure > 170) && (opticalMeasure < 245))) correctColor = false;
+        if (intake->color == BLUE && ((opticalMeasure > 340 && opticalMeasure < 360) || (opticalMeasure < 20))) correctColor = false;
+        return intake->detected_ring(STAGE_2) && correctColor;
+    };
+
+    bool runningAuton = true;
+
+    Task updates([&]() {
+        while (runningAuton) {
+            arm->update();
+            intake->update();
+            delay(1);
+        }
+    });
+
+    red6p1Start(chassis, robot, arm, intake);
+
+    delay(200);
+    chassis->moveToPoint(-47, 0, 1000, {.forwards = false, .maxSpeed = 127, .minSpeed=60});
+    chassis->waitUntilDone();
+    
+    chassis->turnToPoint(0, 0, 500);
+    chassis->waitUntilDone();
+
+    chassis->moveToPoint(-32, 0, 1000, {.forwards = true, .maxSpeed = 60});
+    chassis->waitUntilDone();
+
+    arm->set_target(ALLIANCE_STAKE + 40);
+
+    delay(1200);
+
+    runningAuton = false;
+}
+
 
 void worldsautonomous::red_sawp(lemlib::Chassis* chassis, Robot* robot) {
     robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
