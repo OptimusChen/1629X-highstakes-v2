@@ -104,9 +104,8 @@ void worldsautonomous::red6p1CornerClear(lemlib::Chassis* chassis, Robot* robot)
 
     intake->color_sort = true;
 
-    chassis->moveToPoint(-60, 60, 500, {.forwards = true, .maxSpeed = 127, .minSpeed=80});  
+    chassis->moveToPoint(-60, 60, 500, {.forwards = true, .maxSpeed = 127, .minSpeed=50});  
     chassis->waitUntilDone(); 
-
     delay(500);
     
     chassis->moveToPoint(-47, 47, 1000, {.forwards = false, .maxSpeed = 40});
