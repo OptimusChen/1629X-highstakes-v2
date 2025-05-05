@@ -133,7 +133,7 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 
 void initialize() {
     lcd::initialize();
-    sec::init(&robot);
+    // sec::init(&robot);
 
     robot.add_subsystem(new Intake());
     robot.add_subsystem(new Arm());
@@ -162,7 +162,7 @@ void competition_initialize() {}
 
 void autonomous() {
     if (AUTON) {
-        worldsautonomous::red6p1Ladder(&chassis, &robot);
+        worldsautonomous::bluePos6Ladder(&chassis, &robot);
         return;
     } 
 

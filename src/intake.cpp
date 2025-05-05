@@ -46,10 +46,8 @@ void Intake::update() {
         sort = color == RED && ((opticalMeasure > 170) && (opticalMeasure < 245)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120;
     }
     if (color == BLUE) {
-        sort = color == BLUE && ((opticalMeasure > 340 && opticalMeasure < 360) || (opticalMeasure < 20)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120;
+        sort = color == BLUE && ((opticalMeasure > 355 && opticalMeasure < 360) || (opticalMeasure < 12)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120;
     }
-
-    // std::cout << colorSortOptical->get_integration_time() << std::endl;
 
     if (sort) {
         this->toSort = true;
@@ -57,10 +55,6 @@ void Intake::update() {
         pros::Task ejectRingTask([&] {
           hooks.move(127);
           pros::delay(150);
-          if (hooks.get_actual_velocity() < 300) {
-            pros::delay(50);
-            std::cout << "Slow eject" << std::endl;
-          }
           hooks.move(-127); // we suddenly stop the intake right before the ring reaches the top, so
                                               // it's inertia flings it off the hook before it can score onto the mogo
 
