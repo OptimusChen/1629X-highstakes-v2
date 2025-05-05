@@ -63,35 +63,7 @@ void redNegStart(lemlib::Chassis* chassis, Robot* robot, Arm* arm, Intake* intak
     chassis->turnToPoint(-70, 70, 200);
     chassis->waitUntilDone();
 }
-
-void worldsautonomous::red6p1CornerClear(lemlib::Chassis* chassis, Robot* robot) {
-    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
-
-    Arm * arm = robot->get_subsystem<Arm>();
-    Intake * intake = robot->get_subsystem<Intake>();
-    intake->arm = arm; 
-    
-    intake->color_sort = true;
-    intake->set_color(RED);  
-
-    auto stage_1_stop = [&] {
-        auto opticalMeasure = intake->optical->get_hue();
-        bool correctColor = true;
-        if (intake->color == RED && ((opticalMeasure > 170) && (opticalMeasure < 245))) correctColor = false;
-        if (intake->color == BLUE && ((opticalMeasure > 340 && opticalMeasure < 360) || (opticalMeasure < 20))) correctColor = false;
-        return intake->detected_ring(STAGE_2) && correctColor;
-    };
-
-    bool runningAuton = true;
-
-    Task updates([&]() {
-        while (runningAuton) {
-            arm->update();
-            intake->update();
-            delay(1);
-        }
-    });
-
+void red6p1Start(lemlib::Chassis* chassis, Robot* robot, Arm* arm, Intake* intake) {
     redNegStart(chassis, robot, arm, intake);
  
     intake->color_sort = false;
@@ -123,6 +95,37 @@ void worldsautonomous::red6p1CornerClear(lemlib::Chassis* chassis, Robot* robot)
     chassis->moveToPoint(-47, 6, 1000, {.forwards = true, .maxSpeed = 60});
     chassis->waitUntilDone();
     robot->set_lift_intake(false);
+}
+
+void worldsautonomous::red6p1CornerClear(lemlib::Chassis* chassis, Robot* robot) {
+    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
+
+    Arm * arm = robot->get_subsystem<Arm>();
+    Intake * intake = robot->get_subsystem<Intake>();
+    intake->arm = arm; 
+    
+    intake->color_sort = true;
+    intake->set_color(RED);  
+
+    auto stage_1_stop = [&] {
+        auto opticalMeasure = intake->optical->get_hue();
+        bool correctColor = true;
+        if (intake->color == RED && ((opticalMeasure > 170) && (opticalMeasure < 245))) correctColor = false;
+        if (intake->color == BLUE && ((opticalMeasure > 340 && opticalMeasure < 360) || (opticalMeasure < 20))) correctColor = false;
+        return intake->detected_ring(STAGE_2) && correctColor;
+    };
+
+    bool runningAuton = true;
+
+    Task updates([&]() {
+        while (runningAuton) {
+            arm->update();
+            intake->update();
+            delay(1);
+        }
+    });
+
+    red6p1Start(chassis, robot, arm, intake);
 
     robot->set_rush_arm_right(true);
     chassis->moveToPoint(-62, -56, 2000, {.forwards = true, .maxSpeed = 127, .minSpeed=80});
@@ -132,6 +135,44 @@ void worldsautonomous::red6p1CornerClear(lemlib::Chassis* chassis, Robot* robot)
     chassis->waitUntilDone();
 
     chassis->moveToPoint(-62, -62, 1000, {.forwards = false, .maxSpeed = 127, .minSpeed=127});
+    chassis->waitUntilDone();
+
+    runningAuton = false;
+}
+void worldsautonomous::red6p1CornerNoSweep(lemlib::Chassis* chassis, Robot* robot) {
+    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
+
+    Arm * arm = robot->get_subsystem<Arm>();
+    Intake * intake = robot->get_subsystem<Intake>();
+    intake->arm = arm; 
+    
+    intake->color_sort = true;
+    intake->set_color(RED);  
+
+    auto stage_1_stop = [&] {
+        auto opticalMeasure = intake->optical->get_hue();
+        bool correctColor = true;
+        if (intake->color == RED && ((opticalMeasure > 170) && (opticalMeasure < 245))) correctColor = false;
+        if (intake->color == BLUE && ((opticalMeasure > 340 && opticalMeasure < 360) || (opticalMeasure < 20))) correctColor = false;
+        return intake->detected_ring(STAGE_2) && correctColor;
+    };
+
+    bool runningAuton = true;
+
+    Task updates([&]() {
+        while (runningAuton) {
+            arm->update();
+            intake->update();
+            delay(1);
+        }
+    });
+
+    red6p1Start(chassis, robot, arm, intake);
+
+    chassis->moveToPoint(-62, -30, 2000, {.forwards = true, .maxSpeed = 127, .minSpeed=80});
+    chassis->waitUntilDone();
+
+    chassis->turnToPoint(0, 0, 1000);
     chassis->waitUntilDone();
 
     runningAuton = false;

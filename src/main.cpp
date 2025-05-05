@@ -162,7 +162,7 @@ void competition_initialize() {}
 
 void autonomous() {
     if (AUTON) {
-        worldsautonomous::red6p1CornerClear(&chassis, &robot);
+        worldsautonomous::red6p1CornerNoSweep(&chassis, &robot);
         return;
     } 
 
