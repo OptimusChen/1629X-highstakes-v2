@@ -58,7 +58,7 @@ void redNegStart(lemlib::Chassis* chassis, Robot* robot, Arm* arm, Intake* intak
     chassis->moveToPoint(-21.5, 48, 1000, {.forwards = true, .maxSpeed = 127, .minSpeed=60});
     chassis->waitUntilDone();
     // chassis->moveToPose(-57, 57, 315, 2000, {.forwards = true, .lead=0.2, .maxSpeed=127});
-    chassis->moveToPoint(-56, 56, 2000, {.forwards = true, .maxSpeed = 127});
+    chassis->moveToPoint(-54, 54, 2000, {.forwards = true, .maxSpeed = 127});
     chassis->waitUntilDone();
     chassis->turnToPoint(-70, 70, 200);
     chassis->waitUntilDone();
@@ -68,7 +68,7 @@ void red6p1Start(lemlib::Chassis* chassis, Robot* robot, Arm* arm, Intake* intak
  
     intake->color_sort = false;
     intake->antijam = false;    
-    chassis->moveToPoint(-70, 70, 500, {.forwards = true, .maxSpeed = 127});  
+    chassis->moveToPoint(-70, 70, 500, {.forwards = true, .maxSpeed = 127, .minSpeed=40});  
     chassis->waitUntilDone();   
     
     chassis->moveToPoint(-47, 47, 1000, {.forwards = false, .maxSpeed = 40});
