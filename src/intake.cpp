@@ -11,7 +11,7 @@ void Intake::initialize() {
     optical = new Optical(OPTICAL);
     colorSortOptical = new Optical(COLOR_SORT_OPTICAL);
 
-    optical->set_integration_time(10);
+    optical->set_integration_time(7);
     optical->set_led_pwm(100);
 
     colorSortOptical->set_integration_time(10);
@@ -28,8 +28,10 @@ void Intake::initialize() {
 }
 
 void Intake::update() {
-    colorSortOptical->set_integration_time(10);
-    colorSortOptical->set_led_pwm(100);
+    // colorSortOptical->set_integration_time(10);
+    // colorSortOptical->set_led_pwm(100);
+    // optical->set_integration_time(10);
+    // colorSortOptical->set_led_pwm(100);
 
     auto opticalMeasure = colorSortOptical->get_hue();
     int off = 100;
@@ -47,12 +49,18 @@ void Intake::update() {
         sort = color == BLUE && ((opticalMeasure > 340 && opticalMeasure < 360) || (opticalMeasure < 20)) && color_sort && !toSort && colorSortOptical->get_proximity() > 120;
     }
 
+    // std::cout << colorSortOptical->get_integration_time() << std::endl;
+
     if (sort) {
         this->toSort = true;
 
         pros::Task ejectRingTask([&] {
           hooks.move(127);
-          if (hooks.get_actual_velocity() < 450) pros::delay(50);
+          pros::delay(150);
+          if (hooks.get_actual_velocity() < 300) {
+            pros::delay(50);
+            std::cout << "Slow eject" << std::endl;
+          }
           hooks.move(-127); // we suddenly stop the intake right before the ring reaches the top, so
                                               // it's inertia flings it off the hook before it can score onto the mogo
 
@@ -148,7 +156,7 @@ void Intake::stop() {
 }
 
 bool Intake::detected_ring(int threshold) {
-    return colorSortOptical->get_proximity() > threshold;
+    return optical->get_proximity() > threshold;
 }
 
 void Intake::set_stop_condition(std::function<bool()> condition) {

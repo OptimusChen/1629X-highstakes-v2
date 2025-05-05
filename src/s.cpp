@@ -10,11 +10,42 @@ Controller cm(E_CONTROLLER_MASTER);
 
 LV_IMG_DECLARE(field);
 
+const char* autonNames[] = {
+    "RSAWP",     // 0
+    "BSAWP",     // 1
+    "R5p1wB",    // 2
+    "R5p1wL",    // 3
+    "R5p1aB",    // 4
+    "R5p1aL",    // 5
+    "R6B",       // 6
+    "R6L",       // 7
+    "B5p1wB",    // 8
+    "B5p1wL",    // 9
+    "B5p1aB",    // 10
+    "B5p1aL",    // 11
+    "B6B",       // 12
+    "B6L",       // 13
+    "R-6.1C",    // 14
+    "R-6.1L",    // 15
+    "R-6.1X",    // 16  (X = No Sweep)
+    "R-6C",      // 17
+    "R-6L",      // 18
+    "R-6X",      // 19
+    "B-6.1C",    // 20
+    "B-6.1L",    // 21
+    "B-6.1X",    // 22
+    "B-6C",      // 23
+    "B-6L",      // 24
+    "B-6X"       // 25
+};
+
+
 lv_obj_t* redNegBtn;
 lv_obj_t* redPosBtn;
 lv_obj_t* blueNegBtn;
 lv_obj_t* bluePosBtn;
 
+// RED POS
 lv_obj_t* redPos_5p1w_BakerBtn;
 lv_obj_t* redPos_5p1w_LadderBtn;
 lv_obj_t* redPos_5p1a_BakerBtn;
@@ -22,6 +53,7 @@ lv_obj_t* redPos_5p1a_LadderBtn;
 lv_obj_t* redPos_6_BakerBtn;
 lv_obj_t* redPos_6_LadderBtn;
 
+// BLUE POS
 lv_obj_t* bluePos_5p1w_BakerBtn;
 lv_obj_t* bluePos_5p1w_LadderBtn;
 lv_obj_t* bluePos_5p1a_BakerBtn;
@@ -29,6 +61,7 @@ lv_obj_t* bluePos_5p1a_LadderBtn;
 lv_obj_t* bluePos_6_BakerBtn;
 lv_obj_t* bluePos_6_LadderBtn;
 
+// RED NEG
 lv_obj_t* redNeg_6p1CornerBtn;
 lv_obj_t* redNeg_6p1LadderBtn;
 lv_obj_t* redNeg_6p1CornerNoSweepBtn;
@@ -37,6 +70,7 @@ lv_obj_t* redNeg_6CornerBtn;
 lv_obj_t* redNeg_6LadderBtn;
 lv_obj_t* redNeg_6CornerNoSweepBtn;
 
+// BLUE NEG
 lv_obj_t* blueNeg_6p1CornerBtn;
 lv_obj_t* blueNeg_6p1LadderBtn;
 lv_obj_t* blueNeg_6p1CornerNoSweepBtn;
@@ -127,7 +161,59 @@ namespace sec {
 
         if (equals(btn, redNeg_sawpBtn)) {
             auton = 0;
+        } else if (equals(btn, blueNeg_sawpBtn)) {
+            auton = 1;
+        } else if (equals(btn, redPos_5p1w_BakerBtn)) {
+            auton = 2;
+        } else if (equals(btn, redPos_5p1w_LadderBtn)) {
+            auton = 3;
+        } else if (equals(btn, redPos_5p1a_BakerBtn)) {
+            auton = 4;
+        } else if (equals(btn, redPos_5p1a_LadderBtn)) {
+            auton = 5;
+        } else if (equals(btn, redPos_6_BakerBtn)) {
+            auton = 6;
+        } else if (equals(btn, redPos_6_LadderBtn)) {
+            auton = 7;
+        } else if (equals(btn, bluePos_5p1w_BakerBtn)) {
+            auton = 8;
+        } else if (equals(btn, bluePos_5p1w_LadderBtn)) {
+            auton = 9;
+        } else if (equals(btn, bluePos_5p1a_BakerBtn)) {
+            auton = 10;
+        } else if (equals(btn, bluePos_5p1a_LadderBtn)) {
+            auton = 11;
+        } else if (equals(btn, bluePos_6_BakerBtn)) {
+            auton = 12;
+        } else if (equals(btn, bluePos_6_LadderBtn)) {
+            auton = 13;
+        } else if (equals(btn, redNeg_6p1CornerBtn)) {
+            auton = 14;
+        } else if (equals(btn, redNeg_6p1LadderBtn)) {
+            auton = 15;
+        } else if (equals(btn, redNeg_6p1CornerNoSweepBtn)) {
+            auton = 16;
+        } else if (equals(btn, redNeg_6CornerBtn)) {
+            auton = 17;
+        } else if (equals(btn, redNeg_6LadderBtn)) {
+            auton = 18;
+        } else if (equals(btn, redNeg_6CornerNoSweepBtn)) {
+            auton = 19;
+        } else if (equals(btn, blueNeg_6p1CornerBtn)) {
+            auton = 20;
+        } else if (equals(btn, blueNeg_6p1LadderBtn)) {
+            auton = 21;
+        } else if (equals(btn, blueNeg_6p1CornerNoSweepBtn)) {
+            auton = 22;
+        } else if (equals(btn, blueNeg_6CornerBtn)) {
+            auton = 23;
+        } else if (equals(btn, blueNeg_6LadderBtn)) {
+            auton = 24;
+        } else if (equals(btn, blueNeg_6CornerNoSweepBtn)) {
+            auton = 25;
         }
+        
+        lv_label_set_text_fmt(titleLabel, "Selected Auton: %s", autonNames[auton]);
     }
 
     static void makeButtons(int x, std::vector<lv_obj_t*> &buttons, int type) {

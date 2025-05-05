@@ -158,8 +158,24 @@ void disabled() {}
 
 void competition_initialize() {}
 
+#define AUTON true
+
 void autonomous() {
-    worldsautonomous::blue_sawp(&chassis, &robot);
+    if (AUTON) {
+        worldsautonomous::red6p1CornerClear(&chassis, &robot);
+        return;
+    } 
+
+    switch (sec::auton) {
+        case 0:
+            worldsautonomous::red_sawp(&chassis, &robot);
+            break;
+        case 1:
+            worldsautonomous::blue_sawp(&chassis, &robot);
+            break;
+        default:
+            break;
+    }
 }
 
 float get_rotation_degrees(Rotation rot) {
@@ -177,6 +193,8 @@ void opcontrol() {
     intake->color_sort = true;
     intake->antijam = false;
     intake->toSort = false;
+
+    intake->set_color(BLUE);
 
 	auto mogo = ADIDigitalOut(MOGO);
     auto doinker_left = ADIDigitalOut(DOINKER_LEFT);
@@ -208,8 +226,6 @@ void opcontrol() {
 
     bool abc = false;
     bool abc2 = false;
-
-    return;
 
     hold_controls.emplace(E_CONTROLLER_DIGITAL_L1, std::make_pair(
         [&](bool firstActivation) {
