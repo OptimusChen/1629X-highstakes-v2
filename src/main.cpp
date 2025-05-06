@@ -133,7 +133,7 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 
 void initialize() {
     lcd::initialize();
-    // sec::init(&robot);
+    sec::init(&robot);
 
     robot.add_subsystem(new Intake());
     robot.add_subsystem(new Arm());
@@ -162,7 +162,7 @@ void competition_initialize() {}
 
 void autonomous() {
     if (AUTON) {
-        worldsautonomous::bluePos6Ladder(&chassis, &robot);
+        worldsautonomous::redPos6Ladder(&chassis, &robot);
         return;
     } 
 
@@ -173,9 +173,82 @@ void autonomous() {
         case 1:
             worldsautonomous::blue_sawp(&chassis, &robot);
             break;
+        case 2:
+            // worldsautonomous::red_5p1w_baker(&chassis, &robot);
+            break;
+        case 3:
+            // worldsautonomous::red_5p1w_ladder(&chassis, &robot);
+            break;
+        case 4:
+            // worldsautonomous::red_5p1a_baker(&chassis, &robot);
+            break;
+        case 5:
+            // worldsautonomous::red_5p1a_ladder(&chassis, &robot);
+            break;
+        case 6:
+            // worldsautonomous::red_6_baker(&chassis, &robot);
+            break;
+        case 7:
+            worldsautonomous::redPos6Ladder(&chassis, &robot);
+            break;
+        case 8:
+            // worldsautonomous::blue_5p1w_baker(&chassis, &robot);
+            break;
+        case 9:
+            // worldsautonomous::blue_5p1w_ladder(&chassis, &robot);
+            break;
+        case 10:
+            // worldsautonomous::blue_5p1a_baker(&chassis, &robot);
+            break;
+        case 11:
+            // worldsautonomous::blue_5p1a_ladder(&chassis, &robot);
+            break;
+        case 12:
+            // worldsautonomous::blue_6_baker(&chassis, &robot);
+            break;
+        case 13:
+            worldsautonomous::bluePos6Ladder(&chassis, &robot);
+            break;
+        case 14:
+            worldsautonomous::red6p1CornerClear(&chassis, &robot);
+            break;
+        case 15:
+            worldsautonomous::red6p1Ladder(&chassis, &robot);
+            break;
+        case 16:
+            worldsautonomous::red6p1CornerNoSweep(&chassis, &robot);
+            break;
+        case 17:
+            // worldsautonomous::red_6_corner(&chassis, &robot);
+            break;
+        case 18:
+            // worldsautonomous::red_6_ladder(&chassis, &robot);
+            break;
+        case 19:
+            // worldsautonomous::red_6_corner_nosweep(&chassis, &robot);
+            break;
+        case 20:
+            // worldsautonomous::blue_6p1_corner(&chassis, &robot);
+            break;
+        case 21:
+            // worldsautonomous::blue_6p1_ladder(&chassis, &robot);
+            break;
+        case 22:
+            // worldsautonomous::blue_6p1_corner_nosweep(&chassis, &robot);
+            break;
+        case 23:
+            // worldsautonomous::blue_6_corner(&chassis, &robot);
+            break;
+        case 24:
+            // worldsautonomous::blue_6_ladder(&chassis, &robot);
+            break;
+        case 25:
+            // worldsautonomous::blue_6_corner_nosweep(&chassis, &robot);
+            break;
         default:
             break;
     }
+    
 }
 
 float get_rotation_degrees(Rotation rot) {
@@ -201,7 +274,7 @@ void opcontrol() {
     auto doinker_right = ADIDigitalOut(DOINKER_RIGHT);
     bool dlActive = false;
     bool drActive = false;
-    bool mogoActive = false;
+    bool mogoActive = true;
 
     mogo.set_value(mogoActive);
 

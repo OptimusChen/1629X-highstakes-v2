@@ -39,6 +39,8 @@ const char* autonNames[] = {
     "B-6X"       // 25
 };
 
+// COMPLETED AUTONS:
+
 
 lv_obj_t* redNegBtn;
 lv_obj_t* redPosBtn;
@@ -101,6 +103,14 @@ namespace sec {
     int color = RED;
     lib::Robot* robot;
 
+    static void set_auto_text(lv_obj_t* button, std::string text) {
+        lv_obj_t* label = lv_obj_get_child(button, 0);
+        if (label != nullptr) {
+            lv_label_set_text(label, text.c_str());
+        } else {
+            std::cout << "Label not found" << std::endl;
+        }
+    }
 
     static void showButtons(std::vector<lv_obj_t*> buttons) {
         for (auto btn : buttons) {
@@ -452,5 +462,12 @@ namespace sec {
         redPosBtn = redPosBtn;
         blueNegBtn = blueNegBtn;
         bluePosBtn = bluePosBtn;
+
+        // FINISHED AUTONS:
+        set_auto_text(redNeg_6p1CornerBtn, "R 6.1 C");
+        set_auto_text(redNeg_6p1LadderBtn, "R 6.1 L");
+        set_auto_text(redNeg_6p1CornerNoSweepBtn, "R 6.1 X");
+        set_auto_text(redPos_6_LadderBtn, "R 6 L");
+        set_auto_text(bluePos_6_LadderBtn, "B 6 L");
     }
 }

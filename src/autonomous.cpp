@@ -280,7 +280,7 @@ void worldsautonomous::bluePos6Ladder(lemlib::Chassis* chassis, Robot* robot) {
         while (true) {
             lemlib::Pose pose = chassis->getPose();
             int distanceFrom00 = sqrt(pow(pose.x - 17, 2) + pow(pose.y + 24, 2));
-            if (distanceFrom00 < 5) {
+            if (distanceFrom00 < 9) {
                 robot->set_mogo(true);
                 clamped = true;
                 delay(200);
@@ -324,34 +324,38 @@ void worldsautonomous::bluePos6Ladder(lemlib::Chassis* chassis, Robot* robot) {
     chassis->moveToPoint(23, -12, 3000, {.forwards = false, .maxSpeed = 80, .minSpeed=60});
     chassis->waitUntilDone();
 
-    chassis->turnToPoint(18, -45, 1000, {.forwards = true, .maxSpeed = 40});
+    chassis->turnToPoint(15, -45, 1250, {.forwards = true, .maxSpeed = 60, .minSpeed=1});
     chassis->waitUntilDone();
 
     robot->set_rush_arm_left(false);
-    delay(500);
+    arm->set_target(MID + 50);
+    delay(200);
 
-    chassis->turnToPoint(23, -45, 500, {.forwards = true, .maxSpeed = 40});
+    chassis->turnToPoint(26, -45, 500, {.forwards = true, .maxSpeed = 40});
     chassis->waitUntilDone();
 
     robot->set_rush_arm_left(true);
     robot->set_rush_arm_right(true);
 
     intake->forwards();
-    chassis->moveToPoint(23, -48, 2000, {.forwards = true, .maxSpeed = 60, .minSpeed=40});
+    
+    chassis->moveToPoint(23, -43, 2000, {.forwards = true, .maxSpeed = 60, .minSpeed=40});
     chassis->waitUntilDone();
     robot->set_rush_arm_left(false);
     robot->set_rush_arm_right(false);
 
-    chassis->swingToPoint(54, -54, DriveSide::RIGHT, 500, {.forwards = true, .maxSpeed = 127});
+    chassis->swingToPoint(59, -54, DriveSide::RIGHT, 500, {.forwards = true, .maxSpeed = 127, .minSpeed=40});
     chassis->waitUntilDone();
-    chassis->moveToPoint(54, -54, 2000, {.forwards = true, .maxSpeed = 127});
+    chassis->moveToPoint(59, -54, 2000, {.forwards = true, .maxSpeed = 127});
     chassis->waitUntilDone();
+
+    arm->set_target(ALLIANCE_STAKE + 20);
 
     chassis->turnToPoint(70, -70, 200);
     chassis->waitUntilDone();
 
     intake->antijam = false;    
-    chassis->moveToPoint(70, -70, 1000, {.forwards = true, .maxSpeed = 127, .minSpeed=40});  
+    chassis->moveToPoint(70, -70, 750, {.forwards = true, .maxSpeed = 60, .minSpeed=40});  
     chassis->waitUntilDone();   
     
     chassis->moveToPoint(49, -49, 1000, {.forwards = false, .maxSpeed = 40});
@@ -363,34 +367,167 @@ void worldsautonomous::bluePos6Ladder(lemlib::Chassis* chassis, Robot* robot) {
     chassis->waitUntilDone(); 
     delay(500);
     
-    chassis->moveToPoint(47, -47, 1000, {.forwards = false, .maxSpeed = 40});
+    arm->set_target(MID + 50);
+    chassis->moveToPoint(47, -47, 1000, {.forwards = false, .maxSpeed = 80, .earlyExitRange=10});
     chassis->waitUntilDone(); 
-    intake->color_sort = true;
+    intake->color_sort = true; 
     intake->antijam = true; 
 
-    delay(10000);
+    Task intakeDelayAgain([&] {
+        delay(500);
+        intake->stop();
+        arm->set_target(MID - 12);
+    });
+    chassis->moveToPoint(14, -14, 1000, {.forwards = false, .maxSpeed = 127, .minSpeed=100});
+    chassis->waitUntilDone(); 
 
+    runningAuton = false;
+}
 
+/*
+██████╗░███████╗██████╗░  ██████╗░░█████╗░░██████╗██╗████████╗██╗██╗░░░██╗███████╗
+██╔══██╗██╔════╝██╔══██╗  ██╔══██╗██╔══██╗██╔════╝██║╚══██╔══╝██║██║░░░██║██╔════╝
+██████╔╝█████╗░░██║░░██║  ██████╔╝██║░░██║╚█████╗░██║░░░██║░░░██║╚██╗░██╔╝█████╗░░
+██╔══██╗██╔══╝░░██║░░██║  ██╔═══╝░██║░░██║░╚═══██╗██║░░░██║░░░██║░╚████╔╝░██╔══╝░░
+██║░░██║███████╗██████╔╝  ██║░░░░░╚█████╔╝██████╔╝██║░░░██║░░░██║░░╚██╔╝░░███████╗
+╚═╝░░╚═╝╚══════╝╚═════╝░  ╚═╝░░░░░░╚════╝░╚═════╝░╚═╝░░░╚═╝░░░╚═╝░░░╚═╝░░░╚══════╝
+*/
 
+void worldsautonomous::redPos6Ladder(lemlib::Chassis* chassis, Robot* robot) {
+    robot->set_brake_mode(E_MOTOR_BRAKE_COAST);
 
-
-    pros::delay(490);
-    robot->set_rush_arm_right(true);
-    chassis->swingToPoint(-24, 1, DriveSide::LEFT, 800, {.minSpeed = 75});
-    chassis->waitUntilDone();
-    pros::delay(320);
-    robot->set_rush_arm_left(true);
-    chassis->swingToPoint(0, 24, DriveSide::LEFT, 500, {.minSpeed = 75});
-    chassis->waitUntilDone();
-    intake->backwards(60);
-    chassis->moveToPoint(39, -32, 1200, {.forwards = false, .minSpeed = 60});
-    chassis->waitUntilDone();
-    chassis->turnToPoint(24, -30, 900, {.maxSpeed = 60});
-    chassis->waitUntilDone();
-    pros::delay(500);
+    Arm * arm = robot->get_subsystem<Arm>();
+    Intake * intake = robot->get_subsystem<Intake>();
+    intake->arm = arm; 
     
+    intake->color_sort = true;
+    intake->set_color(RED);  
+
+    auto stage_1_stop = [&] {
+        auto opticalMeasure = intake->optical->get_hue();
+        bool correctColor = true;
+        if (intake->color == RED && ((opticalMeasure > 170) && (opticalMeasure < 245))) correctColor = false;
+        if (intake->color == BLUE && ((opticalMeasure > 340 && opticalMeasure < 360) || (opticalMeasure < 20))) correctColor = false;
+        return intake->detected_ring(STAGE_2) && correctColor;
+    };
+
+    bool runningAuton = true;
+
+    Task updates([&]() {
+        while (runningAuton) {
+            arm->update();
+            intake->update();
+            delay(1);
+        }
+    });
+
+    chassis->setPose(-53, -20.5, 270);
+
+    chassis->moveToPoint(-17, -23, 1900, {.forwards = false, .maxSpeed = 100});
+
+    bool clamped = false;
+    Task clampTask([&] {
+        while (true) {
+            lemlib::Pose pose = chassis->getPose();
+            int distanceFrom00 = sqrt(pow(pose.x + 17, 2) + pow(pose.y + 24, 2));
+            if (distanceFrom00 < 5) {
+                robot->set_mogo(true);
+                clamped = true;
+                delay(200);
+                chassis->cancelMotion();
+                break;
+            } 
+            delay(10);
+        }
+    });
+
+    chassis->waitUntilDone();
+
+    if (!clamped) {
+        robot->set_mogo(true);
+        delay(200);
+    }
+
+    intake->color_sort = false;
+    float pos = intake->hooks.get_position();
+    intake->forwards();
+    while (intake->hooks.get_position() < pos + 900) {
+        delay(10);
+    }
+
+    intake->stop();
+    intake->color_sort = true;
+
+    chassis->turnToPoint(0, 8, 700);
+    chassis->waitUntilDone();
+    chassis->moveToPose(-9, -8, -335, 1000, {.forwards = true, .lead=0.1});
+    chassis->waitUntilDone();
+
+    intake->stop();
+    robot->set_rush_arm_right(true);
+
+    delay(400);
+
+    chassis->turnToPoint(-23, -12, 500, {.forwards = false});
+    chassis->waitUntilDone();
+    intake->backwards(20);
+    chassis->moveToPoint(-23, -12, 3000, {.forwards = false, .maxSpeed = 80, .minSpeed=60});
+    chassis->waitUntilDone();
+
+    chassis->turnToPoint(-10, -45, 1250, {.forwards = true, .maxSpeed = 60, .minSpeed=1});
+    chassis->waitUntilDone();
+
+    robot->set_rush_arm_right(false);
+    arm->set_target(MID + 50);
+    delay(200);
+
+    chassis->turnToPoint(-23, -45, 500, {.forwards = true, .maxSpeed = 40});
+    chassis->waitUntilDone();
+
+    robot->set_rush_arm_left(true);
+    robot->set_rush_arm_right(true);
+
+    intake->forwards();
+    chassis->moveToPoint(-23, -44, 2000, {.forwards = true, .maxSpeed = 60, .minSpeed=40});
+    chassis->waitUntilDone();
     robot->set_rush_arm_left(false);
     robot->set_rush_arm_right(false);
+
+    chassis->swingToPoint(-54, -54, DriveSide::LEFT, 500, {.forwards = true, .maxSpeed = 127, .minSpeed=40});
+    chassis->waitUntilDone();
+    chassis->moveToPoint(-54, -54, 2000, {.forwards = true, .maxSpeed = 127});
+    chassis->waitUntilDone();
+
+    arm->set_target(ALLIANCE_STAKE + 20);
+
+    chassis->turnToPoint(-70, -70, 200);
+    chassis->waitUntilDone();
+
+    intake->antijam = false;    
+    chassis->moveToPoint(-70, -70, 750, {.forwards = true, .maxSpeed = 60, .minSpeed=40});  
+    chassis->waitUntilDone();   
+
+    chassis->moveToPoint(-49, -49, 1000, {.forwards = false, .maxSpeed = 40});
+    chassis->waitUntilDone(); 
+
+    intake->color_sort = true;
+    chassis->moveToPoint(-60, -60, 500, {.forwards = true, .maxSpeed = 127, .minSpeed=50});  
+    chassis->waitUntilDone(); 
+    delay(500);
+    
+    arm->set_target(MID + 50);
+    chassis->moveToPoint(-47, -47, 1000, {.forwards = false, .maxSpeed = 80, .earlyExitRange=10});
+    chassis->waitUntilDone(); 
+    intake->color_sort = true; 
+    intake->antijam = true; 
+
+    Task intakeDelayAgain([&] {
+        delay(500);
+        intake->stop();
+        arm->set_target(MID - 12);
+    });
+    chassis->moveToPoint(-14, -14, 1000, {.forwards = false, .maxSpeed = 127, .minSpeed=100});
+    chassis->waitUntilDone(); 
 
     runningAuton = false;
 }
